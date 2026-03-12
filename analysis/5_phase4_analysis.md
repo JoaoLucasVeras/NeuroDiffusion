@@ -2,40 +2,44 @@
 
 This is the final stage of the DreamDiffusion pipeline. After the model has been trained to map EEG signals horizontally to Stable Diffusion latent conditioning, it needs to be evaluated. This phase covers how a single EEG signal generates an image, and mathematically, how we determine if the generated image is "good".
 
-Here is the line-by-line breakdown of the Inference and Evaluation files:
+### 🧠 AI Concepts Explained Simply
+When you ask an AI to draw "a dog", and it draws a Husky, but you were thinking of a Poodle, is the AI right or wrong? Evaluating AI art is tricky because art is subjective. Scientists created mathematical formulas to score AI images like a report card.
+*   **Pixel Grading (MSE/PCC)**: The dumbest way to grade an image. It just overlaps the real photo and the AI photo and subtracts the pixel colors. If the AI drew the dog 1 inch to the left, this score thinks the AI failed completely.
+*   **Human-Eye Grading (LPIPS/SSIM)**: These formulas try to grade like a human. They look at the "structure" of the image (edges, blobs, lighting) instead of raw pixels. If the AI draws a Husky instead of a Poodle, the structure is still "dog-like", so it gets a passing grade.
+*   **The Gold Standard (FID)**: Frechet Inception Distance. It uses *another* AI to look at 10,000 real photos and 10,000 AI photos. It measures how "fake" the AI photos feel statistically compared to reality. Lower scores mean it looks more real.
+*   **Semantic Grading (ViT Accuracy)**: The smartest way to grade. It uses a massive AI to classify what is inside both pictures. If both pictures classify as "Dog", the AI successfully read your mind, even if the colors and shapes are different!
+
+---
 
 ## 1. `gen_eval_eeg.py` (The Inference Script)
-This is a standard standalone evaluation script. It does not train the model; it only performs the forward pass. 
+This is the script used when the training is entirely finished. It doesn't learn anymore; it just performs the magic trick.
 *   **Initialization (Lines 72-108)**: 
-    *   Loads the pre-trained weights from `args.model_path`.
-    *   Sets up the `img_transform_test` which just resizes the images to 512x512 and normalizes them.
-    *   Loads the datasets (both train and test splits) via `create_EEG_dataset`.
+    *   Loads the fully trained "brain" (`args.model_path`).
+    *   Formats the test dataset (brainwaves it has never seen before).
 *   **Generation (Lines 110-131)**:
-    *   It wraps the loaded weights in an inference-only class called `eLDM_eval` (imported from `ldm_for_eeg.py`).
-    *   It generates batches of images (usually 10 `num_samples` at a time per EEG input).
-    *   It runs 250 denoising steps (`ddim_steps`) natively.
-    *   Finally, it converts the output PyTorch tensors back into `.png` pixel arrays and saves them to the disk so human researchers can visually compare the generated image against what the subject was looking at.
+    *   It wraps the loaded weights in an inference-only class called `eLDM_eval`.
+    *   It takes a brainwave, generates complete static, and runs 250 denoising passes (`ddim_steps`).
+    *   Finally, it converts the output into `.png` pixel arrays and saves them to the disk so human researchers can visually compare the original photo the person looked at against the photo generated purely from their brainwaves.
 
 ## 2. `eval_metrics.py` (The Quantitative Graders)
-While looking at images is good, researchers need hard numbers to prove a model works. This file provides 5 different mathematical ways to grade the quality of the generated AI image compared to the original "ground truth" image.
+While looking at images is fun, scientists need hard numbers to get papers published. This file computes the 5 different mathematical report cards.
 
-*   **`mse_metric` (Line 18)**: Mean Squared Error. A very basic pixel-by-pixel difference calculation. Not great for AI generation since the AI might generate the correct *object* but in slightly different pixel locations.
-*   **`pcc_metric` (Line 21)**: Pearson Correlation Coefficient. Measures the linear correlation between the pixels of the two images.
-*   **`ssim_metric` (Line 24)**: Structural Similarity Index. Rather than raw pixels, this algorithm grades how similar the *structures* (edges, patterns, luminance) of the two images are.
+*   **`mse_metric` (Line 18)**: Mean Squared Error. The "dumb" pixel-by-pixel difference calculation.
+*   **`pcc_metric` (Line 21)**: Pearson Correlation Coefficient. Measures the linear correlation between the raw pixels.
+*   **`ssim_metric` (Line 24)**: Structural Similarity Index. Grades how similar the *patterns* (edges, luminance) of the two images are, ignoring exact pixel matches.
 *   **`psm_wrapper` (Lines 30-44)**: Learned Perceptual Image Patch Similarity (LPIPS). 
-    *   This is a deep learning-based metric. 
-    *   It passes both the generated image and the ground truth image through a pre-trained `AlexNet`. It then compares the hidden layer feature maps. If both images trigger similar neurons in AlexNet, it means they "look" perceptually similar to a human, even if the raw pixels don't perfectly align.
+    *   It passes both the generated image and the original image through an old AI called `AlexNet`. 
+    *   If both images trigger the exact same "artificial neurons" inside AlexNet, it means they "look" perceptually identical to a human.
 *   **`fid_wrapper` (Lines 46-56)**: Frechet Inception Distance.
-    *   The gold standard metric for generative AI. 
-    *   It passes the images through an `InceptionV3` classifier and measures the statistical distance (Frechet distance) between the distribution of the real images vs the fake images. A lower FID score is better.
+    *   It passes the images through an `InceptionV3` classifier and measures the statistical distance (Frechet distance) between the blur, noise, and textures of real images vs the generated images. A lower FID score is better.
 *   **`get_n_way_top_k_acc` (Lines 124-146)**: $N$-way Top-$K$ Accuracy.
-    *   This is a clever test. It passes both the generated image and the true image through a massive pre-trained Vision Transformer (`ViT_H_14`).
-    *   It asks the ViT to classify both images. If the generated image is classified as the *exact same category* as the ground truth image (e.g., they both classify as a "Golden Retriever"), the model scores a point. This proves the EEG successfully captured the semantic *meaning* of the brainwave.
+    *   This is the "Semantic" test. It passes both the generated image and the true image through a massive pre-trained Vision Transformer (`ViT_H_14`).
+    *   It asks the ViT to name the object. If the generated image is named the *exact same category* as the true image (e.g., they both classify as "Airplane"), the model scores a point. This proves the EEG successfully captured the core *meaning* of the brainwave.
 
 ---
 **Summary of the End-to-End Pipeline:**
 1. **Target Image** -> Subject's Brain -> **Raw EEG recorded**.
-2. **Phase 1**: Data is cleaned, sliced, and loaded.
-3. **Phase 2 (MBM)**: Raw EEG is heavily masked. A Transformer Encoder learns to compress the EEG into a 1024-dim embedding, while a Decoder learns to fill in the missing brainwaves.
-4. **Phase 3 (Latent Finetuning)**: The Decoder is thrown away. The 1024-dim EEG embedding is projected into a 1280-dim space. A pre-trained Stable Diffusion model's Cross-Attention layers are fine-tuned to accept this 1280-dim vector instead of text.
-5. **Phase 4 (Inference)**: A new EEG signal is fed into the system. Stable diffusion generates an image. `eval_metrics.py` grades the generated image against the original target image using SSIM, LPIPS, FID, and ViT Semantic accuracy.
+2. **Phase 1 (Data Prep)**: Data is cleaned, sliced to 512 milliseconds, and loaded.
+3. **Phase 2 (MBM / Pre-training)**: Raw EEG is heavily masked. A self-supervised AI learns to compress the EEG into a 1024-number summary by practicing guessing the missing brainwaves.
+4. **Phase 3 (Latent Finetuning)**: A pre-trained Stable Diffusion model has its "text steering wheel" ripped out and replaced with our EEG summary. It learns to draw the meaning of the brainwave.
+5. **Phase 4 (Inference)**: A new EEG signal is fed into the system. Stable diffusion generates an image. `eval_metrics.py` grades the generated image against reality.
