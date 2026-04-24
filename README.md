@@ -89,6 +89,41 @@ python3 code/gen_eval_eeg.py --dataset EEG --model_path  pretrains/models/checkp
 
 ![results](assets/results.png)
 
+## SJSU HPC Usage (Scaling Up)
+
+If you are moving from local development to the SJSU HPC cluster for multi-GPU training:
+
+### 1. Repository Setup
+Clone the repository and switch to the optimized HPC branch:
+```sh
+git clone https://github.com/JoaoLucasVeras/NeuroDiffusion.git
+cd NeuroDiffusion
+git checkout hpc-dev
+```
+
+### 2. Environment Setup
+```sh
+module load anaconda3
+conda env create -f env.yaml
+conda activate neurodiffusion
+```
+
+### 3. Data Transfer
+Do not download weights/data via login nodes. Transfer the pre-formatted tensors and SD weights from your local machine using `scp`:
+```bash
+# Transfer tensors and weights
+scp -r ./datasets/*.pth username@hpc-login.sjsu.edu:~/NeuroDiffusion/datasets/
+scp ./pretrains/models/v1-5-pruned.ckpt username@hpc-login.sjsu.edu:~/NeuroDiffusion/pretrains/models/
+```
+
+### 4. Job Submission
+Submit the pretraining job to the SLURM queue:
+```bash
+cd code
+sbatch train_mae.sh
+```
+Check job status with `squeue -u your_sjsu_id`. Logs will be saved in `results/logs/`.
+
 ## Acknowledgement
 
 This code is built upon the publicly available code [Mind-vis](https://github.com/zjc062/mind-vis) and [StableDiffusion](https://github.com/CompVis/stable-diffusion). Thanks these authors for making their excellent work and codes publicly available.
