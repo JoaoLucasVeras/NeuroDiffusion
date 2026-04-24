@@ -1,0 +1,25 @@
+# Large Model Weights
+pretrains/models/*.ckpt
+pretrains/models/*.pth
+pretrains/models/*.bin
+
+# Datasets (Local storage only)
+datasets/Imagination Experiment/*.mat
+datasets/Visual Experiment/*.mat
+datasets/*.pth
+datasets/mne_data/*.npy
+
+# Results and Logs
+results/*
+exps/*
+code/logs/
+
+# Python environment / Cache
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.DS_Store
+
+# User-specific analytical scripts
+analysis/format_tensors.py
+analysis/inspect_mat.py
