@@ -5,7 +5,6 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel
 import argparse
 import time
-from timm.optim import optim_factory
 import datetime
 import matplotlib.pyplot as plt
 import wandb
@@ -144,8 +143,8 @@ def main(config):
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(model, device_ids=[config.local_rank], output_device=config.local_rank, find_unused_parameters=config.use_nature_img_loss)
 
-    param_groups = optim_factory.add_weight_decay(model, config.weight_decay)
-    optimizer = torch.optim.AdamW(param_groups, lr=config.lr, betas=(0.9, 0.95))
+    from timm.optim import create_optimizer_v2
+    optimizer = create_optimizer_v2(model, opt='adamw', lr=config.lr, weight_decay=config.weight_decay, betas=(0.9, 0.95))
     print(optimizer)
     loss_scaler = NativeScaler()
 
