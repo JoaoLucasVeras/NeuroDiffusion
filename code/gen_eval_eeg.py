@@ -75,7 +75,7 @@ if __name__ == '__main__':
     root = args.root
     target = args.dataset
 
-    sd = torch.load(args.model_path, map_location='cpu')
+    sd = torch.load(args.model_path, map_location='cpu', weights_only=False)
     config = sd['config']
     # update paths
     config.root_path = root
