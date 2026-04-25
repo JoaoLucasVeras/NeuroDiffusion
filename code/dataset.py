@@ -268,7 +268,8 @@ class EEGDataset(Dataset):
 
         eeg = self.data[i]["eeg"].float().t()
 
-        eeg = eeg[20:460,:]
+        if eeg.shape[0] >= 460:
+            eeg = eeg[20:460,:]
 
         eeg = np.array(eeg.transpose(0,1))
         x = np.linspace(0, 1, eeg.shape[-1])
@@ -309,7 +310,7 @@ class Splitter:
 
         self.split_idx = loaded["splits"][split_num][split_name]
         # Filter data
-        self.split_idx = [i for i in self.split_idx if i <= len(self.dataset.data) and 450 <= self.dataset.data[i]["eeg"].size(1) <= 600]
+        self.split_idx = [i for i in self.split_idx if i < len(self.dataset.data) and self.dataset.data[i]["eeg"].size(1) >= 120]
         # Compute size
 
         self.size = len(self.split_idx)
