@@ -5,7 +5,7 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel
 import argparse
 import time
-import timm.optim.optim_factory as optim_factory
+import timm.optim as optim_factory
 import datetime
 import matplotlib.pyplot as plt
 import wandb
