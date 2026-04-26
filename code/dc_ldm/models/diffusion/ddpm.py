@@ -116,6 +116,8 @@ class DDPM(pl.LightningModule):
         self.logvar = torch.full(fill_value=logvar_init, size=(self.num_timesteps,))
         if self.learn_logvar:
             self.logvar = nn.Parameter(self.logvar, requires_grad=True)
+        else:
+            self.register_buffer('logvar', self.logvar)
 
         self.validation_count = 0
         self.ddim_steps = ddim_steps
