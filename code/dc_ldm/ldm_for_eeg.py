@@ -144,8 +144,8 @@ class eLDM:
       
         # # stage one: only optimize conditional encoders
         print('\n##### Stage One: only optimize conditional encoders #####')
-        dataloader = DataLoader(dataset, batch_size=bs1, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
-        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
+        dataloader = DataLoader(dataset, batch_size=bs1, shuffle=True, num_workers=8, pin_memory=True, persistent_workers=True)
+        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False, num_workers=8, pin_memory=True, persistent_workers=True)
         self.model.unfreeze_whole_model()
         self.model.freeze_first_stage()
         # self.model.freeze_whole_model()
@@ -199,11 +199,16 @@ class eLDM:
                 # assert latent.shape[-1] == self.fmri_latent_dim, 'dim error'
                 
                 c, re_latent = model.get_learned_conditioning(repeat(latent, 'h w -> c h w', c=num_samples).to(self.device))
-                # c = model.get_learned_conditioning(repeat(latent, 'h w -> c h w', c=num_samples).to(self.device))
+                
+                # CFG null conditioning using zeros to push the model against a baseline noise
+                uc = model.get_learned_conditioning(torch.zeros_like(repeat(latent, 'h w -> c h w', c=num_samples)).to(self.device))[0]
+
                 samples_ddim, _ = sampler.sample(S=ddim_steps, 
                                                 conditioning=c,
                                                 batch_size=num_samples,
                                                 shape=shape,
+                                                unconditional_guidance_scale=getattr(self.ldm_config, 'cfg_scale', 8.0),
+                                                unconditional_conditioning=uc,
                                                 verbose=False)
 
                 x_samples_ddim = model.decode_first_stage(samples_ddim)
@@ -337,11 +342,16 @@ class eLDM_eval:
                 # assert latent.shape[-1] == self.fmri_latent_dim, 'dim error'
                 
                 c, re_latent = model.get_learned_conditioning(repeat(latent, 'h w -> c h w', c=num_samples).to(self.device))
-                # c = model.get_learned_conditioning(repeat(latent, 'h w -> c h w', c=num_samples).to(self.device))
+                
+                # CFG null conditioning using zeros to push the model against a baseline noise
+                uc = model.get_learned_conditioning(torch.zeros_like(repeat(latent, 'h w -> c h w', c=num_samples)).to(self.device))[0]
+
                 samples_ddim, _ = sampler.sample(S=ddim_steps, 
                                                 conditioning=c,
                                                 batch_size=num_samples,
                                                 shape=shape,
+                                                unconditional_guidance_scale=getattr(self.ldm_config, 'cfg_scale', 8.0),
+                                                unconditional_conditioning=uc,
                                                 verbose=False)
 
                 x_samples_ddim = model.decode_first_stage(samples_ddim)

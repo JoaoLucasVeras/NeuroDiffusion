@@ -234,9 +234,10 @@ def create_readme(config, path):
         print(config.__dict__, file=f)
 
 
+from pytorch_lightning.plugins.environments import SLURMEnvironment
 def create_trainer(num_epoch, precision=32, accumulate_grad_batches=2,logger=None,check_val_every_n_epoch=0):
     acc = 'gpu' if torch.cuda.is_available() else 'cpu'
-    return pl.Trainer(accelerator=acc, max_epochs=num_epoch, logger=logger, 
+    return pl.Trainer(accelerator=acc, devices='auto', strategy='ddp_find_unused_parameters_true', plugins=[SLURMEnvironment(auto_requeue=True)], max_epochs=num_epoch, logger=logger, 
             precision=precision, accumulate_grad_batches=accumulate_grad_batches,
             enable_checkpointing=True, enable_model_summary=False, gradient_clip_val=0.5,
             check_val_every_n_epoch=check_val_every_n_epoch)
@@ -260,6 +261,6 @@ if __name__ == '__main__':
     
     wandb_init(config, output_path)
 
-    # logger = WandbLogger()
-    config.logger = None # logger
+    logger = WandbLogger(project='dreamdiffusion', name=f"stage2-{datetime.datetime.now().strftime('%m%d-%H%M')}")
+    config.logger = logger
     main(config)

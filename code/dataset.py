@@ -279,7 +279,16 @@ class EEGDataset(Dataset):
         eeg = self.data[i]["eeg"].float().t()
 
         if eeg.shape[0] >= 460:
-            eeg = eeg[20:460,:]
+            # Temporal jitter for robust embeddings
+            jitter = np.random.randint(-10, 10)
+            start_idx = max(0, 20 + jitter)
+            end_idx = min(eeg.shape[0], start_idx + 440)
+            # Ensure it is exactly 440
+            eeg_slice = eeg[start_idx:end_idx,:]
+            if eeg_slice.shape[0] < 440:
+                eeg = torch.nn.functional.pad(eeg_slice, (0, 0, 0, 440 - eeg_slice.shape[0]))
+            else:
+                eeg = eeg_slice
 
         eeg = np.array(eeg.transpose(0,1))
         # Optimized interpolation: only compute if shapes differ
