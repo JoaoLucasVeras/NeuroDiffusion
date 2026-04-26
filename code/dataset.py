@@ -258,6 +258,7 @@ class EEGDataset(Dataset):
         # Compute size
         self.size = len(self.data)
         self.processor = AutoProcessor.from_pretrained("openai/clip-vit-large-patch14")
+        self.noise_cache = None
 
     # Get size
     def __len__(self):
@@ -272,10 +273,12 @@ class EEGDataset(Dataset):
             eeg = eeg[20:460,:]
 
         eeg = np.array(eeg.transpose(0,1))
-        x = np.linspace(0, 1, eeg.shape[-1])
-        x2 = np.linspace(0, 1, self.data_len)
-        f = interp1d(x, eeg)
-        eeg = f(x2)
+        # Optimized interpolation: only compute if shapes differ
+        if eeg.shape[-1] != self.data_len:
+            x = np.linspace(0, 1, eeg.shape[-1])
+            x2 = np.linspace(0, 1, self.data_len)
+            f = interp1d(x, eeg)
+            eeg = f(x2)
         eeg = torch.from_numpy(eeg).float()
 
         label = torch.tensor(self.data[i]["label"]).long()
@@ -287,8 +290,10 @@ class EEGDataset(Dataset):
             image_raw = Image.open(image_path).convert('RGB') 
         # print(image_path)
         else:
-            noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
-            image_raw = Image.fromarray(noise, 'RGB')
+            if self.noise_cache is None:
+                print("🎲 Generating Nitro Noise Cache...")
+                self.noise_cache = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
+            image_raw = Image.fromarray(self.noise_cache, 'RGB')
         
         
         image = np.array(image_raw) / 255.0
