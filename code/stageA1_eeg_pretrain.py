@@ -120,9 +120,12 @@ def main(config):
     np.random.seed(config.seed)
 
     # create dataset and dataloader
-    dataset_pretrain = eeg_pretrain_dataset(path=os.path.join(config.root_path, 'datasets/mne_data/'), roi=config.roi, patch_size=config.patch_size,
-                transform=fmri_transform, aug_times=config.aug_times, num_sub_limit=config.num_sub_limit, 
-                include_kam=config.include_kam, include_hcp=config.include_hcp)
+    # create dataset and dataloader
+    from dataset import create_EEG_dataset
+    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path=os.path.join(config.root_path, 'datasets/eeg_5_95_std.pth'), 
+                                                     splits_path=os.path.join(config.root_path, 'datasets/block_splits_by_image_single.pth'))
+    dataset_pretrain = torch.utils.data.ConcatDataset([dataset_train, dataset_test])
+    dataset_pretrain.data_len = 512
    
     print(f'Dataset size: {len(dataset_pretrain)}\n Time len: {dataset_pretrain.data_len}')
     sampler = torch.utils.data.DistributedSampler(dataset_pretrain, rank=config.local_rank) if torch.cuda.device_count() > 1 else None 
