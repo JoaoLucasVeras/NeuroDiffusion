@@ -1,0 +1,19 @@
+# HPC Requirements for A100/H100 Node
+torch>=2.0.0
+torchvision
+pytorch-lightning>=2.0.0
+transformers
+einops
+omegaconf
+timm
+torchmetrics
+lpips
+scikit-image
+h5py
+mne
+scipy
+natsort
+kornia
+wandb
+pillow
+numpy
