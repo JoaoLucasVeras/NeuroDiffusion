@@ -861,7 +861,7 @@ class LatentDiffusion(DDPM):
         x = x.to(self.device)
         if self.z_cache is None:
             encoder_posterior = self.encode_first_stage(x)
-            self.z_cache = self.get_first_stage_encoding(encoder_posterior).detach() if not self.imagenet else self.get_first_stage_encoding(encoder_posterior).detach()
+            self.z_cache = self.get_first_stage_encoding(encoder_posterior).detach() 
         z = self.z_cache
         # print('z.shape')
         # print(z.shape)
