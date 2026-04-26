@@ -129,6 +129,7 @@ class Config_Generative_Model:
         self.num_samples = 5
         self.ddim_steps = 250
         self.HW = None
+        self.cfg_scale = 8.0 # Critical for Imagination Paradigm
         # resume check util
         self.model_meta = None
         self.checkpoint_path = None 
