@@ -258,7 +258,16 @@ class EEGDataset(Dataset):
         # Compute size
         self.size = len(self.data)
         self.processor = AutoProcessor.from_pretrained("openai/clip-vit-large-patch14")
-        self.noise_cache = None
+        if self.imagenet is None:
+            print("🎲 Pre-generating Nitro Noise & Processor Cache...")
+            noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
+            image_raw_pil = Image.fromarray(noise, 'RGB')
+            image_raw_processed = self.processor(images=image_raw_pil, return_tensors="pt")
+            image_raw_processed['pixel_values'] = image_raw_processed['pixel_values'].squeeze(0)
+            image_numpy = np.array(image_raw_pil) / 255.0
+            self.noise_cache = (image_numpy, image_raw_processed)
+        else:
+            self.noise_cache = None
 
     # Get size
     def __len__(self):
@@ -290,15 +299,6 @@ class EEGDataset(Dataset):
             image_raw = Image.open(image_path).convert('RGB') 
         # print(image_path)
         else:
-            if self.noise_cache is None:
-                print("🎲 Generating Nitro Noise & Processor Cache...")
-                noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
-                image_raw_pil = Image.fromarray(noise, 'RGB')
-                image_raw_processed = self.processor(images=image_raw_pil, return_tensors="pt")
-                image_raw_processed['pixel_values'] = image_raw_processed['pixel_values'].squeeze(0)
-                image_numpy = np.array(image_raw_pil) / 255.0
-                self.noise_cache = (image_numpy, image_raw_processed)
-            
             image, image_raw = self.noise_cache
 
 
