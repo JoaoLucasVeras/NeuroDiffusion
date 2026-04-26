@@ -234,8 +234,10 @@ def create_readme(config, path):
         print(config.__dict__, file=f)
 
 
-def create_trainer(num_epoch, precision=32, accumulate_grad_batches=2,logger=None,check_val_every_n_epoch=0):
+def create_trainer(num_epoch, precision=16, accumulate_grad_batches=2,logger=None,check_val_every_n_epoch=0):
     acc = 'gpu' if torch.cuda.is_available() else 'cpu'
+    # Use 16-bit mixed precision for A100 speedup
+    if precision == 32: precision = 16
     return pl.Trainer(accelerator=acc, max_epochs=num_epoch, logger=logger, 
             precision=precision, accumulate_grad_batches=accumulate_grad_batches,
             enable_checkpointing=True, enable_model_summary=False, gradient_clip_val=0.5,
