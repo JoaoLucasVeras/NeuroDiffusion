@@ -166,15 +166,21 @@ def main(config):
     # finetune the model
     trainer = create_trainer(config.num_epoch, config.precision, config.accumulate_grad, config.logger, check_val_every_n_epoch=20)
     
-    # Enable periodic saving to avoid losing progress on crash
+    # Custom Callback for clear epoch tracking
+    from pytorch_lightning.callbacks import Callback
+    class PrintEpochCallback(Callback):
+        def on_train_epoch_start(self, trainer, pl_module):
+            print(f"\n🚀 >>> STARTING EPOCH {trainer.current_epoch}/{trainer.max_epochs} <<< 🚀\n")
+
+    # Enable periodic saving and clear printing
     from pytorch_lightning.callbacks import ModelCheckpoint
     checkpoint_callback = ModelCheckpoint(
         dirpath=os.path.join(config.output_path, 'checkpoints'),
         filename='checkpoint-{epoch:02d}',
         every_n_epochs=50,
-        save_top_k=-1 # Save all periodic checkpoints
+        save_top_k=-1
     )
-    trainer.callbacks.append(checkpoint_callback)
+    trainer.callbacks.extend([PrintEpochCallback(), checkpoint_callback])
 
     generative_model.finetune(trainer, eeg_latents_dataset_train, eeg_latents_dataset_test,
                 config.batch_size, config.lr, config.output_path, config=config)
