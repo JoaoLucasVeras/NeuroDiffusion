@@ -165,6 +165,17 @@ def main(config):
         print('model resumed')
     # finetune the model
     trainer = create_trainer(config.num_epoch, config.precision, config.accumulate_grad, config.logger, check_val_every_n_epoch=20)
+    
+    # Enable periodic saving to avoid losing progress on crash
+    from pytorch_lightning.callbacks import ModelCheckpoint
+    checkpoint_callback = ModelCheckpoint(
+        dirpath=os.path.join(config.output_path, 'checkpoints'),
+        filename='checkpoint-{epoch:02d}',
+        every_n_epochs=50,
+        save_top_k=-1 # Save all periodic checkpoints
+    )
+    trainer.callbacks.append(checkpoint_callback)
+
     generative_model.finetune(trainer, eeg_latents_dataset_train, eeg_latents_dataset_test,
                 config.batch_size, config.lr, config.output_path, config=config)
 
@@ -221,7 +232,7 @@ def create_trainer(num_epoch, precision=32, accumulate_grad_batches=2,logger=Non
     acc = 'gpu' if torch.cuda.is_available() else 'cpu'
     return pl.Trainer(accelerator=acc, max_epochs=num_epoch, logger=logger, 
             precision=precision, accumulate_grad_batches=accumulate_grad_batches,
-            enable_checkpointing=False, enable_model_summary=False, gradient_clip_val=0.5,
+            enable_checkpointing=True, enable_model_summary=False, gradient_clip_val=0.5,
             check_val_every_n_epoch=check_val_every_n_epoch)
   
 if __name__ == '__main__':
