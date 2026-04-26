@@ -151,7 +151,7 @@ def main(config):
 
     # prepare pretrained mbm 
 
-    pretrain_mbm_metafile = torch.load(config.pretrain_mbm_path, map_location='cpu', weights_only=False)
+    pretrain_mbm_metafile = torch.load(config.pretrain_mbm_path, map_location='cpu')
 
     # create generateive model
     generative_model = eLDM(pretrain_mbm_metafile, num_voxels,
@@ -160,7 +160,7 @@ def main(config):
     
     # resume training if applicable
     if config.checkpoint_path is not None:
-        model_meta = torch.load(config.checkpoint_path, map_location='cpu', weights_only=False)
+        model_meta = torch.load(config.checkpoint_path, map_location='cpu')
         generative_model.model.load_state_dict(model_meta['model_state_dict'])
         print('model resumed')
     # finetune the model
@@ -251,7 +251,7 @@ if __name__ == '__main__':
     config = update_config(args, config)
     
     if config.checkpoint_path is not None:
-        model_meta = torch.load(config.checkpoint_path, map_location='cpu', weights_only=False)
+        model_meta = torch.load(config.checkpoint_path, map_location='cpu')
         ckp = config.checkpoint_path
         config = model_meta['config']
         config.checkpoint_path = ckp
