@@ -164,7 +164,7 @@ def main(config):
         generative_model.model.load_state_dict(model_meta['model_state_dict'])
         print('model resumed')
     # finetune the model
-    trainer = create_trainer(config.num_epoch, config.precision, config.accumulate_grad, config.logger, check_val_every_n_epoch=2)
+    trainer = create_trainer(config.num_epoch, config.precision, config.accumulate_grad, config.logger, check_val_every_n_epoch=20)
     generative_model.finetune(trainer, eeg_latents_dataset_train, eeg_latents_dataset_test,
                 config.batch_size, config.lr, config.output_path, config=config)
 
