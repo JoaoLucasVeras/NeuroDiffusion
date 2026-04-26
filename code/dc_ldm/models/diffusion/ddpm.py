@@ -127,6 +127,7 @@ class DDPM(pl.LightningModule):
         self.best_val = 0.0 
         self.run_full_validation_threshold = 0.0
         self.eval_avg = True
+        self.z_cache = None
 
     def re_init_ema(self):
         if self.use_ema:
@@ -858,10 +859,10 @@ class LatentDiffusion(DDPM):
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
-        encoder_posterior = self.encode_first_stage(x)
-        # print('encoder_posterior.shape')
-        # print(encoder_posterior.shape)
-        z = self.get_first_stage_encoding(encoder_posterior).detach()
+        if self.z_cache is None:
+            encoder_posterior = self.encode_first_stage(x)
+            self.z_cache = self.get_first_stage_encoding(encoder_posterior).detach() if not self.imagenet else self.get_first_stage_encoding(encoder_posterior).detach()
+        z = self.z_cache
         # print('z.shape')
         # print(z.shape)
         # print(cond_key)
