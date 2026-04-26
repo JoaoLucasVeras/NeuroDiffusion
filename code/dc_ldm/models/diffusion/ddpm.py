@@ -450,7 +450,13 @@ class DDPM(pl.LightningModule):
         metric_dict = {f'val/{k}_full':v for k, v in zip(metric_list, metric)}
         # self.logger.log_metrics(metric_dict)
         grid_imgs = Image.fromarray(grid.astype(np.uint8))
-        # self.logger.log_image(key=f'samples_test_full', images=[grid_imgs])
+        # Auto-display in notebook
+        try:
+            from IPython.display import display
+            print(f"\n🎨 [EPOCH {self.current_epoch}] NEW BRAIN DECODING PREVIEW:")
+            display(grid_imgs)
+        except:
+            pass
         if metric[-1] > self.best_val:
             self.best_val = metric[-1]
             torch.save(
@@ -476,6 +482,13 @@ class DDPM(pl.LightningModule):
             metric, metric_list = self.get_eval_metric(all_samples, avg=self.eval_avg)
             grid_imgs = Image.fromarray(grid.astype(np.uint8))
             # self.logger.log_image(key=f'samples_test', images=[grid_imgs])
+            # Auto-display in notebook
+            try:
+                from IPython.display import display
+                print(f"\n🎨 [EPOCH {self.current_epoch}] BRAIN DECODING CHECK-IN:")
+                display(grid_imgs)
+            except:
+                pass
             metric_dict = {f'val/{k}':v for k, v in zip(metric_list, metric)}
             # self.logger.log_metrics(metric_dict)
             if metric[-1] > self.run_full_validation_threshold:
