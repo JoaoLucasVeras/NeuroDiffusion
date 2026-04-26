@@ -105,7 +105,7 @@ class eLDM:
         self.cond_dim = config.model.params.unet_config.params.context_dim
 
         model = instantiate_from_config(config.model)
-        pl_sd = torch.load(self.ckp_path, map_location="cpu")['state_dict']
+        pl_sd = torch.load(self.ckp_path, map_location="cpu", weights_only=False)['state_dict']
        
         m, u = model.load_state_dict(pl_sd, strict=False)
         model.cond_stage_trainable = True
