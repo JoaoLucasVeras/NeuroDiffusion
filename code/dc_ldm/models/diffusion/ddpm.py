@@ -444,7 +444,7 @@ class DDPM(pl.LightningModule):
                                     
     def full_validation(self, batch, state=None):
         print('###### run full validation! ######\n')
-        grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=5, limit=None, state=state)
+        grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=2, limit=3, state=state)
         metric, metric_list = self.get_eval_metric(all_samples)
         self.save_images(all_samples, suffix='%.4f'%metric[-1])
         metric_dict = {f'val/{k}_full':v for k, v in zip(metric_list, metric)}
@@ -472,7 +472,7 @@ class DDPM(pl.LightningModule):
             self.full_validation(batch)
         else:
             # pass
-            grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=3, limit=5)
+            grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=1, limit=3)
             metric, metric_list = self.get_eval_metric(all_samples, avg=self.eval_avg)
             grid_imgs = Image.fromarray(grid.astype(np.uint8))
             # self.logger.log_image(key=f'samples_test', images=[grid_imgs])
