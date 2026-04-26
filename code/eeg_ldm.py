@@ -200,6 +200,8 @@ def get_args_parser():
     parser.add_argument('--checkpoint_path', type=str)
     parser.add_argument('--crop_ratio', type=float)
     parser.add_argument('--dataset', type=str)
+    parser.add_argument('--eeg_signals_path', type=str)
+    parser.add_argument('--splits_path', type=str)
 
     # finetune parameters
     parser.add_argument('--batch_size', type=int)
