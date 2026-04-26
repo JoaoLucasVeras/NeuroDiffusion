@@ -144,8 +144,8 @@ class eLDM:
       
         # # stage one: only optimize conditional encoders
         print('\n##### Stage One: only optimize conditional encoders #####')
-        dataloader = DataLoader(dataset, batch_size=bs1, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False)
+        dataloader = DataLoader(dataset, batch_size=bs1, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
+        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
         self.model.unfreeze_whole_model()
         self.model.freeze_first_stage()
         # self.model.freeze_whole_model()
@@ -281,8 +281,8 @@ class eLDM_eval:
       
         # # stage one: only optimize conditional encoders
         print('\n##### Stage One: only optimize conditional encoders #####')
-        dataloader = DataLoader(dataset, batch_size=bs1, shuffle=True)
-        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False)
+        dataloader = DataLoader(dataset, batch_size=bs1, shuffle=True, num_workers=4, pin_memory=True, persistent_workers=True)
+        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
         self.model.unfreeze_whole_model()
         self.model.freeze_first_stage()
         # self.model.freeze_whole_model()
