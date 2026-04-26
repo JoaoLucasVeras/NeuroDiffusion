@@ -76,7 +76,11 @@ if __name__ == '__main__':
     target = args.dataset
 
     sd = torch.load(args.model_path, map_location='cpu', weights_only=False)
-    config = sd['config']
+    if 'config' in sd:
+        config = sd['config']
+    else:
+        print("⚠️ Warning: config not found in checkpoint. Using default Config_Generative_Model.")
+        config = Config_Generative_Model()
     # update paths
     config.root_path = root
 
@@ -102,7 +106,7 @@ if __name__ == '__main__':
     
     dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path = args.eeg_signals_path, 
                 splits_path = args.splits_path, imagenet_path=args.imagenet_path,
-                image_transform=[img_transform_train, img_transform_test], subject = 4)
+                image_transform=[img_transform_train, img_transform_test], subject = config.subject)
     num_voxels = dataset_test.dataset.data_len
 
 
@@ -112,9 +116,17 @@ if __name__ == '__main__':
                 device=device, pretrain_root=config.pretrain_gm_path, logger=config.logger,
                 ddim_steps=config.ddim_steps, global_pool=config.global_pool, use_time_cond=config.use_time_cond)
     # m, u = model.load_state_dict(pl_sd, strict=False)
-    generative_model.model.load_state_dict(sd['model_state_dict'], strict=False)
+    if 'model_state_dict' in sd:
+        generative_model.model.load_state_dict(sd['model_state_dict'], strict=False)
+    elif 'state_dict' in sd:
+        # Lightning format
+        generative_model.model.load_state_dict(sd['state_dict'], strict=False)
+    else:
+        # Raw state dict
+        generative_model.model.load_state_dict(sd, strict=False)
+        
     print('load ldm successfully')
-    state = sd['state']
+    state = sd.get('state', None)
     os.makedirs(output_path, exist_ok=True)
     grid, _ = generative_model.generate(dataset_train, config.num_samples, 
                 config.ddim_steps, config.HW, 10) # generate 10 instances
