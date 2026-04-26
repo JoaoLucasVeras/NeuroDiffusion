@@ -291,14 +291,15 @@ class EEGDataset(Dataset):
         # print(image_path)
         else:
             if self.noise_cache is None:
-                print("🎲 Generating Nitro Noise Cache...")
-                self.noise_cache = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
-            image_raw = Image.fromarray(self.noise_cache, 'RGB')
-        
-        
-        image = np.array(image_raw) / 255.0
-        image_raw = self.processor(images=image_raw, return_tensors="pt")
-        image_raw['pixel_values'] = image_raw['pixel_values'].squeeze(0)
+                print("🎲 Generating Nitro Noise & Processor Cache...")
+                noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
+                image_raw_pil = Image.fromarray(noise, 'RGB')
+                image_raw_processed = self.processor(images=image_raw_pil, return_tensors="pt")
+                image_raw_processed['pixel_values'] = image_raw_processed['pixel_values'].squeeze(0)
+                image_numpy = np.array(image_raw_pil) / 255.0
+                self.noise_cache = (image_numpy, image_raw_processed)
+            
+            image, image_raw = self.noise_cache
 
 
         return {'eeg': eeg, 'label': label, 'image': self.image_transform(image), 'image_raw': image_raw}
