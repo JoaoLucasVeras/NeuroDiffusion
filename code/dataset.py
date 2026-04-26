@@ -240,7 +240,7 @@ class EEGDataset(Dataset):
     # Constructor
     def __init__(self, eeg_signals_path, imagenet_path, image_transform=identity, subject = 4):
         # Load EEG signals
-        loaded = torch.load(eeg_signals_path, weights_only=False)
+        loaded = torch.load(eeg_signals_path)
         # if opt.subject!=0:
         #     self.data = [loaded['dataset'][i] for i in range(len(loaded['dataset']) ) if loaded['dataset'][i]['subject']==opt.subject]
         # else:
@@ -321,7 +321,7 @@ class Splitter:
         # Set EEG dataset
         self.dataset = dataset
         # Load split
-        loaded = torch.load(split_path, weights_only=False)
+        loaded = torch.load(split_path)
 
         self.split_idx = loaded["splits"][split_num][split_name]
         # Filter data
