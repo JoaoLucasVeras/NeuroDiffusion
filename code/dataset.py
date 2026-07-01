@@ -282,8 +282,18 @@ class EEGDataset(Dataset):
         else:
             image_name = self.images[self.data[i]["image"]]
         if self.imagenet:
+            # Default ImageNet structure
             image_path = os.path.join(self.imagenet, image_name.split('_')[0], image_name+'.JPEG')
-            image_raw = Image.open(image_path).convert('RGB') 
+            
+            # Fallback 1: Flat directory structure
+            if not os.path.exists(image_path):
+                image_path = os.path.join(self.imagenet, image_name)
+                
+            # Fallback 2: Subfolder structure but without appending .JPEG
+            if not os.path.exists(image_path):
+                image_path = os.path.join(self.imagenet, image_name.split('_')[0], image_name)
+                
+            image_raw = Image.open(image_path).convert('RGB')
         # print(image_path)
         else:
             noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
