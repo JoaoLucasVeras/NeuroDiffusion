@@ -54,12 +54,13 @@ class Config_EEG_finetune(Config_MBM_finetune):
     def __init__(self):
         
         # Project setting
-        self.root_path = '../dreamdiffusion/'
+        self.root_path = './'
         # self.root_path = '.'
-        self.output_path = '../dreamdiffusion/exps/'
+        self.output_path = './exps/'
 
         self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
-        self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_all.pth')
+        self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/image/')
 
         self.dataset = 'EEG' 
         self.pretrain_mbm_path = '../dreamdiffusion/pretrains/eeg_pretrain/checkpoint.pth' 
@@ -89,11 +90,12 @@ class Config_Generative_Model:
     def __init__(self):
         # project parameters
         self.seed = 2022
-        self.root_path = '../dreamdiffusion/'
-        self.output_path = '../dreamdiffusion/exps/'
+        self.root_path = './'
+        self.output_path = './exps/'
 
         self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
         self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/image/')
         # self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_all.pth')
         self.roi = 'VC'
         self.patch_size = 4 # 16
@@ -139,13 +141,12 @@ class Config_Cls_Model:
     def __init__(self):
         # project parameters
         self.seed = 2022
-        self.root_path = '../dreamdiffusion/'
-        self.output_path = '../dreamdiffusion/exps/'
+        self.root_path = './'
+        self.output_path = './exps/'
 
-        # self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
-        self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_14_70_std.pth')
-        # self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
-        self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_all.pth')
+        self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
+        self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/image/')
         self.roi = 'VC'
         self.patch_size = 4 # 16
         self.embed_dim = 1024
