@@ -60,7 +60,7 @@ class Config_EEG_finetune(Config_MBM_finetune):
 
         self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
         self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
-        self.imagenet_path = os.path.join(self.root_path, 'datasets/image/')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/imageNet_images/')
 
         self.dataset = 'EEG' 
         self.pretrain_mbm_path = '../dreamdiffusion/pretrains/eeg_pretrain/checkpoint.pth' 
@@ -95,7 +95,7 @@ class Config_Generative_Model:
 
         self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
         self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
-        self.imagenet_path = os.path.join(self.root_path, 'datasets/image/')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/imageNet_images/')
         # self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_all.pth')
         self.roi = 'VC'
         self.patch_size = 4 # 16
@@ -146,7 +146,7 @@ class Config_Cls_Model:
 
         self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
         self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
-        self.imagenet_path = os.path.join(self.root_path, 'datasets/image/')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/imageNet_images/')
         self.roi = 'VC'
         self.patch_size = 4 # 16
         self.embed_dim = 1024
