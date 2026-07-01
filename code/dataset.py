@@ -309,7 +309,7 @@ class Splitter:
 
         self.split_idx = loaded["splits"][split_num][split_name]
         # Filter data
-        self.split_idx = [i for i in self.split_idx if i <= len(self.dataset.data) and 450 <= self.dataset.data[i]["eeg"].size(1) <= 600]
+        self.split_idx = [i for i in self.split_idx if i < len(self.dataset.data) and 450 <= self.dataset.data[i]["eeg"].size(1) <= 600]
         # Compute size
 
         self.size = len(self.split_idx)
