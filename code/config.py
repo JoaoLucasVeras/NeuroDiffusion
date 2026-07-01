@@ -124,7 +124,7 @@ class Config_Generative_Model:
         self.use_time_cond = True
         self.clip_tune = True #False
         self.cls_tune = False
-        self.subject = 4
+        self.subject = 1
         self.eval_avg = True
 
         # diffusion sampling parameters
@@ -173,7 +173,7 @@ class Config_Cls_Model:
         self.global_pool = False
         self.use_time_cond = False
         self.clip_tune = False
-        self.subject = 4
+        self.subject = 1
         self.eval_avg = True
 
         # diffusion sampling parameters
