@@ -277,7 +277,10 @@ class EEGDataset(Dataset):
         label = torch.tensor(self.data[i]["label"]).long()
 
         # Get label
-        image_name = self.images[self.data[i]["image"]]
+        if isinstance(self.data[i]["image"], str):
+            image_name = self.data[i]["image"]
+        else:
+            image_name = self.images[self.data[i]["image"]]
         if self.imagenet:
             image_path = os.path.join(self.imagenet, image_name.split('_')[0], image_name+'.JPEG')
             image_raw = Image.open(image_path).convert('RGB') 
