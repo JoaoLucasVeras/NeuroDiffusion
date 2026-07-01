@@ -293,7 +293,12 @@ class EEGDataset(Dataset):
             if not os.path.exists(image_path):
                 image_path = os.path.join(self.imagenet, image_name.split('_')[0], image_name)
                 
-            image_raw = Image.open(image_path).convert('RGB')
+            try:
+                image_raw = Image.open(image_path).convert('RGB')
+            except FileNotFoundError:
+                print(f"Warning: Missing image {image_path}, using random noise instead.")
+                noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
+                image_raw = Image.fromarray(noise, 'RGB')
         # print(image_path)
         else:
             noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
