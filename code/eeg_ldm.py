@@ -153,7 +153,7 @@ def main(config):
 
     # prepare pretrained mbm 
 
-    pretrain_mbm_metafile = torch.load(config.pretrain_mbm_path, map_location='cpu')
+    pretrain_mbm_metafile = torch.load(config.pretrain_mbm_path, map_location='cpu') if config.pretrain_mbm_path is not None else None
 
     # create generateive model
     generative_model = eLDM(pretrain_mbm_metafile, num_voxels,
