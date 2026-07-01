@@ -11,6 +11,4 @@ export TRANSFORMERS_OFFLINE=1
 export HF_DATASETS_OFFLINE=1
 export WANDB_MODE=offline
 
-module load cuda
-
 ~/.conda/envs/neurodiffusion/bin/python code/eeg_ldm.py
