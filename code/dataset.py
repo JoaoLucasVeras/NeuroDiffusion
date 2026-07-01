@@ -245,10 +245,7 @@ class EEGDataset(Dataset):
         #     self.data = [loaded['dataset'][i] for i in range(len(loaded['dataset']) ) if loaded['dataset'][i]['subject']==opt.subject]
         # else:
         # print(loaded)
-        if subject!=0:
-            self.data = [loaded['dataset'][i] for i in range(len(loaded['dataset']) ) if loaded['dataset'][i]['subject']==subject]
-        else:
-            self.data = loaded['dataset']        
+        self.data = loaded['dataset']        
         self.labels = loaded["labels"]
         self.images = loaded["images"]
         self.imagenet = imagenet_path
@@ -309,7 +306,7 @@ class Splitter:
 
         self.split_idx = loaded["splits"][split_num][split_name]
         # Filter data
-        self.split_idx = [i for i in self.split_idx if i < len(self.dataset.data)]
+        self.split_idx = [i for i in loaded["splits"][split_num][split_name] if subject == 0 or self.dataset.data[i]["subject"] == subject]
         # Compute size
 
         self.size = len(self.split_idx)
