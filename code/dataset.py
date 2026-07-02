@@ -254,12 +254,29 @@ class EEGDataset(Dataset):
         self.image_mapping = {}
         if self.imagenet and os.path.exists(self.imagenet):
             folders = sorted([f for f in os.listdir(self.imagenet) if os.path.isdir(os.path.join(self.imagenet, f))])
+            
+            # Group self.images by class index
+            class_to_images = {}
+            for img_name in self.images:
+                parts = img_name.split('_')
+                if len(parts) >= 2:
+                    cls_idx = parts[1]
+                    if cls_idx not in class_to_images:
+                        class_to_images[cls_idx] = []
+                    class_to_images[cls_idx].append(img_name)
+                    
             for folder_idx, folder in enumerate(folders):
                 files = sorted([f for f in os.listdir(os.path.join(self.imagenet, folder)) if f.endswith('.JPEG') or f.endswith('.jpg')])
-                for file_idx, file in enumerate(files):
-                    # Map both 1-indexed and 0-indexed just in case
-                    self.image_mapping[f"img_{folder_idx+1}_{file_idx}.jpg"] = os.path.join(folder, file)
-                    self.image_mapping[f"img_{folder_idx}_{file_idx}.jpg"] = os.path.join(folder, file)
+                
+                # Try 1-indexed first, then 0-indexed
+                cls_idx_1 = str(folder_idx + 1)
+                cls_idx_0 = str(folder_idx)
+                
+                target_images = sorted(list(set(class_to_images.get(cls_idx_1, class_to_images.get(cls_idx_0, [])))))
+                
+                for i, img_name in enumerate(target_images):
+                    if i < len(files):
+                        self.image_mapping[img_name] = os.path.join(folder, files[i])
         self.image_transform = image_transform
         self.num_voxels = 440
         self.data_len = 512
