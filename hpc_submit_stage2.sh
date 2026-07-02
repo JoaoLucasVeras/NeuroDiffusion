@@ -6,6 +6,8 @@
 #SBATCH --mem=64G
 #SBATCH --gres=gpu:1
 #SBATCH --time=24:00:00
+#SBATCH --exclude=cs001
+
 
 export TRANSFORMERS_OFFLINE=1
 export HF_DATASETS_OFFLINE=1
