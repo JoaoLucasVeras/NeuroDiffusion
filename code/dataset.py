@@ -249,6 +249,17 @@ class EEGDataset(Dataset):
         self.labels = loaded["labels"]
         self.images = loaded["images"]
         self.imagenet = imagenet_path
+        
+        # Dynamically build image mapping for img_X_Y.jpg to ImageNet files
+        self.image_mapping = {}
+        if self.imagenet and os.path.exists(self.imagenet):
+            folders = sorted([f for f in os.listdir(self.imagenet) if os.path.isdir(os.path.join(self.imagenet, f))])
+            for folder_idx, folder in enumerate(folders):
+                files = sorted([f for f in os.listdir(os.path.join(self.imagenet, folder)) if f.endswith('.JPEG') or f.endswith('.jpg')])
+                for file_idx, file in enumerate(files):
+                    # Map both 1-indexed and 0-indexed just in case
+                    self.image_mapping[f"img_{folder_idx+1}_{file_idx}.jpg"] = os.path.join(folder, file)
+                    self.image_mapping[f"img_{folder_idx}_{file_idx}.jpg"] = os.path.join(folder, file)
         self.image_transform = image_transform
         self.num_voxels = 440
         self.data_len = 512
@@ -282,8 +293,12 @@ class EEGDataset(Dataset):
         else:
             image_name = self.images[self.data[i]["image"]]
         if self.imagenet:
-            # Default ImageNet structure
-            image_path = os.path.join(self.imagenet, image_name.split('_')[0], image_name+'.JPEG')
+            # Check if we built a mapping for this image
+            if hasattr(self, 'image_mapping') and image_name in self.image_mapping:
+                image_path = os.path.join(self.imagenet, self.image_mapping[image_name])
+            else:
+                # Default ImageNet structure
+                image_path = os.path.join(self.imagenet, image_name.split('_')[0], image_name+'.JPEG')
             
             # Fallback 1: Flat directory structure
             if not os.path.exists(image_path):
