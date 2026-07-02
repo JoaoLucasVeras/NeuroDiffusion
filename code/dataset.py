@@ -253,7 +253,7 @@ class EEGDataset(Dataset):
         # Dynamically build image mapping for img_X_Y.jpg to ImageNet files
         self.image_mapping = {}
         if self.imagenet and os.path.exists(self.imagenet):
-            folders = sorted([f for f in os.listdir(self.imagenet) if os.path.isdir(os.path.join(self.imagenet, f))])
+            folders = sorted([f for f in os.listdir(self.imagenet) if os.path.isdir(os.path.join(self.imagenet, f)) and f.startswith('n')])
             
             # Group self.images by class index
             class_to_images = {}
@@ -265,18 +265,22 @@ class EEGDataset(Dataset):
                         class_to_images[cls_idx] = []
                     class_to_images[cls_idx].append(img_name)
                     
+            # Sort the class indices numerically to perfectly align with alphabetical folders
+            sorted_classes = sorted([int(k) for k in class_to_images.keys()])
+                    
             for folder_idx, folder in enumerate(folders):
+                if folder_idx >= len(sorted_classes):
+                    break
+                    
+                cls_idx = str(sorted_classes[folder_idx])
                 files = sorted([f for f in os.listdir(os.path.join(self.imagenet, folder)) if f.endswith('.JPEG') or f.endswith('.jpg')])
                 
-                # Try 1-indexed first, then 0-indexed
-                cls_idx_1 = str(folder_idx + 1)
-                cls_idx_0 = str(folder_idx)
+                target_images = sorted(list(set(class_to_images[cls_idx])))
                 
-                target_images = sorted(list(set(class_to_images.get(cls_idx_1, class_to_images.get(cls_idx_0, [])))))
-                
+                # Assign 1-to-1 (Loop back to 0 if there are more dataset images than physical images)
                 for i, img_name in enumerate(target_images):
-                    if i < len(files):
-                        self.image_mapping[img_name] = os.path.join(folder, files[i])
+                    if len(files) > 0:
+                        self.image_mapping[img_name] = os.path.join(folder, files[i % len(files)])
         self.image_transform = image_transform
         self.num_voxels = 440
         self.data_len = 512
