@@ -13,4 +13,4 @@ export HF_DATASETS_OFFLINE=1
 export WANDB_MODE=offline
 export CUDA_VISIBLE_DEVICES=1
 
-~/.conda/envs/neurodiffusion/bin/python code/eeg_ldm.py --checkpoint_path ./exps/results/generation/01-07-2026-18-31-38/checkpoint_best.pth
+~/.conda/envs/neurodiffusion/bin/python code/eeg_ldm.py
