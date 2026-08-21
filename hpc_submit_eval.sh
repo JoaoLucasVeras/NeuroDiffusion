@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=stage3_eval
-#SBATCH --output=/home/015555345/NeruoDiffusion/logs/stage3_%j.out
-#SBATCH --error=/home/015555345/NeruoDiffusion/logs/stage3_%j.err
+#SBATCH --output=/home/015555345/NeuroDiffusion/logs/stage3_%j.out
+#SBATCH --error=/home/015555345/NeuroDiffusion/logs/stage3_%j.err
 #SBATCH --time=08:00:00
 #SBATCH --partition=gpuqs
 #SBATCH --gres=gpu:a100:1
@@ -18,7 +18,7 @@
 
 set -euo pipefail
 
-ROOT=/home/015555345/NeruoDiffusion
+ROOT=/home/015555345/NeuroDiffusion
 export PYTHON=/home/015555345/.conda/envs/neurodiffusion/bin/python
 export PATH=$(dirname "$PYTHON"):$PATH
 
@@ -26,7 +26,6 @@ export TRANSFORMERS_OFFLINE=1
 export HF_DATASETS_OFFLINE=1
 export HF_HUB_OFFLINE=1
 export WANDB_MODE=offline
-export CUDA_VISIBLE_DEVICES=0
 
 cd "$ROOT/code"
 
@@ -38,6 +37,36 @@ SPLIT_SUFFIX=${SPLIT_SUFFIX-_avail}
 DATASET=$ROOT/datasets/${EXPERIMENT}_5_95_std.pth
 SPLITS=$ROOT/datasets/${EXPERIMENT}_5_95_std_splits_${PROTOCOL}${SPLIT_SUFFIX}.pth
 IMAGENET=$ROOT/datasets/imageNet_images
+
+# --- GPU sanity check -------------------------------------------------------
+# History: the `training` branch carried CUDA_VISIBLE_DEVICES=1 because GPU 0 on one
+# node was broken. Hardcoding an index is fragile -- it silently targets the wrong
+# device (or none at all) depending on how SLURM scopes the allocation. Instead, let
+# SLURM assign the GPU and verify here that it actually works, so a bad device fails
+# in seconds rather than after hours of queueing.
+echo "### GPU CHECK ###"
+nvidia-smi --query-gpu=index,name,memory.total,memory.used --format=csv 2>&1 || true
+$PYTHON - <<'PYGPU'
+import sys
+try:
+    import torch
+except Exception as e:
+    sys.exit("FATAL: cannot import torch (%s)" % e)
+if not torch.cuda.is_available():
+    sys.exit("FATAL: torch.cuda.is_available() is False -- no usable GPU in this allocation")
+n = torch.cuda.device_count()
+print("  visible GPUs: %d" % n)
+for i in range(n):
+    p = torch.cuda.get_device_properties(i)
+    print("   [%d] %s  %.1f GB" % (i, p.name, p.total_memory / 1e9))
+try:
+    x = torch.randn(2048, 2048, device="cuda")
+    float((x @ x).sum())
+    torch.cuda.synchronize()
+    print("  matmul on cuda:0 OK")
+except Exception as e:
+    sys.exit("FATAL: GPU present but unusable (%s: %s)" % (type(e).__name__, e))
+PYGPU
 
 MODEL=${1:-}
 if [ -z "$MODEL" ]; then

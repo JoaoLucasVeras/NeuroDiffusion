@@ -3,6 +3,21 @@
 Order of operations, and what each stage needs. See [DATA.md](DATA.md) for why the data
 pipeline looks the way it does.
 
+## Cluster topology (SJSU)
+
+The two head nodes have different roles, and the split drives the whole sequence:
+
+| node | network | used for |
+|---|---|---|
+| `coe-hpc1.sjsu.edu` | **has internet** | `git pull`, dataset transfer, `precache_models.py` |
+| `coe-hpc3.sjsu.edu` | **air-gapped** | all training and evaluation jobs |
+
+Anything that downloads must happen on **hpc1**. Anything that runs on a GPU is submitted
+from **hpc3**. That is why the SLURM scripts export `TRANSFORMERS_OFFLINE=1` and why the
+HuggingFace cache has to be warmed on hpc1 before any job is submitted.
+
+Repository root on both: `/home/015555345/NeuroDiffusion`.
+
 ## Stage 0 — build and validate the data (no GPU)
 
 ```bash
