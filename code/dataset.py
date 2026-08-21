@@ -235,39 +235,94 @@ import numpy as np
  
 
 
+def resolve_imagenet_dir(path):
+    """Tolerate the double-nested imageNet_images/imageNet_images layout."""
+    if path is None:
+        return None
+    nested = os.path.join(path, 'imageNet_images')
+    if os.path.isdir(nested) and any(
+            d.startswith('n') for d in os.listdir(nested)
+            if os.path.isdir(os.path.join(nested, d))):
+        return nested
+    return path
+
+
 class EEGDataset(Dataset):
-    
+
     # Constructor
-    def __init__(self, eeg_signals_path, imagenet_path, image_transform=identity, subject = 4):
+    def __init__(self, eeg_signals_path, imagenet_path, image_transform=identity, subject=0,
+                 strict_images=True, missing_tolerance=0.0, load_images=True,
+                 validate_scope=None):
         # Load EEG signals
         loaded = torch.load(eeg_signals_path)
-        # if opt.subject!=0:
-        #     self.data = [loaded['dataset'][i] for i in range(len(loaded['dataset']) ) if loaded['dataset'][i]['subject']==opt.subject]
-        # else:
-        # print(loaded)
-        if subject!=0:
-            self.data = [loaded['dataset'][i] for i in range(len(loaded['dataset']) ) if loaded['dataset'][i]['subject']==subject]
+
+        # Keep the ORIGINAL index of every retained trial. Splits are written against
+        # the full trial list, so subject filtering must not silently renumber them.
+        all_data = loaded['dataset']
+        if subject != 0:
+            kept = [i for i, e in enumerate(all_data) if e['subject'] == subject]
         else:
-            self.data = loaded['dataset']        
+            kept = list(range(len(all_data)))
+        self.data = [all_data[i] for i in kept]
+        self.orig_to_pos = {orig: pos for pos, orig in enumerate(kept)}
+
         self.labels = loaded["labels"]
         self.images = loaded["images"]
-        self.imagenet = imagenet_path
+        self.imagenet = resolve_imagenet_dir(imagenet_path)
         self.image_transform = image_transform
         self.num_voxels = 440
         self.data_len = 512
-        # Compute size
         self.size = len(self.data)
+        self.load_images = load_images
+
+        # Stage 1 (masked EEG pre-training) is self-supervised and never touches the
+        # stimulus. Skipping image IO there avoids a hard dependency on the image set
+        # and removes a CLIP preprocess from every sample.
+        if not self.load_images:
+            self.processor = None
+            self.missing = []
+            print("[EEGDataset] image loading disabled (EEG-only mode), %d trials" % self.size)
+            return
+
         self.processor = AutoProcessor.from_pretrained("openai/clip-vit-large-patch14")
+
         if self.imagenet is None:
-            print("🎲 Pre-generating Nitro Noise & Processor Cache...")
-            noise = np.random.randint(0, 256, (512, 512, 3), dtype=np.uint8)
-            image_raw_pil = Image.fromarray(noise, 'RGB')
-            image_raw_processed = self.processor(images=image_raw_pil, return_tensors="pt")
-            image_raw_processed['pixel_values'] = image_raw_processed['pixel_values'].squeeze(0)
-            image_numpy = np.array(image_raw_pil) / 255.0
-            self.noise_cache = (image_numpy, image_raw_processed)
+            raise ValueError("No ImageNet path provided to EEGDataset. Training requires real images.")
+        if not os.path.isdir(self.imagenet):
+            raise FileNotFoundError("ImageNet directory not found at %s." % self.imagenet)
+
+        # Verify the stimulus files exist UP FRONT. A missing file used to fall back to a
+        # black square, which turns the diffusion target into a constant and makes the whole
+        # run meaningless while the loss still looks like it is converging. Fail loudly instead.
+        #
+        # validate_scope restricts the check to the trials the splits actually reach. A split
+        # built with --require_images has already excluded unavailable stimuli, so checking
+        # the whole dataset would reject a perfectly clean configuration.
+        if validate_scope is not None:
+            scope = [self.data[self.orig_to_pos[i]] for i in validate_scope
+                     if i in self.orig_to_pos]
         else:
-            self.noise_cache = None
+            scope = self.data
+        wanted = sorted({e['image'] for e in scope})
+        self.missing = [s for s in wanted if not os.path.exists(self._image_path(s))]
+        frac = len(self.missing) / max(1, len(wanted))
+        print("[EEGDataset] %d/%d stimulus images found under %s"
+              % (len(wanted) - len(self.missing), len(wanted), self.imagenet))
+        if self.missing and strict_images and frac > missing_tolerance:
+            preview = ', '.join(self.missing[:5])
+            raise FileNotFoundError(
+                "%d/%d stimulus images are missing (%.1f%% > tolerance %.1f%%).\n"
+                "  Missing e.g.: %s\n"
+                "  Training against absent images silently substitutes a blank target and "
+                "produces a model that has learned nothing. Fetch the stimulus set, or pass "
+                "strict_images=False if you have deliberately accepted the loss."
+                % (len(self.missing), len(wanted), frac * 100, missing_tolerance * 100, preview)
+            )
+        if self.missing:
+            print("[EEGDataset] WARNING: %d missing images will use a blank target." % len(self.missing))
+
+    def _image_path(self, stem):
+        return os.path.join(self.imagenet or '', stem.split('_')[0], stem + '.JPEG')
 
     # Get size
     def __len__(self):
@@ -278,20 +333,19 @@ class EEGDataset(Dataset):
 
         eeg = self.data[i]["eeg"].float().t()
 
-        if eeg.shape[0] >= 460:
-            # Temporal jitter for robust embeddings
-            jitter = np.random.randint(-10, 10)
-            start_idx = max(0, 20 + jitter)
-            end_idx = min(eeg.shape[0], start_idx + 440)
-            # Ensure it is exactly 440
-            eeg_slice = eeg[start_idx:end_idx,:]
-            if eeg_slice.shape[0] < 440:
-                eeg = torch.nn.functional.pad(eeg_slice, (0, 0, 0, 440 - eeg_slice.shape[0]))
-            else:
-                eeg = eeg_slice
+        # Temporal jitter augmentation. The window is expressed as a fraction of the
+        # recording so it applies to the 125-sample Shimizu trials as well as the
+        # longer ImageNet-EEG ones (the old absolute >=460 gate never fired here).
+        n_t = eeg.shape[0]
+        if self.image_transform is not identity and n_t >= 16:
+            max_shift = max(1, int(round(n_t * 0.08)))
+            shift = np.random.randint(-max_shift, max_shift + 1)
+            keep = n_t - max_shift
+            start_idx = int(np.clip(max_shift // 2 + shift, 0, n_t - keep))
+            eeg = eeg[start_idx:start_idx + keep, :]
 
-        eeg = np.array(eeg.transpose(0,1))
-        # Optimized interpolation: only compute if shapes differ
+        eeg = np.array(eeg.transpose(0, 1))
+        # Resample the time axis to the length the encoder expects.
         if eeg.shape[-1] != self.data_len:
             x = np.linspace(0, 1, eeg.shape[-1])
             x2 = np.linspace(0, 1, self.data_len)
@@ -301,36 +355,49 @@ class EEGDataset(Dataset):
 
         label = torch.tensor(self.data[i]["label"]).long()
 
-        # Get label
-        image_name = self.data[i]["image"]
-        if self.imagenet:
-            image_path = os.path.join(self.imagenet, image_name.split('_')[0], image_name+'.JPEG')
-            image_raw = Image.open(image_path).convert('RGB') 
-        # print(image_path)
-        else:
-            image, image_raw = self.noise_cache
+        if not self.load_images:
+            return {'eeg': eeg, 'label': label, 'image': 0, 'image_raw': 0}
 
+        image_name = self.data[i]["image"]
+        image_path = self._image_path(image_name)
+        if os.path.exists(image_path):
+            image_raw_pil = Image.open(image_path).convert('RGB')
+        else:
+            image_raw_pil = Image.new('RGB', (512, 512), (0, 0, 0))
+
+        image = np.array(image_raw_pil).astype(np.float32) / 255.0
+        image_raw = self.processor(images=image_raw_pil, return_tensors="pt")
+        image_raw['pixel_values'] = image_raw['pixel_values'].squeeze(0)
 
         return {'eeg': eeg, 'label': label, 'image': self.image_transform(image), 'image_raw': image_raw}
-        # Return
-        # return eeg, label
+
 
 class Splitter:
 
-    def __init__(self, dataset, split_path, split_num=0, split_name="train", subject=4):
-        # Set EEG dataset
+    def __init__(self, dataset, split_path, split_num=0, split_name="train", subject=0):
         self.dataset = dataset
-        # Load split
         loaded = torch.load(split_path)
 
-        self.split_idx = loaded["splits"][split_num][split_name]
-        # Filter data
-        self.split_idx = [i for i in self.split_idx if i < len(self.dataset.data) and self.dataset.data[i]["eeg"].size(1) >= 120]
-        # Compute size
+        raw_idx = loaded["splits"][split_num][split_name]
+        # Split indices address the FULL trial list. Map them onto this dataset's
+        # positions so subject filtering cannot silently point at the wrong trials.
+        mapped = [dataset.orig_to_pos[i] for i in raw_idx if i in dataset.orig_to_pos]
+        self.split_idx = [i for i in mapped if dataset.data[i]["eeg"].size(1) >= 120]
+
+        dropped = len(raw_idx) - len(self.split_idx)
+        if dropped:
+            print("[Splitter:%s] %d/%d split indices dropped (subject filter or short recording)"
+                  % (split_name, dropped, len(raw_idx)))
+        if not self.split_idx:
+            raise ValueError(
+                "Split '%s' is empty after mapping. The splits file was probably built for a "
+                "different dataset than the one that was loaded." % split_name
+            )
 
         self.size = len(self.split_idx)
-        self.num_voxels = 440
-        self.data_len = 512
+        self.num_voxels = dataset.num_voxels
+        self.data_len = dataset.data_len
+        self.protocol = loaded.get("description", "unspecified")
 
     # Get size
     def __len__(self):
@@ -341,19 +408,33 @@ class Splitter:
         return self.dataset[self.split_idx[i]]
 
 
-def create_EEG_dataset(eeg_signals_path='../dreamdiffusion/datasets/eeg_5_95_std.pth', 
-            splits_path = '../dreamdiffusion/datasets/block_splits_by_image_single.pth',
-            imagenet_path = None,
-            image_transform=identity, subject = 0):
+def create_EEG_dataset(eeg_signals_path='../datasets/imagination_5_95_std.pth',
+            splits_path='../datasets/imagination_5_95_std_splits_subject.pth',
+            imagenet_path=None,
+            image_transform=identity, subject=0,
+            strict_images=True, missing_tolerance=0.0, load_images=True):
+
+    # Load the splits first so the stimulus check can be scoped to the trials that
+    # training will actually touch, rather than to every trial in the file.
+    validate_scope = None
+    if load_images and splits_path and os.path.exists(splits_path):
+        sp = torch.load(splits_path, map_location='cpu')['splits'][0]
+        validate_scope = sorted(set(sp['train']) | set(sp['test']))
 
     if isinstance(image_transform, list):
-        dataset_train = EEGDataset(eeg_signals_path, imagenet_path, image_transform[0], subject )
-        dataset_test = EEGDataset(eeg_signals_path, imagenet_path, image_transform[1], subject)
+        dataset_train = EEGDataset(eeg_signals_path, imagenet_path, image_transform[0], subject,
+                                   strict_images, missing_tolerance, load_images, validate_scope)
+        dataset_test = EEGDataset(eeg_signals_path, imagenet_path, image_transform[1], subject,
+                                  strict_images, missing_tolerance, load_images, validate_scope)
     else:
-        dataset_train = EEGDataset(eeg_signals_path, imagenet_path, image_transform, subject)
-        dataset_test = EEGDataset(eeg_signals_path, imagenet_path, image_transform, subject)
-    split_train = Splitter(dataset_train, split_path = splits_path, split_num = 0, split_name = 'train', subject= subject)
-    split_test = Splitter(dataset_test, split_path = splits_path, split_num = 0, split_name = 'test', subject = subject)
+        dataset_train = EEGDataset(eeg_signals_path, imagenet_path, image_transform, subject,
+                                   strict_images, missing_tolerance, load_images, validate_scope)
+        dataset_test = EEGDataset(eeg_signals_path, imagenet_path, image_transform, subject,
+                                  strict_images, missing_tolerance, load_images, validate_scope)
+    split_train = Splitter(dataset_train, split_path=splits_path, split_num=0, split_name='train', subject=subject)
+    split_test = Splitter(dataset_test, split_path=splits_path, split_num=0, split_name='test', subject=subject)
+    print("[create_EEG_dataset] protocol: %s" % split_train.protocol)
+    print("[create_EEG_dataset] train=%d test=%d" % (len(split_train), len(split_test)))
     return (split_train, split_test)
 
 

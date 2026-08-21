@@ -477,25 +477,16 @@ class DDPM(pl.LightningModule):
         if batch_idx != 0:
             return
         
-        if self.validation_count % 5 == 0 and self.trainer.current_epoch != 0:
-            self.full_validation(batch)
-        else:
-            # pass
-            grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=1, limit=3)
-            metric, metric_list = self.get_eval_metric(all_samples, avg=self.eval_avg)
-            grid_imgs = Image.fromarray(grid.astype(np.uint8))
-            # self.logger.log_image(key=f'samples_test', images=[grid_imgs])
-            # Auto-display in notebook
-            try:
-                from IPython.display import display
-                print(f"\n🎨 [EPOCH {self.current_epoch}] BRAIN DECODING CHECK-IN:")
-                display(grid_imgs)
-            except:
-                pass
-            metric_dict = {f'val/{k}':v for k, v in zip(metric_list, metric)}
-            # self.logger.log_metrics(metric_dict)
-            if metric[-1] > self.run_full_validation_threshold:
-                self.full_validation(batch, state=state)
+        # Force image saving at every epoch for monitoring.
+        # Use a simple suffix to avoid the "0.0000" naming bug.
+        suffix = f"epoch_{self.current_epoch}"
+        grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=1, limit=3)
+        self.save_images(all_samples, suffix=suffix)
+        
+        # Every 5 epochs, run the full validation for metrics.
+        if self.validation_count % 5 == 0:
+            self.full_validation(batch, state=state)
+        
         self.validation_count += 1
 
     def get_eval_metric(self, samples, avg=True):

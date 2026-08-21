@@ -65,6 +65,10 @@ class cond_stage_model(nn.Module):
 
     def forward(self, x):
         # n, c, w = x.shape
+        # Cast input to match model dtype. model.half() puts weights in fp16 but
+        # DataLoader returns fp32. With precision=32 (no AMP), Lightning won't
+        # auto-cast, so we do it explicitly here to avoid dtype mismatch in Conv1d.
+        x = x.to(next(self.mae.parameters()).dtype)
         latent_crossattn = self.mae(x)
         latent_return = latent_crossattn
         if self.global_pool == False:
@@ -113,6 +117,10 @@ class eLDM:
 
         model.ddim_steps = ddim_steps
         model.re_init_ema()
+        # NOTE: model.half() is NOT called here. On the A100 (40GB), the fp32 model
+        # fits comfortably. Calling model.half() makes gradients fp16, which causes
+        # AMP's GradScaler to raise: ValueError: Attempting to unscale FP16 gradients.
+        # AMP (--precision 16) handles fp16 activations automatically with fp32 params.
         if logger is not None:
             logger.watch(model, log="all", log_graph=False)
 
@@ -207,7 +215,7 @@ class eLDM:
                                                 conditioning=c,
                                                 batch_size=num_samples,
                                                 shape=shape,
-                                                unconditional_guidance_scale=getattr(self.ldm_config, 'cfg_scale', 8.0),
+                                                unconditional_guidance_scale=getattr(model.main_config, 'cfg_scale', 8.0) if hasattr(model, 'main_config') else 8.0,
                                                 unconditional_conditioning=uc,
                                                 verbose=False)
 
@@ -256,6 +264,8 @@ class eLDM_eval:
 
         model.ddim_steps = ddim_steps
         model.re_init_ema()
+        # Keep model in fp32 for stability with BF16/AMP.
+        # Batch size is lowered to 2 to ensure we stay within 40GB during sampling.
         if logger is not None:
             logger.watch(model, log="all", log_graph=False)
 
@@ -350,7 +360,7 @@ class eLDM_eval:
                                                 conditioning=c,
                                                 batch_size=num_samples,
                                                 shape=shape,
-                                                unconditional_guidance_scale=getattr(self.ldm_config, 'cfg_scale', 8.0),
+                                                unconditional_guidance_scale=getattr(model.main_config, 'cfg_scale', 8.0) if hasattr(model, 'main_config') else 8.0,
                                                 unconditional_conditioning=uc,
                                                 verbose=False)
 

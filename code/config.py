@@ -31,7 +31,7 @@ class Config_MBM_EEG(Config_MAE_fMRI):
         self.mlp_ratio = 1.0
 
         # Project setting
-        self.root_path = '../'
+        self.root_path = '/home/015555345/NeruoDiffusion/'
         self.output_path = '../exps/'
         self.seed = 2022
         self.roi = 'VC'
@@ -46,6 +46,13 @@ class Config_MBM_EEG(Config_MAE_fMRI):
         self.focus_range = None # [0, 1500] # None to disable it
         self.focus_rate = 0.6
 
+        # Dataset paths. Built by code/prepare_shimizu_data.py, split by code/make_splits.py.
+        # The old imagination_splits.pth was a random shuffle over sliding windows of the
+        # same recordings -- 100% of its test recordings also appeared in train.
+        self.eeg_signals_path = os.path.join(self.root_path, 'datasets/imagination_5_95_std.pth')
+        self.splits_path = os.path.join(self.root_path, 'datasets/imagination_5_95_std_splits_subject_avail.pth')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/imageNet_images')
+
         # distributed training
         self.local_rank = 0
 
@@ -54,7 +61,7 @@ class Config_EEG_finetune(Config_MBM_finetune):
     def __init__(self):
         
         # Project setting
-        self.root_path = '../'
+        self.root_path = '/home/015555345/NeruoDiffusion/'
         # self.root_path = '.'
         self.output_path = '../exps/'
 
@@ -89,12 +96,14 @@ class Config_Generative_Model:
     def __init__(self):
         # project parameters
         self.seed = 2022
-        self.root_path = '../'
+        self.root_path = '/home/015555345/NeruoDiffusion/'
         self.output_path = '../exps/'
 
-        self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
-        self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_single.pth')
-        # self.splits_path = os.path.join(self.root_path, 'datasets/block_splits_by_image_all.pth')
+        self.eeg_signals_path = os.path.join(self.root_path, 'datasets/imagination_5_95_std.pth')
+        self.splits_path = os.path.join(self.root_path, 'datasets/imagination_5_95_std_splits_subject_avail.pth')
+        self.imagenet_path = os.path.join(self.root_path, 'datasets/imageNet_images')
+        # Abort rather than silently substituting a blank target for a missing stimulus.
+        self.strict_images = True
         self.roi = 'VC'
         self.patch_size = 4 # 16
         self.embed_dim = 1024
@@ -111,7 +120,7 @@ class Config_Generative_Model:
 
         np.random.seed(self.seed)
         # finetune parameters
-        self.batch_size = 5 if self.dataset == 'GOD' else 25
+        self.batch_size = 10
         self.lr = 5.3e-5
         self.num_epoch = 200
         
@@ -122,13 +131,16 @@ class Config_Generative_Model:
         self.use_time_cond = True
         self.clip_tune = True #False
         self.cls_tune = False
-        self.subject = 1
+        self.subject = 0
         self.eval_avg = True
 
         # diffusion sampling parameters
         self.num_samples = 5
         self.ddim_steps = 250
         self.HW = None
+        # Sampling the whole test set after training costs hours and can be killed by the
+        # walltime. 200 trials is plenty for tight CLIP error bars. None = no cap.
+        self.generate_limit = 200
         self.cfg_scale = 8.0 # Critical for Imagination Paradigm
         # resume check util
         self.model_meta = None
@@ -140,7 +152,7 @@ class Config_Cls_Model:
     def __init__(self):
         # project parameters
         self.seed = 2022
-        self.root_path = '../'
+        self.root_path = '/home/015555345/NeruoDiffusion/'
         self.output_path = '../exps/'
 
         # self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')

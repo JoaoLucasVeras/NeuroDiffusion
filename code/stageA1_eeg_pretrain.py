@@ -11,7 +11,7 @@ import wandb
 import copy
 
 from config import Config_MBM_EEG
-from dataset import eeg_pretrain_dataset
+from dataset import eeg_pretrain_dataset, create_EEG_dataset
 from sc_mbm.mae_for_eeg import MAEforEEG
 from sc_mbm.trainer import train_one_epoch
 from sc_mbm.trainer import NativeScalerWithGradNormCount as NativeScaler
@@ -121,9 +121,9 @@ def main(config):
 
     # create dataset and dataloader
     # create dataset and dataloader
-    from dataset import create_EEG_dataset
-    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path=os.path.join(config.root_path, 'datasets/eeg_5_95_std.pth'), 
-                                                     splits_path=os.path.join(config.root_path, 'datasets/block_splits_by_image_single.pth'))
+    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path=config.eeg_signals_path, 
+                                                     splits_path=config.splits_path,
+                                                     imagenet_path=getattr(config, 'imagenet_path', None))
     dataset_pretrain = torch.utils.data.ConcatDataset([dataset_train, dataset_test])
     dataset_pretrain.data_len = 512
    
