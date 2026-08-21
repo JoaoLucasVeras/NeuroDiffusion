@@ -3,11 +3,16 @@ pretrains/models/*.ckpt
 pretrains/models/*.pth
 pretrains/models/*.bin
 
-# Datasets (Local storage only)
+# Datasets (Local storage only -- transferred to the cluster by scp, never committed)
 datasets/Imagination Experiment/*.mat
 datasets/Visual Experiment/*.mat
 datasets/*.pth
 datasets/mne_data/*.npy
+# Stimulus images: ~3.6k JPEGs / 412 MB. Rebuild with code/download_stimuli.py.
+datasets/imageNet_images/
+
+# Scratch
+*.bak
 
 # Results and Logs
 results/*

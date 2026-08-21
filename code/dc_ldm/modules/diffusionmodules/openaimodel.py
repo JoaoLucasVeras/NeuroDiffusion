@@ -736,6 +736,10 @@ class UNetModel(nn.Module):
         ), "must specify y if and only if the model is class-conditional"
         hs = []
         t_emb = timestep_embedding(timesteps, self.model_channels, repeat_only=False)
+        # Cast t_emb to match actual weight dtype. self.dtype may be stale (float32)
+        # if model.half() was called after init, so we detect dtype from weights directly.
+        _actual_dtype = next(self.time_embed.parameters()).dtype
+        t_emb = t_emb.to(_actual_dtype)
         emb = self.time_embed(t_emb)
 
         if self.num_classes is not None:
@@ -746,7 +750,7 @@ class UNetModel(nn.Module):
             assert c.shape[1] == 1, f'found {c.shape}'
             emb = emb + torch.squeeze(c, dim=1)
 
-        h = x.type(self.dtype)
+        h = x.to(_actual_dtype)  # cast input to actual weight dtype
         for module in self.input_blocks:
             h = module(h, emb, context)
             hs.append(h)

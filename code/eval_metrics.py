@@ -30,10 +30,18 @@ def identity(x):
 class psm_wrapper:
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.lpips = LearnedPerceptualImagePatchSimilarity(net_type='alex').to(self.device)
+        # AlexNet weights are downloaded on first use; unavailable on an air-gapped node.
+        try:
+            self.lpips = LearnedPerceptualImagePatchSimilarity(net_type='alex').to(self.device)
+        except Exception as e:
+            print("[eval_metrics] LPIPS weights unavailable (%s). Metric will return NaN."
+                  % type(e).__name__)
+            self.lpips = None
 
     @torch.no_grad()
     def __call__(self, img1, img2):
+        if self.lpips is None:
+            return float('nan')
         if img1.shape[-1] == 3:
             img1 = rearrange(img1, 'w h c -> c w h')
             img2 = rearrange(img2, 'w h c -> c w h')
@@ -46,13 +54,15 @@ class psm_wrapper:
 class fid_wrapper:
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.fid = FrechetInceptionDistance(feature=64)
+        # feature=64 is the pool1 block, not comparable to published FID numbers.
+        # 2048 is the standard final-pooling feature used everywhere in the literature.
+        self.fid = FrechetInceptionDistance(feature=2048).to(self.device)
 
     @torch.no_grad()
     def __call__(self, pred_imgs, gt_imgs):
         self.fid.reset()
-        self.fid.update(torch.tensor(rearrange(gt_imgs, 'n w h c -> n c w h')), real=True)
-        self.fid.update(torch.tensor(rearrange(pred_imgs, 'n w h c -> n c w h')), real=False)
+        self.fid.update(torch.tensor(rearrange(gt_imgs, 'n w h c -> n c w h')).to(self.device), real=True)
+        self.fid.update(torch.tensor(rearrange(pred_imgs, 'n w h c -> n c w h')).to(self.device), real=False)
         return self.fid.compute().item() 
 
 def pair_wise_score(pred_imgs, gt_imgs, metric, is_sucess):
@@ -111,20 +121,36 @@ def metrics_only(pred_imgs, gt_imgs, metric, *args, **kwargs):
 
 @torch.no_grad()
 def n_way_top_k_acc(pred, class_id, n_way, num_trials=40, top_k=1):
-    pick_range =[i for i in np.arange(len(pred)) if i != class_id]
+    pick_range = [i for i in np.arange(len(pred)) if i != class_id]
     acc_list = []
     for t in range(num_trials):
         idxs_picked = np.random.choice(pick_range, n_way-1, replace=False)
         pred_picked = torch.cat([pred[class_id].unsqueeze(0), pred[idxs_picked]])
-        acc = accuracy(pred_picked.unsqueeze(0), torch.tensor([0], device=pred.device), 
-                    task='multiclass', num_classes=n_way, top_k=top_k)
+        try:
+            # torchmetrics >= 0.11: requires task= argument
+            acc = accuracy(pred_picked.unsqueeze(0), torch.tensor([0], device=pred.device),
+                           task='multiclass', num_classes=n_way, top_k=top_k)
+        except TypeError:
+            # torchmetrics < 0.11: does not accept task= argument
+            acc = accuracy(pred_picked.unsqueeze(0), torch.tensor([0], device=pred.device),
+                           num_classes=n_way, top_k=top_k)
         acc_list.append(acc.item())
     return np.mean(acc_list), np.std(acc_list)
 
 @torch.no_grad()
 def get_n_way_top_k_acc(pred_imgs, ground_truth, n_way, num_trials, top_k, device, return_std=False):
-    weights = ViT_H_14_Weights.DEFAULT
-    model = vit_h_14(weights=weights)
+    # ViT-H weights (~2.4 GB) are downloaded on first use. Compute nodes are air-gapped,
+    # so this would raise only after training completes and destroy the run's output.
+    # Degrade to NaN instead; the CLIP-based class metrics in eval_report.py cover this.
+    try:
+        weights = ViT_H_14_Weights.DEFAULT
+        model = vit_h_14(weights=weights)
+    except Exception as e:
+        print("[eval_metrics] ViT-H weights unavailable (%s: %s). Skipping top-k class "
+              "accuracy -- use code/eval_report.py for CLIP-based class metrics."
+              % (type(e).__name__, e))
+        nan = [float('nan')] * len(pred_imgs)
+        return (nan, nan) if return_std else nan
     preprocess = weights.transforms()
     model = model.to(device)
     model = model.eval()

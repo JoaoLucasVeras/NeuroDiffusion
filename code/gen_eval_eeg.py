@@ -104,16 +104,19 @@ if __name__ == '__main__':
     ])
 
     
-    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path = args.eeg_signals_path, 
-                splits_path = args.splits_path, imagenet_path=args.imagenet_path,
-                image_transform=[img_transform_train, img_transform_test], subject = config.subject)
+    dataset_train, dataset_test = create_EEG_dataset(
+                eeg_signals_path=args.eeg_signals_path,
+                splits_path=args.splits_path, imagenet_path=args.imagenet_path,
+                image_transform=[img_transform_train, img_transform_test],
+                subject=config.subject,
+                strict_images=getattr(config, 'strict_images', True))
     num_voxels = dataset_test.dataset.data_len
 
 
 
     # create generateive model
     generative_model = eLDM_eval(args.config_patch, num_voxels,
-                device=device, pretrain_root=config.pretrain_gm_path, logger=config.logger,
+                device=device, pretrain_root=config.pretrain_gm_path, logger=getattr(config, 'logger', None),
                 ddim_steps=config.ddim_steps, global_pool=config.global_pool, use_time_cond=config.use_time_cond)
     # m, u = model.load_state_dict(pl_sd, strict=False)
     if 'model_state_dict' in sd:
@@ -140,3 +143,17 @@ if __name__ == '__main__':
 
 
     grid_imgs.save(os.path.join(output_path, f'./samples_test.png'))
+
+    # Persist raw generations so eval_report.py can score them against the
+    # noise and shuffled-pairing baselines.
+    gt = np.stack([np.asarray(img[0]) for img in samples])
+    pred = np.stack([np.stack([np.asarray(c) for c in img[1:]]) for img in samples])
+    gt = rearrange(gt, 'n c h w -> n h w c')
+    pred = rearrange(pred, 'n k c h w -> n k h w c')
+    base = dataset_test.dataset
+    idx = list(dataset_test.split_idx)[:len(gt)]
+    np.savez_compressed(os.path.join(output_path, 'samples.npz'),
+                        gt=gt.astype(np.uint8), pred=pred.astype(np.uint8),
+                        labels=np.array([base.data[i]['label'] for i in idx]),
+                        synsets=np.array(base.labels))
+    print('saved raw samples to', os.path.join(output_path, 'samples.npz'))

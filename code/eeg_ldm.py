@@ -18,6 +18,17 @@ from dc_ldm.ldm_for_eeg import eLDM
 from eval_metrics import get_similarity_metric
 
 
+def str2bool(v):
+    """argparse type=bool is a trap: bool("False") is True. Parse the string properly."""
+    if isinstance(v, bool):
+        return v
+    if v.lower() in ('yes', 'true', 't', 'y', '1'):
+        return True
+    if v.lower() in ('no', 'false', 'f', 'n', '0'):
+        return False
+    raise argparse.ArgumentTypeError('expected a boolean value, got %r' % v)
+
+
 def wandb_init(config, output_path):
     # wandb.init( project='dreamdiffusion',
     #             group="stageB_dc-ldm",
@@ -68,30 +79,54 @@ def get_eval_metric(samples, avg=True):
     metric_list.append('top-1-class (max)')
     return res_list, metric_list
                
+def save_samples_npz(samples, dataset, config):
+    """Persist raw generations so eval_report.py can score them against baselines."""
+    gt = np.stack([np.asarray(img[0]) for img in samples])
+    pred = np.stack([np.stack([np.asarray(c) for c in img[1:]]) for img in samples])
+    # stored channel-first by the sampler; the metrics expect channel-last uint8
+    gt = rearrange(gt, 'n c h w -> n h w c')
+    pred = rearrange(pred, 'n k c h w -> n k h w c')
+
+    base = dataset.dataset if hasattr(dataset, 'dataset') else dataset
+    idx = dataset.split_idx if hasattr(dataset, 'split_idx') else range(len(gt))
+    labels = np.array([base.data[i]['label'] for i in list(idx)[:len(gt)]])
+    synsets = np.array(base.labels)
+
+    out = os.path.join(config.output_path, 'samples.npz')
+    np.savez_compressed(out, gt=gt.astype(np.uint8), pred=pred.astype(np.uint8),
+                        labels=labels, synsets=synsets)
+    print('saved raw samples to %s  (gt=%s pred=%s)' % (out, gt.shape, pred.shape))
+    return out
+
+
 def generate_images(generative_model, eeg_latents_dataset_train, eeg_latents_dataset_test, config):
-    grid, _ = generative_model.generate(eeg_latents_dataset_train, config.num_samples, 
+    grid, _ = generative_model.generate(eeg_latents_dataset_train, config.num_samples,
                 config.ddim_steps, config.HW, 10) # generate 10 instances
     grid_imgs = Image.fromarray(grid.astype(np.uint8))
     grid_imgs.save(os.path.join(config.output_path, 'samples_train.png'))
-    # wandb.log({'summary/samples_train': wandb.Image(grid_imgs)})
 
-    grid, samples = generative_model.generate(eeg_latents_dataset_test, config.num_samples, 
-                config.ddim_steps, config.HW)
+    gen_limit = getattr(config, 'generate_limit', None)
+    if gen_limit is not None and gen_limit > 0:
+        print('generating %d of %d test trials (generate_limit)'
+              % (min(gen_limit, len(eeg_latents_dataset_test)), len(eeg_latents_dataset_test)))
+    grid, samples = generative_model.generate(eeg_latents_dataset_test, config.num_samples,
+                config.ddim_steps, config.HW, limit=gen_limit)
     grid_imgs = Image.fromarray(grid.astype(np.uint8))
-    grid_imgs.save(os.path.join(config.output_path,f'./samples_test.png'))
+    grid_imgs.save(os.path.join(config.output_path, f'./samples_test.png'))
     for sp_idx, imgs in enumerate(samples):
         for copy_idx, img in enumerate(imgs[1:]):
             img = rearrange(img, 'c h w -> h w c')
-            Image.fromarray(img).save(os.path.join(config.output_path, 
+            Image.fromarray(img).save(os.path.join(config.output_path,
                             f'./test{sp_idx}-{copy_idx}.png'))
 
-    # wandb.log({f'summary/samples_test': wandb.Image(grid_imgs)})
+    save_samples_npz(samples, eeg_latents_dataset_test, config)
 
     metric, metric_list = get_eval_metric(samples, avg=config.eval_avg)
     metric_dict = {f'summary/pair-wise_{k}':v for k, v in zip(metric_list[:-2], metric[:-2])}
     metric_dict[f'summary/{metric_list[-2]}'] = metric[-2]
     metric_dict[f'summary/{metric_list[-1]}'] = metric[-1]
-    # wandb.log(metric_dict)
+    print('eval metrics:', metric_dict)
+
 
 def normalize(img):
     if img.shape[-1] == 3:
@@ -140,8 +175,12 @@ def main(config):
     ])
     if config.dataset == 'EEG':
 
-        eeg_latents_dataset_train, eeg_latents_dataset_test = create_EEG_dataset(eeg_signals_path = config.eeg_signals_path, splits_path = config.splits_path, 
-                image_transform=[img_transform_train, img_transform_test], subject = config.subject)
+        eeg_latents_dataset_train, eeg_latents_dataset_test = create_EEG_dataset(
+                eeg_signals_path=config.eeg_signals_path, splits_path=config.splits_path,
+                imagenet_path=getattr(config, 'imagenet_path', None),
+                image_transform=[img_transform_train, img_transform_test],
+                subject=config.subject,
+                strict_images=getattr(config, 'strict_images', True))
         # eeg_latents_dataset_train, eeg_latents_dataset_test = create_EEG_dataset_viz( image_transform=[img_transform_train, img_transform_test])
         num_voxels = eeg_latents_dataset_train.data_len
 
@@ -202,21 +241,32 @@ def get_args_parser():
     parser.add_argument('--dataset', type=str)
     parser.add_argument('--eeg_signals_path', type=str)
     parser.add_argument('--splits_path', type=str)
+    parser.add_argument('--imagenet_path', type=str)
+    parser.add_argument('--subject', type=int)
+    parser.add_argument('--clip_tune', type=str2bool)
+    parser.add_argument('--cls_tune', type=str2bool)
+    parser.add_argument('--cfg_scale', type=float)
+    parser.add_argument('--generate_limit', type=int,
+                        help='cap test trials sampled at the end of training; the full set '
+                             'can take ~6h and runs after training, risking the walltime')
+    parser.add_argument('--strict_images', type=str2bool, default=True,
+                        help='abort if stimulus images are missing instead of '
+                             'silently training against a blank target')
 
     # finetune parameters
     parser.add_argument('--batch_size', type=int)
     parser.add_argument('--lr', type=float)
     parser.add_argument('--num_epoch', type=int)
-    parser.add_argument('--precision', type=int)
+    parser.add_argument('--precision', type=str, default='32')
     parser.add_argument('--accumulate_grad', type=int)
-    parser.add_argument('--global_pool', type=bool)
+    parser.add_argument('--global_pool', type=str2bool)
 
     # diffusion sampling parameters
     parser.add_argument('--pretrain_gm_path', type=str)
     parser.add_argument('--num_samples', type=int)
     parser.add_argument('--ddim_steps', type=int)
-    parser.add_argument('--use_time_cond', type=bool)
-    parser.add_argument('--eval_avg', type=bool)
+    parser.add_argument('--use_time_cond', type=str2bool)
+    parser.add_argument('--eval_avg', type=str2bool)
 
     # # distributed training parameters
     # parser.add_argument('--local_rank', type=int)
@@ -239,10 +289,21 @@ def create_readme(config, path):
 from pytorch_lightning.plugins.environments import SLURMEnvironment
 def create_trainer(num_epoch, precision=32, accumulate_grad_batches=2,logger=None,check_val_every_n_epoch=0):
     acc = 'gpu' if torch.cuda.is_available() else 'cpu'
-    return pl.Trainer(accelerator=acc, devices='auto', strategy='ddp_find_unused_parameters_true', plugins=[SLURMEnvironment(auto_requeue=True)], max_epochs=num_epoch, logger=logger, 
-            precision=precision, accumulate_grad_batches=accumulate_grad_batches,
-            enable_checkpointing=True, enable_model_summary=False, gradient_clip_val=0.5,
-            check_val_every_n_epoch=check_val_every_n_epoch)
+    num_gpus = torch.cuda.device_count()
+    if num_gpus > 1:
+        # Multi-GPU: use DDP
+        return pl.Trainer(accelerator=acc, devices=num_gpus, strategy='ddp',
+                plugins=[SLURMEnvironment(auto_requeue=True)], max_epochs=num_epoch, logger=logger,
+                precision=precision, accumulate_grad_batches=accumulate_grad_batches,
+                enable_checkpointing=True, enable_model_summary=False, gradient_clip_val=0.5,
+                check_val_every_n_epoch=check_val_every_n_epoch)
+    else:
+        # Single GPU: let PL auto-select strategy (avoids DDP NCCL OOM)
+        return pl.Trainer(accelerator=acc, devices=1, max_epochs=num_epoch, logger=logger,
+                precision=precision, accumulate_grad_batches=accumulate_grad_batches,
+                enable_checkpointing=True, enable_model_summary=False, gradient_clip_val=0.5,
+                check_val_every_n_epoch=check_val_every_n_epoch)
+
   
 if __name__ == '__main__':
     args = get_args_parser()
@@ -257,7 +318,8 @@ if __name__ == '__main__':
         config.checkpoint_path = ckp
         print('Resuming from checkpoint: {}'.format(config.checkpoint_path))
 
-    output_path = os.path.join(config.output_path, 'results', 'generation',  '%s'%(datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")))
+    # Use root_path for results to ensure they appear in the main project folder
+    output_path = os.path.join(config.root_path, 'results', 'generation',  '%s'%(datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")))
     config.output_path = output_path
     os.makedirs(output_path, exist_ok=True)
     
