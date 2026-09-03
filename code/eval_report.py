@@ -47,7 +47,9 @@ def main():
     p = argparse.ArgumentParser(description="EEG-to-image evaluation report")
     p.add_argument("--samples", required=True)
     p.add_argument("--output", default=None)
-    p.add_argument("--n_way", type=int, nargs="+", default=[2, 10, 40])
+    # The full-way case is appended automatically from the classes actually present,
+    # so the headline n-way figure never overstates the number of alternatives.
+    p.add_argument("--n_way", type=int, nargs="+", default=[2, 10])
     p.add_argument("--seed", type=int, default=2022)
     p.add_argument("--device", default=None)
     p.add_argument("--clip_model", default=None,
@@ -56,16 +58,31 @@ def main():
 
     gt, pred, labels, synsets = load_samples(args.samples)
     n, k = pred.shape[0], pred.shape[1]
-    n_classes = len(synsets)
-    print("Loaded %d trials, %d generation(s) each, %d classes" % (n, k, n_classes))
+
+    # Two different denominators, and conflating them misstates the headline claim.
+    #   n_prompts  : how many class prompts the zero-shot classifier chooses between.
+    #                Chance for that decision is 1/n_prompts.
+    #   n_present  : how many classes actually occur in this test set. Stimuli whose
+    #                images could not be sourced were dropped from the splits, so the
+    #                imagination set has 33 of 40 classes -- chance 0.0303, not 0.0250.
+    # Report against the classes actually present; that is the honest baseline.
+    n_prompts = len(synsets)
+    present = sorted(set(int(l) for l in labels))
+    n_present = len(present)
+    print("Loaded %d trials, %d generation(s) each, %d classes present of %d prompts"
+          % (n, k, n_present, n_prompts))
+    if n_present not in args.n_way:
+        args.n_way = list(args.n_way) + [n_present]
 
     scorer = CLIPScorer(device=args.device,
                         **({"model_name": args.clip_model} if args.clip_model else {}))
     results = {
         "n_trials": n,
         "n_generations_per_trial": k,
-        "n_classes": n_classes,
-        "chance_accuracy": 1.0 / n_classes,
+        "n_classes": n_present,
+        "n_prompts": n_prompts,
+        "chance_accuracy": 1.0 / n_present,
+        "chance_accuracy_over_prompts": 1.0 / n_prompts,
         "samples_file": os.path.abspath(args.samples),
     }
 
@@ -89,7 +106,7 @@ def main():
         ])),
     }
     for w in args.n_way:
-        if w <= n_classes:
+        if w <= n_present:
             results["model"]["clip_%d_way" % w] = scorer.n_way_accuracy(
                 mean_probs, labels, n_way=w, seed=args.seed)
 
@@ -103,7 +120,7 @@ def main():
         "clip_zeroshot_top1": noise_acc,
     }
     for w in args.n_way:
-        if w <= n_classes:
+        if w <= n_present:
             results["baseline_noise"]["clip_%d_way" % w] = scorer.n_way_accuracy(
                 noise_probs, labels, n_way=w, seed=args.seed)
 
@@ -138,9 +155,10 @@ def main():
 
     lines = []
     lines.append("# EEG-to-Image Evaluation Report\n")
-    lines.append("- Trials: **%d**, generations/trial: **%d**, classes: **%d**"
-                 % (n, k, n_classes))
-    lines.append("- Chance accuracy: **%.4f**\n" % results["chance_accuracy"])
+    lines.append("- Trials: **%d**, generations/trial: **%d**, classes present: **%d** "
+                 "(of %d prompts)" % (n, k, n_present, n_prompts))
+    lines.append("- Chance accuracy: **%.4f** (1/%d, classes actually in the test set)\n"
+                 % (results["chance_accuracy"], n_present))
     lines.append("## CLIP image similarity (higher is better)\n")
     lines.append("| Condition | Mean | SEM |")
     lines.append("|---|---|---|")
