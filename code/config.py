@@ -31,7 +31,7 @@ class Config_MBM_EEG(Config_MAE_fMRI):
         self.mlp_ratio = 1.0
 
         # Project setting
-        self.root_path = '/home/015555345/NeruoDiffusion/'
+        self.root_path = '/home/015555345/NeuroDiffusion/'
         self.output_path = '../exps/'
         self.seed = 2022
         self.roi = 'VC'
@@ -61,7 +61,7 @@ class Config_EEG_finetune(Config_MBM_finetune):
     def __init__(self):
         
         # Project setting
-        self.root_path = '/home/015555345/NeruoDiffusion/'
+        self.root_path = '/home/015555345/NeuroDiffusion/'
         # self.root_path = '.'
         self.output_path = '../exps/'
 
@@ -96,7 +96,7 @@ class Config_Generative_Model:
     def __init__(self):
         # project parameters
         self.seed = 2022
-        self.root_path = '/home/015555345/NeruoDiffusion/'
+        self.root_path = '/home/015555345/NeuroDiffusion/'
         self.output_path = '../exps/'
 
         self.eeg_signals_path = os.path.join(self.root_path, 'datasets/imagination_5_95_std.pth')
@@ -152,7 +152,7 @@ class Config_Cls_Model:
     def __init__(self):
         # project parameters
         self.seed = 2022
-        self.root_path = '/home/015555345/NeruoDiffusion/'
+        self.root_path = '/home/015555345/NeuroDiffusion/'
         self.output_path = '../exps/'
 
         # self.eeg_signals_path = os.path.join(self.root_path, 'datasets/eeg_5_95_std.pth')
