@@ -50,6 +50,10 @@ BATCH_SIZE=${BATCH_SIZE:-8}
 NUM_EPOCH=${NUM_EPOCH:-200}
 DDIM_STEPS=${DDIM_STEPS:-250}
 GEN_LIMIT=${GEN_LIMIT:-200}
+# torch 1.12.1 ships no CUDA bfloat16 kernel for upsample_nearest2d, which the VAE
+# decoder hits during PLMS sampling ("not implemented for 'BFloat16'"). fp16 AMP is
+# supported and fast on A100 tensor cores. Fall back to 32 if fp16 produces NaNs.
+PRECISION=${PRECISION:-16}
 
 DATASET=$ROOT/datasets/${EXPERIMENT}_5_95_std.pth
 SPLITS=$ROOT/datasets/${EXPERIMENT}_5_95_std_splits_${PROTOCOL}${SPLIT_SUFFIX}.pth
@@ -64,7 +68,7 @@ echo "  protocol   : $PROTOCOL"
 echo "  dataset    : $DATASET"
 echo "  splits     : $SPLITS"
 echo "  stage1 ckpt: $CHECKPOINT"
-echo "  batch/epoch: $BATCH_SIZE / $NUM_EPOCH   ddim: $DDIM_STEPS   gen_limit: $GEN_LIMIT"
+echo "  batch/epoch: $BATCH_SIZE / $NUM_EPOCH   ddim: $DDIM_STEPS   gen_limit: $GEN_LIMIT   precision: $PRECISION"
 [ -f "$CHECKPOINT" ] || { echo "FATAL: no Stage 1 checkpoint at $CHECKPOINT"; exit 1; }
 
 # --- GPU sanity check -------------------------------------------------------
@@ -109,7 +113,7 @@ $PYTHON -u eeg_ldm.py \
     --ddim_steps "$DDIM_STEPS" \
     --generate_limit "$GEN_LIMIT" \
     --lr 5.3e-5 \
-    --precision bf16 \
+    --precision "$PRECISION" \
     --eeg_signals_path "$DATASET" \
     --splits_path "$SPLITS" \
     --imagenet_path "$IMAGENET" \
