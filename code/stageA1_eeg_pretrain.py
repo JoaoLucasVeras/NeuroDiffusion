@@ -121,9 +121,14 @@ def main(config):
 
     # create dataset and dataloader
     # create dataset and dataloader
-    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path=config.eeg_signals_path, 
+    # Stage 1 is masked EEG reconstruction: EEG in, EEG out. The stimulus image is
+    # neither an input nor a target here, so image IO is disabled. Without this the
+    # DataLoader tries to batch raw ImageNet images of differing sizes and dies on
+    # "stack expects each tensor to be equal size".
+    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path=config.eeg_signals_path,
                                                      splits_path=config.splits_path,
-                                                     imagenet_path=getattr(config, 'imagenet_path', None))
+                                                     imagenet_path=getattr(config, 'imagenet_path', None),
+                                                     load_images=False)
     dataset_pretrain = torch.utils.data.ConcatDataset([dataset_train, dataset_test])
     dataset_pretrain.data_len = 512
    
