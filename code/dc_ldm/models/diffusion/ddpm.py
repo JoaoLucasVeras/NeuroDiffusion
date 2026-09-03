@@ -127,7 +127,7 @@ class DDPM(pl.LightningModule):
         self.best_val = 0.0 
         self.run_full_validation_threshold = 0.0
         self.eval_avg = True
-        self.z_cache = None
+        # (self.z_cache removed -- see get_input: it cached one batch of latents forever)
 
     def re_init_ema(self):
         if self.use_ema:
@@ -850,10 +850,17 @@ class LatentDiffusion(DDPM):
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
-        if self.z_cache is None:
-            encoder_posterior = self.encode_first_stage(x)
-            self.z_cache = self.get_first_stage_encoding(encoder_posterior).detach() 
-        z = self.z_cache
+        # NOTE: this used to cache the first batch's latents in self.z_cache and reuse
+        # them for every subsequent batch ("Overdrive Patch: VAE latent caching").
+        # self.z_cache was never invalidated, so every training step denoised the SAME
+        # images regardless of which EEG samples were in the batch -- a constant target,
+        # exactly the failure mode as training against blank images. It also crashed on
+        # the final short batch ("size of tensor a (8) must match tensor b (4)") because
+        # the cached latents kept the first batch's size while the conditioning did not.
+        # Encode every batch. VAE encoding is a small fraction of the step cost next to
+        # the UNet forward/backward; a correct cache would key latents per sample.
+        encoder_posterior = self.encode_first_stage(x)
+        z = self.get_first_stage_encoding(encoder_posterior).detach()
         # print('z.shape')
         # print(z.shape)
         # print(cond_key)
