@@ -49,7 +49,12 @@ class psm_wrapper:
         img2 = img2 / 127.5 - 1.0
         img1 = np.expand_dims(img1, axis=0)
         img2 = np.expand_dims(img2, axis=0)
-        return self.lpips(torch.FloatTensor(img1).to(self.device), torch.FloatTensor(img2).to(self.device)).item()
+        # Frozen scoring model called from inside the AMP validation step -- disable
+        # autocast so fp32 weights are not fed fp16 activations. Same failure mode as
+        # the ViT-H metric below.
+        with torch.cuda.amp.autocast(enabled=False):
+            return self.lpips(torch.FloatTensor(img1).to(self.device),
+                              torch.FloatTensor(img2).to(self.device)).item()
 
 class fid_wrapper:
     def __init__(self):
@@ -157,15 +162,21 @@ def get_n_way_top_k_acc(pred_imgs, ground_truth, n_way, num_trials, top_k, devic
     
     acc_list = []
     std_list = []
-    for pred, gt in zip(pred_imgs, ground_truth):
-        pred = preprocess(Image.fromarray(pred.astype(np.uint8))).unsqueeze(0).to(device)
-        gt = preprocess(Image.fromarray(gt.astype(np.uint8))).unsqueeze(0).to(device)
-        gt_class_id = model(gt).squeeze(0).softmax(0).argmax().item()
-        pred_out = model(pred).squeeze(0).softmax(0).detach()
+    # This runs inside Lightning's validation step, where AMP autocast is active. The
+    # ViT-H parameters are fp32 but autocast would feed it fp16 activations, and
+    # _native_multi_head_attention refuses the mix ("expected scalar type Half but
+    # found Float"). This is a frozen scoring model, so disable autocast for it --
+    # there is nothing to gain from half precision here anyway.
+    with torch.cuda.amp.autocast(enabled=False):
+        for pred, gt in zip(pred_imgs, ground_truth):
+            pred = preprocess(Image.fromarray(pred.astype(np.uint8))).unsqueeze(0).to(device).float()
+            gt = preprocess(Image.fromarray(gt.astype(np.uint8))).unsqueeze(0).to(device).float()
+            gt_class_id = model(gt).squeeze(0).softmax(0).argmax().item()
+            pred_out = model(pred).squeeze(0).softmax(0).detach()
 
-        acc, std = n_way_top_k_acc(pred_out, gt_class_id, n_way, num_trials, top_k)
-        acc_list.append(acc)
-        std_list.append(std)
+            acc, std = n_way_top_k_acc(pred_out, gt_class_id, n_way, num_trials, top_k)
+            acc_list.append(acc)
+            std_list.append(std)
        
     if return_std:
         return acc_list, std_list
