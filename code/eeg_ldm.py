@@ -290,6 +290,11 @@ from pytorch_lightning.plugins.environments import SLURMEnvironment
 def create_trainer(num_epoch, precision=32, accumulate_grad_batches=2,logger=None,check_val_every_n_epoch=0):
     acc = 'gpu' if torch.cuda.is_available() else 'cpu'
     num_gpus = torch.cuda.device_count()
+    # argparse gives precision as a string, but Lightning 1.6 only accepts an int for
+    # numeric precisions -- "16" raises RuntimeError("No precision set"). Only "bf16"
+    # is legitimately a string.
+    if isinstance(precision, str) and precision.strip().isdigit():
+        precision = int(precision)
     if num_gpus > 1:
         # Multi-GPU: use DDP
         return pl.Trainer(accelerator=acc, devices=num_gpus, strategy='ddp',
