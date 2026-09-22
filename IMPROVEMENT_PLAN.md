@@ -70,6 +70,12 @@ Files: `code/dc_ldm/models/diffusion/ddpm.py` (`validation_step`,
 ### P2 -- Contrastive CLIP loss with an explicit weight
 *Answers: does a batch-relative objective generalise better than pointwise cosine?*
 
+STATUS 2026-09-22: implemented and **verified to run** (jobs 80330/80331, cancelled
+after epoch 0 when the project pivoted to per-subject). Loss values sat at 0.67-1.94,
+i.e. near the InfoNCE chance level of ln(8)~2.08 for batch 8, instead of collapsing to
+1e-4 the way the pointwise cosine loss does. The anti-collapse property is confirmed;
+whether it improves decoding is still untested. Needs one per-subject run.
+
 `clip_loss()` (InfoNCE, symmetric) is already in `ldm_for_eeg.py` but unused.
 Switch `get_clip_loss` to it with a learnable temperature, and add
 `config.clip_weight` (start 1.0, sweep {1, 5, 10}). Because batches of 8 will
