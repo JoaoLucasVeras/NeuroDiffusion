@@ -193,7 +193,11 @@ class eLDM:
         sampler = PLMSSampler(model)
         # sampler = DDIMSampler(model)
         if state is not None:
-            torch.cuda.set_rng_state(state)
+            # Checkpoints store the CPU generator state (torch.random.get_rng_state),
+            # so restore it there; loading it into the CUDA generator raises
+            # "RNG state is wrong size". Seed CUDA from it for reproducibility.
+            torch.random.set_rng_state(state)
+            torch.cuda.manual_seed_all(int(torch.randint(0, 2**31 - 1, (1,))))
             
         with model.ema_scope():
             model.eval()
@@ -337,7 +341,11 @@ class eLDM_eval:
         sampler = PLMSSampler(model)
         # sampler = DDIMSampler(model)
         if state is not None:
-            torch.cuda.set_rng_state(state)
+            # Checkpoints store the CPU generator state (torch.random.get_rng_state),
+            # so restore it there; loading it into the CUDA generator raises
+            # "RNG state is wrong size". Seed CUDA from it for reproducibility.
+            torch.random.set_rng_state(state)
+            torch.cuda.manual_seed_all(int(torch.randint(0, 2**31 - 1, (1,))))
             
         with model.ema_scope():
             model.eval()
