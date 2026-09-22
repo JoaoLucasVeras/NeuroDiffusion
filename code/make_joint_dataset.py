@@ -45,6 +45,11 @@ def main():
     p.add_argument("--seed", type=int, default=2022)
     p.add_argument("--imagenet_path", default="../datasets/imageNet_images")
     p.add_argument("--require_images", action="store_true")
+    # Per-subject ("Imagine"/"Mix") replication of Shimizu & Srinivasan 2022: the
+    # imagination train/test both come from ONE subject; the perception data that is
+    # mixed in comes from every subject, as in their Mix model.
+    p.add_argument("--imagination_subject", type=int, default=0, help="0 = all subjects")
+    p.add_argument("--visual_subject", type=int, default=0, help="0 = all subjects (paper's Mix)")
     args = p.parse_args()
 
     vis = torch.load(args.visual, map_location="cpu")
@@ -74,6 +79,15 @@ def main():
     else:
         tr, te, desc = split_by_window(ima_entries, args.test_frac, args.gap, rng)
         vis_train = list(range(n_ima, len(dataset)))
+    if args.imagination_subject:
+        S = args.imagination_subject
+        tr = [i for i in tr if dataset[i]["subject"] == S]
+        te = [i for i in te if dataset[i]["subject"] == S]
+        desc += "; imagination restricted to subject %d" % S
+    if args.visual_subject:
+        V = args.visual_subject
+        vis_train = [i for i in vis_train if dataset[i]["subject"] == V]
+        desc += "; perception restricted to subject %d" % V
     train = tr + vis_train
     test = te
     desc = "joint perception+imagination; imagination " + desc
@@ -88,7 +102,10 @@ def main():
     print("  train paradigms :", dict(par))
     print("  test paradigms  :", dict(collections.Counter(dataset[i]["paradigm"] for i in test)))
 
-    suffix = "_splits_%s" % args.protocol + ("_avail" if args.require_images else "")
+    suffix = "_splits_%s" % args.protocol
+    if args.imagination_subject:
+        suffix += "_s%d" % args.imagination_subject
+    suffix += "_avail" if args.require_images else ""
     out = args.output.replace(".pth", suffix + ".pth")
     torch.save({"splits": [{"train": train, "test": test}], "protocol": args.protocol,
                 "description": desc, "source_dataset": os.path.basename(args.output),
