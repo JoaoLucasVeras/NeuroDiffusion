@@ -126,6 +126,74 @@ The visual result already shows the architecture extracts category information
 from this EEG cap. Whether imagery survives the same treatment is what the next
 two runs answer.
 
+## What the field has learned (literature check, 2026-09-21)
+
+Sources: Shimizu & Srinivasan 2022 (the dataset paper); Li et al. NeurIPS 2024
+(ATM-S, THINGS-EEG); "Interpretable EEG-to-Image Generation with Semantic Prompts"
+(2025); the 2026 cross-subject EEG survey (arXiv 2604.27033); EEG foundation
+models (LaBraM, CBraMod, REVE). Links in the conversation log / commit message.
+
+### Directly actionable for this dataset
+
+- **Train on perception + imagination jointly.** This is the headline result of
+  the dataset paper itself: imagination-only classification 13.4%, joint
+  training 25.2% (40-way, within-subject). We train Stage 2 on imagination
+  only. The visual set is 7,987 trials of the *same* 40 classes, same cap, same
+  four people. Joint training is a data-side lever ~3.5x larger than anything
+  else available without recording. -> new item **P3b**, above P3 in priority.
+- **Imagery lives in low-frequency (<15 Hz) temporal-cortex activity;
+  perception in high-frequency (>35 Hz) occipital activity** (same paper,
+  attention analysis). Our encoder sees raw broadband 128-ch. Cheap experiments:
+  band-limit the input to <15 Hz for imagination; try temporal-channel subsets.
+  If the imagery signal is alpha/mu-band, a 250-sample window at 250 Hz is
+  only 2 alpha cycles -- longer windows (1-2 s) may matter more than any model change.
+- **Trial averaging is standard.** THINGS-EEG results average up to 80
+  repetitions per test image; single-trial accuracy is far lower. Our 20 windows
+  per imagined stimulus are the analogue. Now built into the val metric
+  (`retrieval_top1_avg`) and should be added to eval_report.
+- **Small encoders win on small data.** ATM-S is a few million parameters
+  (channel attention + temporal-spatial conv + projector) trained with
+  contrastive loss against CLIP embeddings; it beats large pretrained encoders on
+  THINGS-EEG. Our Stage 2 fine-tunes ~300M. A ~5M-parameter encoder trained from
+  scratch with the contrastive loss is a legitimate ablation and may simply be
+  better here. -> **P7**.
+- **Contrastive alignment, not pointwise regression,** is used by every
+  competitive EEG-to-image method since 2023. Implemented (`clip_loss=contrastive`).
+
+### Field-level context worth knowing
+
+- **THINGS-EEG is the benchmark** (10 subjects, 16,540 training images x 4
+  repeats, 200 test images x 80 repeats, 63 ch). Subject-dependent 200-way
+  top-1 is ~27% (ATM-S) up to ~47-78% in 2026 papers; cross-subject is far lower.
+  Nobody reaches those numbers with 40 images per subject.
+- **The EEGCVPR / Spampinato dataset results (79%+) are block-design
+  contaminated** (Li et al. 2020) and should not be used as a bar. Several
+  2025 papers still report on it.
+- **Cross-subject transfer toolbox** (survey): Euclidean/Riemannian alignment
+  per subject, adversarial subject-invariance (GRL), subject-conditioned
+  contrastive learning (same-stimulus-different-subject as positives), meta-
+  learning, and few-shot calibration. Of these, per-subject alignment and
+  few-shot calibration are cheap and map directly onto your own-data plan.
+- **EEG foundation models exist** (LaBraM: 2,000 h; CBraMod: 9,000 h TUEG,
+  19 channels 10-20; REVE: 25,000 subjects, any montage). They are pretrained
+  on clinical EEG, not visual tasks, and most assume 10-20 montages. Worth a
+  try as an encoder initialisation (REVE handles arbitrary channel sets) but
+  not a first-order lever.
+- **All published imagery results are within-subject.** Cross-subject imagery
+  decoding is essentially an open problem; a null there is not a failure of
+  this project.
+
+### Added priorities
+
+- **P3b -- Joint perception+imagination Stage 2** (highest data-side value).
+  Concatenate the visual and imagination training splits (both `_avail`), keep
+  the imagination test split as the test set. Requires a combined `.pth` + splits.
+- **P7 -- Small encoder ablation** (ATM-S-style, ~5M params, contrastive only,
+  no diffusion) as a fast classifier baseline. If it beats the 300M MAE on the
+  val retrieval metric, the diffusion conditioning should come from it.
+- **P8 -- Input preprocessing sweep**: <15 Hz band-limit; longer windows;
+  per-subject Euclidean alignment.
+
 ## Run queue
 
 | Job | What | Status |
