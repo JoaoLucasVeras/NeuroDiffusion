@@ -126,7 +126,8 @@ $PYTHON -u eeg_ldm.py \
     --pretrain_mbm_path "$CHECKPOINT" \
     --use_time_cond True \
     --clip_tune True \
-    --strict_images True \n    ${EXTRA_ARGS:-}
+    --strict_images True \
+    ${EXTRA_ARGS:-}
 
 RUN=$(ls -td "$ROOT"/results/generation/*/ | head -1)
 echo "### DONE. Run directory: $RUN ###"
