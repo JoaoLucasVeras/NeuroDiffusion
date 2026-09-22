@@ -50,6 +50,10 @@ BATCH_SIZE=${BATCH_SIZE:-8}
 NUM_EPOCH=${NUM_EPOCH:-200}
 DDIM_STEPS=${DDIM_STEPS:-250}
 GEN_LIMIT=${GEN_LIMIT:-200}
+# Free-form pass-through for experiment knobs, e.g.
+#   EXTRA_ARGS="--freeze_encoder_blocks 0 --augment False --weight_decay 0.01 --early_stop_patience 0"  # v1 regime
+#   EXTRA_ARGS="--clip_loss contrastive --clip_weight 5"
+EXTRA_ARGS=${EXTRA_ARGS:-}
 # torch 1.12.1 ships no CUDA bfloat16 kernel for upsample_nearest2d, which the VAE
 # decoder hits during PLMS sampling ("not implemented for 'BFloat16'"). fp16 AMP is
 # supported and fast on A100 tensor cores. Fall back to 32 if fp16 produces NaNs.
@@ -69,6 +73,7 @@ echo "  dataset    : $DATASET"
 echo "  splits     : $SPLITS"
 echo "  stage1 ckpt: $CHECKPOINT"
 echo "  batch/epoch: $BATCH_SIZE / $NUM_EPOCH   ddim: $DDIM_STEPS   gen_limit: $GEN_LIMIT   precision: $PRECISION"
+echo "  extra args: ${EXTRA_ARGS:-<none>}"
 [ -f "$CHECKPOINT" ] || { echo "FATAL: no Stage 1 checkpoint at $CHECKPOINT"; exit 1; }
 
 # --- GPU sanity check -------------------------------------------------------
@@ -121,7 +126,7 @@ $PYTHON -u eeg_ldm.py \
     --pretrain_mbm_path "$CHECKPOINT" \
     --use_time_cond True \
     --clip_tune True \
-    --strict_images True
+    --strict_images True \n    ${EXTRA_ARGS:-}
 
 RUN=$(ls -td "$ROOT"/results/generation/*/ | head -1)
 echo "### DONE. Run directory: $RUN ###"
