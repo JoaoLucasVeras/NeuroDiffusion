@@ -247,6 +247,24 @@ def resolve_imagenet_dir(path):
     return path
 
 
+def augment_eeg(eeg, noise_std=0.1, channel_drop=0.1, scale_range=(0.9, 1.1)):
+    """Train-time EEG augmentation on a (channels, time) tensor.
+
+    Stage 2 fine-tunes a ~300M-parameter encoder on ~2k windows drawn from 33
+    stimuli; without augmentation it memorises them (train/loss_clip -> 1e-4).
+    Noise is relative to per-channel std so it is preprocessing-agnostic.
+    """
+    std = eeg.std(dim=-1, keepdim=True).clamp_min(1e-6)
+    out = eeg + torch.randn_like(eeg) * std * noise_std
+    if channel_drop > 0:
+        keep = (torch.rand(eeg.shape[0], 1) >= channel_drop).float()
+        out = out * keep
+    if scale_range is not None:
+        lo, hi = scale_range
+        out = out * (lo + (hi - lo) * torch.rand(1))
+    return out
+
+
 class EEGDataset(Dataset):
 
     # Constructor
@@ -352,11 +370,14 @@ class EEGDataset(Dataset):
             f = interp1d(x, eeg)
             eeg = f(x2)
         eeg = torch.from_numpy(eeg).float()
+        if getattr(self, 'augment', False):
+            eeg = augment_eeg(eeg)
 
         label = torch.tensor(self.data[i]["label"]).long()
+        stem = self.data[i]["image"]
 
         if not self.load_images:
-            return {'eeg': eeg, 'label': label, 'image': 0, 'image_raw': 0}
+            return {'eeg': eeg, 'label': label, 'image': 0, 'image_raw': 0, 'stem': stem}
 
         image_name = self.data[i]["image"]
         image_path = self._image_path(image_name)
@@ -369,7 +390,8 @@ class EEGDataset(Dataset):
         image_raw = self.processor(images=image_raw_pil, return_tensors="pt")
         image_raw['pixel_values'] = image_raw['pixel_values'].squeeze(0)
 
-        return {'eeg': eeg, 'label': label, 'image': self.image_transform(image), 'image_raw': image_raw}
+        return {'eeg': eeg, 'label': label, 'image': self.image_transform(image),
+                'image_raw': image_raw, 'stem': stem}
 
 
 class Splitter:
@@ -412,7 +434,7 @@ def create_EEG_dataset(eeg_signals_path='../datasets/imagination_5_95_std.pth',
             splits_path='../datasets/imagination_5_95_std_splits_subject.pth',
             imagenet_path=None,
             image_transform=identity, subject=0,
-            strict_images=True, missing_tolerance=0.0, load_images=True):
+            strict_images=True, missing_tolerance=0.0, load_images=True, augment=False):
 
     # Load the splits first so the stimulus check can be scoped to the trials that
     # training will actually touch, rather than to every trial in the file.
@@ -433,6 +455,7 @@ def create_EEG_dataset(eeg_signals_path='../datasets/imagination_5_95_std.pth',
                                   strict_images, missing_tolerance, load_images, validate_scope)
     split_train = Splitter(dataset_train, split_path=splits_path, split_num=0, split_name='train', subject=subject)
     split_test = Splitter(dataset_test, split_path=splits_path, split_num=0, split_name='test', subject=subject)
+    dataset_train.augment = bool(augment)
     print("[create_EEG_dataset] protocol: %s" % split_train.protocol)
     print("[create_EEG_dataset] train=%d test=%d" % (len(split_train), len(split_test)))
     return (split_train, split_test)
@@ -506,3 +529,34 @@ def stratified_order(split, seed=2022):
     out.split_idx = order
     out.size = len(order)
     return out
+
+
+def split_val_from_train(split_train, split_test, n_val_windows=4, gap=1):
+    """Carve a validation set out of the TRAIN split by window index.
+
+    Model selection must not look at the test split (for LOSO that is the held-out
+    subject). Instead the last `n_val_windows` windows of every training recording
+    become validation, with `gap` windows dropped in between so adjacent, highly
+    correlated windows do not straddle the boundary. The validation view wraps the
+    *test* dataset object so it gets the deterministic image transform and no EEG
+    augmentation.
+    """
+    import copy
+    base = split_train.dataset
+    windows = sorted({base.data[pos]['window'] for pos in split_train.split_idx})
+    if len(windows) < n_val_windows + gap + 2:
+        raise ValueError("train split has only %d distinct windows; cannot hold out %d (+%d gap)"
+                         % (len(windows), n_val_windows, gap))
+    val_w = set(windows[-n_val_windows:])
+    gap_w = set(windows[-(n_val_windows + gap):-n_val_windows]) if gap else set()
+
+    train_pos = [p for p in split_train.split_idx
+                 if base.data[p]['window'] not in val_w and base.data[p]['window'] not in gap_w]
+    # positions are shared: both datasets load the same trial list with the same filter
+    val_pos = [p for p in split_train.split_idx if base.data[p]['window'] in val_w]
+
+    new_train = copy.copy(split_train); new_train.split_idx = train_pos; new_train.size = len(train_pos)
+    val = copy.copy(split_test); val.split_idx = val_pos; val.size = len(val_pos)
+    print("[split_val_from_train] train %d -> %d, val %d (windows %s, gap %s)"
+          % (len(split_train.split_idx), len(train_pos), len(val_pos), sorted(val_w), sorted(gap_w)))
+    return new_train, val

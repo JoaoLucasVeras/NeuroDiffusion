@@ -39,6 +39,8 @@ class cond_stage_model(nn.Module):
         self.mae = model
         if clip_tune:
             self.mapping = mapping()
+            # CLIP-style learnable temperature, init 1/0.07 (only used by 'contrastive').
+            self.logit_scale = nn.Parameter(torch.tensor(float(torch.log(torch.tensor(1 / 0.07)))))
         if cls_tune:
             self.cls_net = classify_network()
 
@@ -84,13 +86,36 @@ class cond_stage_model(nn.Module):
     def get_cls(self, x):
         return self.cls_net(x)
 
-    def get_clip_loss(self, x, image_embeds):
-        # image_embeds = self.image_embedder(image_inputs)
+    def get_clip_loss(self, x, image_embeds, stems=None):
+        """EEG->CLIP alignment loss.
+
+        'cosine'      : the original pointwise 1 - cos(pred, target). With ~33 training
+                        stimuli a large encoder drives this to ~0 by memorising which
+                        target each window belongs to (observed: 0.22 -> 1e-4).
+        'contrastive' : symmetric InfoNCE over the batch with a learnable temperature.
+                        Windows of the same stimulus (same stem) are treated as
+                        positives of each other, so they are never pushed apart.
+        """
         target_emb = self.mapping(x)
-        # similarity_matrix = nn.functional.cosine_similarity(target_emb.unsqueeze(1), image_embeds.unsqueeze(0), dim=2)
-        # loss = clip_loss(similarity_matrix)
-        loss = 1 - torch.cosine_similarity(target_emb, image_embeds, dim=-1).mean()
-        return loss
+        if getattr(self, 'clip_loss_type', 'cosine') != 'contrastive':
+            return 1 - torch.cosine_similarity(target_emb, image_embeds, dim=-1).mean()
+
+        pn = F.normalize(target_emb.float(), dim=-1)
+        tn = F.normalize(image_embeds.float(), dim=-1)
+        logits = pn @ tn.T * self.logit_scale.exp().clamp(max=100)
+        n = logits.shape[0]
+        if stems is not None and len(stems) == n:
+            ids = {}
+            key = torch.tensor([ids.setdefault(st, len(ids)) for st in stems], device=logits.device)
+            pos = (key[:, None] == key[None, :]).float()
+        else:
+            pos = torch.eye(n, device=logits.device)
+
+        def sup_con(lg):
+            logp = F.log_softmax(lg, dim=1)
+            return -(torch.logsumexp(logp + torch.log(pos.clamp_min(1e-12)), dim=1)).mean()
+
+        return 0.5 * (sup_con(logits) + sup_con(logits.T))
     
 
 
@@ -152,17 +177,67 @@ class eLDM:
       
         # # stage one: only optimize conditional encoders
         print('\n##### Stage One: only optimize conditional encoders #####')
+        # Validation is carved out of the TRAINING subjects; the test split is only
+        # logged. Selecting a checkpoint on the test subject would be model selection
+        # on the test set.
+        from dataset import split_val_from_train
+        n_val_w = int(getattr(config, 'val_windows', 4))
+        if n_val_w > 0:
+            dataset, val_dataset = split_val_from_train(dataset, test_dataset, n_val_windows=n_val_w,
+                                                        gap=int(getattr(config, 'val_gap', 1)))
+        else:
+            val_dataset = test_dataset
         dataloader = DataLoader(dataset, batch_size=bs1, shuffle=True, num_workers=8, pin_memory=True, persistent_workers=True)
-        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False, num_workers=8, pin_memory=True, persistent_workers=True)
+        val_loader = DataLoader(val_dataset, batch_size=bs1, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
+        test_loader = DataLoader(test_dataset, batch_size=bs1, shuffle=False, num_workers=4, pin_memory=True, persistent_workers=True)
         self.model.unfreeze_whole_model()
         self.model.freeze_first_stage()
-        # self.model.freeze_whole_model()
-        # self.model.unfreeze_cond_stage()
+
+        # Regularisation knobs (see IMPROVEMENT_PLAN.md, P1/P2).
+        self.model.weight_decay = float(getattr(config, 'weight_decay', 0.01))
+        self.model.clip_weight = float(getattr(config, 'clip_weight', 1.0))
+        self.model.val_preview_every = int(getattr(config, 'val_preview_every', 0))
+        self.model.cond_stage_model.clip_loss_type = getattr(config, 'clip_loss', 'cosine')
+        n_freeze = int(getattr(config, 'freeze_encoder_blocks', 0))
+        enc = self.model.cond_stage_model.mae
+        frozen = set()
+        if n_freeze > 0:
+            mods = [enc.patch_embed] + list(enc.blocks[:n_freeze])
+            for m in mods:
+                for p in m.parameters():
+                    frozen.add(id(p))
+            print('freezing patch_embed + %d/%d encoder blocks (%d tensors)'
+                  % (n_freeze, len(enc.blocks), len(frozen)))
+        self.model.frozen_params = frozen
 
         self.model.learning_rate = lr1
         self.model.train_cond_stage_only = True
         self.model.eval_avg = config.eval_avg
-        trainers.fit(self.model, dataloader, val_dataloaders=test_loader)
+
+        from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping
+        monitor = getattr(config, 'select_metric', 'val/retrieval_top1')
+        best_cb = ModelCheckpoint(dirpath=os.path.join(output_path, 'checkpoints'),
+                                  filename='best-{epoch:03d}', monitor=monitor, mode='max',
+                                  save_top_k=1, save_weights_only=True)
+        cbs = [best_cb]
+        patience = int(getattr(config, 'early_stop_patience', 0))
+        if patience > 0:
+            cbs.append(EarlyStopping(monitor=monitor, mode='max', patience=patience, verbose=True))
+        trainers.callbacks.extend(cbs)
+
+        trainers.fit(self.model, dataloader, val_dataloaders=[val_loader, test_loader])
+
+        # checkpoint.pth = best held-out checkpoint (what eval scores); keep last too.
+        torch.save({'model_state_dict': self.model.state_dict(), 'config': config,
+                    'state': torch.random.get_rng_state()},
+                   os.path.join(output_path, 'checkpoint_last.pth'))
+        if best_cb.best_model_path and os.path.exists(best_cb.best_model_path):
+            sd = torch.load(best_cb.best_model_path, map_location='cpu')['state_dict']
+            self.model.load_state_dict(sd, strict=False)
+            print('restored best checkpoint %s (%s=%.4f)'
+                  % (best_cb.best_model_path, monitor, float(best_cb.best_model_score or float('nan'))))
+        else:
+            print('WARNING: no best checkpoint recorded; checkpoint.pth is the last epoch')
 
         self.model.unfreeze_whole_model()
         

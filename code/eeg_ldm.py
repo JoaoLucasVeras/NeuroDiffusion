@@ -185,7 +185,8 @@ def main(config):
                 imagenet_path=getattr(config, 'imagenet_path', None),
                 image_transform=[img_transform_train, img_transform_test],
                 subject=config.subject,
-                strict_images=getattr(config, 'strict_images', True))
+                strict_images=getattr(config, 'strict_images', True),
+                augment=getattr(config, 'augment', False))
         # eeg_latents_dataset_train, eeg_latents_dataset_test = create_EEG_dataset_viz( image_transform=[img_transform_train, img_transform_test])
         num_voxels = eeg_latents_dataset_train.data_len
 
@@ -208,7 +209,7 @@ def main(config):
         generative_model.model.load_state_dict(model_meta['model_state_dict'])
         print('model resumed')
     # finetune the model
-    trainer = create_trainer(config.num_epoch, config.precision, config.accumulate_grad, config.logger, check_val_every_n_epoch=20)
+    trainer = create_trainer(config.num_epoch, config.precision, config.accumulate_grad, config.logger, check_val_every_n_epoch=int(getattr(config, 'val_every', 1)))
     
     # Custom Callback for clear epoch tracking
     from pytorch_lightning.callbacks import Callback
@@ -251,6 +252,15 @@ def get_args_parser():
     parser.add_argument('--clip_tune', type=str2bool)
     parser.add_argument('--cls_tune', type=str2bool)
     parser.add_argument('--cfg_scale', type=float)
+    parser.add_argument('--weight_decay', type=float)
+    parser.add_argument('--freeze_encoder_blocks', type=int)
+    parser.add_argument('--augment', type=str2bool)
+    parser.add_argument('--clip_loss', type=str, choices=['cosine', 'contrastive'])
+    parser.add_argument('--clip_weight', type=float)
+    parser.add_argument('--val_windows', type=int)
+    parser.add_argument('--val_every', type=int)
+    parser.add_argument('--val_preview_every', type=int)
+    parser.add_argument('--early_stop_patience', type=int)
     parser.add_argument('--generate_limit', type=int,
                         help='cap test trials sampled at the end of training; the full set '
                              'can take ~6h and runs after training, risking the walltime')

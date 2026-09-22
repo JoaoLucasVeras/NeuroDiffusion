@@ -142,6 +142,22 @@ class Config_Generative_Model:
         # walltime. 200 trials is plenty for tight CLIP error bars. None = no cap.
         self.generate_limit = 200
         self.cfg_scale = 8.0 # Critical for Imagination Paradigm
+
+        # --- regularisation / model selection (IMPROVEMENT_PLAN.md P0-P2) ---
+        # The first LOSO run memorised the 33 training stimuli (train/loss_clip -> 1e-4)
+        # with the whole 24-block encoder trainable, weight decay never reaching AdamW,
+        # and no held-out metric. These defaults are the "v2" regime.
+        self.weight_decay = 0.05
+        self.freeze_encoder_blocks = 18   # of 24; 0 = train everything (v1 behaviour)
+        self.augment = True               # EEG noise / channel dropout / scaling on train
+        self.clip_loss = 'cosine'         # 'cosine' (v1) or 'contrastive' (P2)
+        self.clip_weight = 1.0
+        self.val_windows = 4              # windows carved from TRAIN subjects for selection
+        self.val_gap = 1
+        self.val_every = 1                # epochs between cheap validations
+        self.val_preview_every = 0        # epochs between 3-image sample previews (0 = off)
+        self.select_metric = 'val/retrieval_top1'
+        self.early_stop_patience = 25     # epochs; 0 = run all num_epoch
         # resume check util
         self.model_meta = None
         self.checkpoint_path = None 
