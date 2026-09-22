@@ -198,10 +198,14 @@ models (LaBraM, CBraMod, REVE). Links in the conversation log / commit message.
 
 | Job | What | Status |
 |---|---|---|
-| 80178 | Imagination LOSO, stratified 200-trial eval on existing checkpoint | running, cs001 |
-| 80181 | Imagination window-protocol Stage 2 (200 epochs) + eval | running, cs003, gpuql |
-| next | P0 + P1 implemented and smoke-tested locally on hpc, then LOSO v2 | not started |
-| after | P2, P3 as separate A/B runs against v2 | not started |
+| 80178 | Imagination LOSO v1 checkpoint, stratified 200-trial eval (the corrected baseline) | running, cs001 |
+| 80181 | Imagination window-protocol Stage 2, v1 regime (upper-bound control) | running, cs003, gpuql |
+| 80211 | **Imagination LOSO v2**: P0 metric + P1 regularisation (18/24 frozen, wd 0.05, augmentation, best-checkpoint by val retrieval, early stop 25) | queued, gpuql |
+| 80212 | **Joint LOSO v2** (P3b): same regime, train = imagination + visual of subjects 1-3 (7,070 trials) | queued, gpuql |
+| next | P2 contrastive loss on top of whichever of 80211/80212 wins (`EXTRA_ARGS="--clip_loss contrastive"`) | not started |
+| next | P7 small-encoder ablation; P8 band-limit / window-length sweep | not started |
 
-Change one thing per run. Every run is scored with the same stratified
-`eval_report.py` so numbers are comparable.
+Every run is scored with the same stratified `eval_report.py` (now with trial-
+averaged and per-class sections) on the same 660-trial subject-4 test set, so the
+numbers are comparable. Smoke test of the v2 code path passed on 2026-09-21
+(2 epochs, checkpoint restore, generation, report).
