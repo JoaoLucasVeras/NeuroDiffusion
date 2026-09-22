@@ -107,7 +107,12 @@ def generate_images(generative_model, eeg_latents_dataset_train, eeg_latents_dat
 
     gen_limit = getattr(config, 'generate_limit', None)
     if gen_limit is not None and gen_limit > 0:
-        print('generating %d of %d test trials (generate_limit)'
+        # Stratify BEFORE truncating. In recording order the first N trials are N/20
+        # stimuli x 20 near-duplicate windows; round-robin over stimuli makes the
+        # prefix span every class first.
+        from dataset import stratified_order
+        eeg_latents_dataset_test = stratified_order(eeg_latents_dataset_test, seed=config.seed)
+        print('generating %d of %d test trials (generate_limit, stratified over stimuli)'
               % (min(gen_limit, len(eeg_latents_dataset_test)), len(eeg_latents_dataset_test)))
     grid, samples = generative_model.generate(eeg_latents_dataset_test, config.num_samples,
                 config.ddim_steps, config.HW, limit=gen_limit)

@@ -470,3 +470,39 @@ if __name__ == '__main__':
     import shutil
 
 
+
+
+def stratified_order(split, seed=2022):
+    """Reorder a Splitter so any prefix covers distinct stimuli as evenly as possible.
+
+    Why this exists: the imagination test set is one recording per stimulus, cut into
+    20 consecutive sliding windows, stored in recording order. Taking the first N
+    trials therefore yields N/20 stimuli, each represented by 20 near-duplicate
+    windows. A 200-trial evaluation covered 10 of 33 classes with an effective
+    sample size of ~10, and its SEM was computed as if the 200 were independent.
+
+    Round-robin over stimuli (shuffled within each) makes a prefix of length N
+    span ~N/n_stimuli windows per stimulus, spread across the recording, and cover
+    every class before repeating any. Returns a shallow copy; the original is
+    untouched.
+    """
+    import collections, copy, random
+    base = split.dataset
+    groups = collections.defaultdict(list)
+    for pos in split.split_idx:
+        groups[base.data[pos]['image']].append(pos)
+    rng = random.Random(seed)
+    keys = list(groups)
+    rng.shuffle(keys)
+    for k in keys:
+        rng.shuffle(groups[k])
+    order, depth = [], 0
+    while len(order) < len(split.split_idx):
+        for k in keys:
+            if depth < len(groups[k]):
+                order.append(groups[k][depth])
+        depth += 1
+    out = copy.copy(split)
+    out.split_idx = order
+    out.size = len(order)
+    return out

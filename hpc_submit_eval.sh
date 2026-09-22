@@ -87,7 +87,8 @@ if [ ! -f "${RUN}samples.npz" ]; then
         --eeg_signals_path "$DATASET" \
         --splits_path "$SPLITS" \
         --imagenet_path "$IMAGENET" \
-        --config_patch "$ROOT/pretrains/models/config15.yaml"
+        --config_patch "$ROOT/pretrains/models/config15.yaml" \
+        --generate_limit "${GEN_LIMIT:-200}"
     RUN=$(ls -td "$ROOT"/results/eval/*/ | head -1)
 fi
 

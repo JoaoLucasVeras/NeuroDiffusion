@@ -63,6 +63,8 @@ def get_args_parser():
     parser.add_argument('--config_patch', type=str, default=None,
                         help='sd config path.')
     
+    parser.add_argument('--generate_limit', type=int, default=None,
+                        help='cap test trials generated, sampled evenly across stimuli')
     parser.add_argument('--imagenet_path', type=str, default=None,
                         help='imagenet path.')
 
@@ -137,8 +139,16 @@ if __name__ == '__main__':
     
     grid_imgs.save(os.path.join(output_path, f'./samples_train.png'))
 
-    grid, samples = generative_model.generate(dataset_test, config.num_samples, 
-                config.ddim_steps, config.HW, limit=None, state=state, output_path = output_path) # generate 10 instances
+    # Stratify over stimuli before truncating, otherwise a prefix of the recording-
+    # ordered imagination test set is N/20 stimuli x 20 near-duplicate windows.
+    gen_limit = args.generate_limit if args.generate_limit and args.generate_limit > 0 else None
+    if gen_limit is not None:
+        from dataset import stratified_order
+        dataset_test = stratified_order(dataset_test, seed=config.seed)
+        print('generating %d of %d test trials (stratified over stimuli)'
+              % (min(gen_limit, len(dataset_test)), len(dataset_test)))
+    grid, samples = generative_model.generate(dataset_test, config.num_samples,
+                config.ddim_steps, config.HW, limit=gen_limit, state=state, output_path=output_path)
     grid_imgs = Image.fromarray(grid.astype(np.uint8))
 
 
