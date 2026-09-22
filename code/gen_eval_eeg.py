@@ -165,5 +165,6 @@ if __name__ == '__main__':
     np.savez_compressed(os.path.join(output_path, 'samples.npz'),
                         gt=gt.astype(np.uint8), pred=pred.astype(np.uint8),
                         labels=np.array([base.data[i]['label'] for i in idx]),
+                        stems=np.array([base.data[i]['image'] for i in idx]),
                         synsets=np.array(base.labels))
     print('saved raw samples to', os.path.join(output_path, 'samples.npz'))

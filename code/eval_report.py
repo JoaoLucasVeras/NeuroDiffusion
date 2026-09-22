@@ -18,6 +18,8 @@ import os
 
 import numpy as np
 
+NL = chr(10)
+
 from clip_metrics import CLIPScorer, make_noise_baseline, shuffle_pairs, synset_to_name
 
 
@@ -29,7 +31,8 @@ def load_samples(path):
     synsets = [str(s) for s in d["synsets"]]
     if pred.ndim == 4:            # single generation per trial
         pred = pred[:, None]
-    return gt, pred, labels, synsets
+    stems = [str(x) for x in d["stems"]] if "stems" in d.files else None
+    return gt, pred, labels, synsets, stems
 
 
 def summarise(values):
@@ -56,7 +59,7 @@ def main():
                    help="override the CLIP checkpoint (default: openai/clip-vit-large-patch14)")
     args = p.parse_args()
 
-    gt, pred, labels, synsets = load_samples(args.samples)
+    gt, pred, labels, synsets, stems = load_samples(args.samples)
     n, k = pred.shape[0], pred.shape[1]
 
     # Two different denominators, and conflating them misstates the headline claim.
@@ -134,6 +137,48 @@ def main():
                 "isolates EEG-image correspondence from raw image quality",
     }
 
+    # ---- trial averaging: pool the windows of each stimulus before deciding ----
+    # Standard in EEG decoding (THINGS-EEG averages up to 80 repeats). One decision
+    # per stimulus, so n is the number of distinct stimuli, not windows.
+    if stems is not None and len(set(stems)) < n:
+        print("Scoring trial-averaged (per-stimulus) metrics ...")
+        uniq = sorted(set(stems))
+        sidx = {s_: i for i, s_ in enumerate(uniq)}
+        tgt = np.array([sidx[s_] for s_ in stems])
+        pe = scorer.embed_images(pred[:, 0]).numpy()
+        ge = scorer.embed_images(gt).numpy()
+        avg = np.zeros((len(uniq), pe.shape[1]))
+        gavg = np.zeros((len(uniq), ge.shape[1]))
+        for i, t in enumerate(tgt):
+            avg[t] += pe[i]; gavg[t] = ge[i]
+        avg /= np.linalg.norm(avg, axis=1, keepdims=True) + 1e-12
+        sims = avg @ gavg.T
+        stim_label = np.array([labels[np.where(tgt == t)[0][0]] for t in range(len(uniq))])
+        ret_top1 = float(np.mean(sims.argmax(1) == np.arange(len(uniq))))
+        ret_class = float(np.mean(stim_label[sims.argmax(1)] == stim_label))
+        rng_ = np.random.RandomState(args.seed)
+        perm = rng_.permutation(len(uniq))
+        results["trial_averaged"] = {
+            "n_stimuli": len(uniq),
+            "windows_per_stimulus_mean": float(n / len(uniq)),
+            "clip_image_similarity_mean": float(np.mean(np.diag(sims))),
+            "clip_image_similarity_shuffled": float(np.mean(sims[np.arange(len(uniq)), perm])),
+            "retrieval_top1": ret_top1,
+            "retrieval_chance": 1.0 / len(uniq),
+            "retrieval_class_top1": ret_class,
+        }
+
+    # ---- per-class breakdown (a null overall can hide a decodable subset) ----
+    per_class = {}
+    for c in present:
+        m_ = labels == c
+        per_class[synsets[c]] = {
+            "n": int(m_.sum()),
+            "clip_sim": float(model_sim[m_].mean()),
+            "top1": float(np.mean([int(np.argmax(mean_probs[i]) == c) for i in np.where(m_)[0]])),
+        }
+    results["per_class"] = per_class
+
     # ---- headline: does the model beat the controls? ----
     m = results["model"]["clip_image_similarity"]
     s = results["baseline_shuffled"]["clip_image_similarity"]
@@ -178,6 +223,23 @@ def main():
         if kk in results["model"]:
             lines.append("| %d-way | %.4f | %.4f | %.4f |" % (
                 w, results["model"][kk], results["baseline_noise"][kk], 1.0 / w))
+    if "trial_averaged" in results:
+        ta = results["trial_averaged"]
+        lines.append("%s## Trial-averaged (one decision per stimulus, %d stimuli, ~%.0f windows each)%s"
+                     % (NL, ta["n_stimuli"], ta["windows_per_stimulus_mean"], NL))
+        lines.append("| Metric | Model | Control |")
+        lines.append("|---|---|---|")
+        lines.append("| CLIP similarity (avg) | %.4f | %.4f (shuffled) |"
+                     % (ta["clip_image_similarity_mean"], ta["clip_image_similarity_shuffled"]))
+        lines.append("| retrieval top-1 (%d-way) | %.4f | %.4f (chance) |"
+                     % (ta["n_stimuli"], ta["retrieval_top1"], ta["retrieval_chance"]))
+        lines.append("| retrieval class top-1 | %.4f | - |" % ta["retrieval_class_top1"])
+    top = sorted(results["per_class"].items(), key=lambda kv: -kv[1]["clip_sim"])[:5]
+    lines.append("%s## Best-decoded classes (by CLIP similarity)%s" % (NL, NL))
+    lines.append("| Class | n | CLIP sim | top-1 |")
+    lines.append("|---|---|---|---|")
+    for syn, d_ in top:
+        lines.append("| %s (%s) | %d | %.4f | %.3f |" % (synset_to_name(syn), syn, d_["n"], d_["clip_sim"], d_["top1"]))
     lines.append("\n## Verdict\n")
     lines.append("CLIP similarity exceeds the shuffled-pairing control by "
                  "**%.4f** (%.1f SEM).\n" % (delta, results["headline"]["delta_in_sems"]))

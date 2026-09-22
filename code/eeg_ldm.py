@@ -90,11 +90,12 @@ def save_samples_npz(samples, dataset, config):
     base = dataset.dataset if hasattr(dataset, 'dataset') else dataset
     idx = dataset.split_idx if hasattr(dataset, 'split_idx') else range(len(gt))
     labels = np.array([base.data[i]['label'] for i in list(idx)[:len(gt)]])
+    stems = np.array([base.data[i]['image'] for i in list(idx)[:len(gt)]])
     synsets = np.array(base.labels)
 
     out = os.path.join(config.output_path, 'samples.npz')
     np.savez_compressed(out, gt=gt.astype(np.uint8), pred=pred.astype(np.uint8),
-                        labels=labels, synsets=synsets)
+                        labels=labels, synsets=synsets, stems=stems)
     print('saved raw samples to %s  (gt=%s pred=%s)' % (out, gt.shape, pred.shape))
     return out
 
