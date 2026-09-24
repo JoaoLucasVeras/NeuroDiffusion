@@ -18,7 +18,7 @@ what any model can learn is the count of independent imagery events.
 | Dataset | Imagery events per person | Rows per person |
 |---|---|---|
 | Shimizu 2022 (ours), after stimulus filtering | **33** | 660 |
-| Bae et al. 2025 visual-imagery dataset | **800** | 800 |
+| Gao et al. visual-imagery dataset (Sci Data 2026) | **800** | 800 |
 
 ~24x difference. No architecture, loss or regulariser closes that gap. Everything
 below is about extracting more from 33 events, and it has a low ceiling.
@@ -30,7 +30,7 @@ below is about extracting more from 33 events, and it has a low ceiling.
 | Source | Finding |
 |---|---|
 | [Xie et al., *Current Biology* 2020](https://pmc.ncbi.nlm.nih.gov/articles/PMC7342016/) | Imagery and perception share a representational code **only in the alpha band (8-13 Hz)** -- absent in theta and beta. Present in **posterior electrodes only** (parieto-occipital). Imagery information spans **600-2280 ms**, peak 1340 ms. Cross-decoding perception<->imagery works bidirectionally. |
-| [Koenig-Robert et al., *Sci Rep* 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11150249/) | Imagined scenes and their properties decodable from **8-13 Hz, peaking at 11 Hz**. Scene properties decodable *exclusively* from alpha. Used multitapers because "imagery data tends to be noisy". |
+| [Stecher & Kaiser, *Sci Rep* 2024](https://pmc.ncbi.nlm.nih.gov/articles/PMC11150249/) | Imagined scenes and their properties decodable from **8-13 Hz, peaking at 11 Hz**. Scene properties decodable *exclusively* from alpha. Used multitapers because "imagery data tends to be noisy". |
 | [Shimizu & Srinivasan 2022](https://pmc.ncbi.nlm.nih.gov/articles/PMC9491577/) (our dataset) | Attention analysis: imagination classified by **low-frequency (<15 Hz)** activity over temporal cortex; perception by **high-frequency (>35 Hz)** occipital/frontal. |
 
 ### Why this matters for us
@@ -63,7 +63,7 @@ after-effects rather than imagery. Worth testing:
 
 ## 2. Do NOT add artifact removal
 
-[Ludwig et al. 2025, *Communications Biology*](https://www.nature.com/articles/s42003-025-08464-3)
+[Kessler, Enge & Skeide, *Communications Biology* 2025](https://www.nature.com/articles/s42003-025-08464-3)
 ([preprint](https://arxiv.org/abs/2410.14453)) systematically varied preprocessing and
 measured decoding accuracy:
 
@@ -82,7 +82,7 @@ ocular-artifact control before we believe it.
 
 ## 3. Small models beat large ones at this data scale
 
-- [Bae et al. 2025](https://pmc.ncbi.nlm.nih.gov/articles/PMC12886826/): **EEGNet 75.8%**
+- [Gao et al. 2026](https://pmc.ncbi.nlm.nih.gov/articles/PMC12886826/): **EEGNet 75.8%**
   (animals), 75.1% (figures), 62.0% (objects) vs **CSP+KNN ~50%/~41%**; chance 33%/25%.
   EEGNet is a few thousand parameters.
 - Shimizu got 13.4% (40-way, chance 2.5%) with Sinc-EEGNet, also small.
@@ -124,14 +124,14 @@ broadband samples. Targets the representation gap in section 1.
 ### S4 -- Small encoder (P7 in the main plan)
 Informed by whatever S1 reports. EEGNet- or ATM-S-class, ~10^4-10^6 params.
 
-### S5 -- Second dataset: Bae et al. 2025
+### S5 -- Second dataset: Gao et al. 2026
 See section 5.
 
 ---
 
-## 5. Bae et al. 2025 visual imagery dataset
+## 5. Gao et al. visual imagery dataset (Scientific Data, 2026)
 
-[Paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC12886826/) ·
+Gao J, Liu Y, Li Z, Huang K, Wang F, Xu J, Zhao L, Li T, Fu Y. *An EEG Dataset for Visual Imagery-Based Brain-Computer Interface.* Scientific Data 13, 194 (2026). [Paper](https://pmc.ncbi.nlm.nih.gov/articles/PMC12886826/) ·
 [Data: figshare 10.6084/m9.figshare.30227503](https://doi.org/10.6084/m9.figshare.30227503) ·
 CC BY-NC-ND 4.0
 
@@ -175,5 +175,5 @@ CC BY-NC-ND 4.0
 ## Decisions pending
 
 - [ ] Approve S1 (classical baselines) as a detour from the diffusion pipeline
-- [ ] Decide whether to pull in the Bae 2025 dataset as a second track
+- [ ] Decide whether to pull in the Gao et al. dataset as a second track
 - [ ] Fold approved items into IMPROVEMENT_PLAN.md's priority ordering
