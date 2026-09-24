@@ -129,7 +129,11 @@ $PYTHON -u eeg_ldm.py \
     --strict_images True \
     ${EXTRA_ARGS:-}
 
-RUN=$(ls -td "$ROOT"/results/generation/*/ | head -1)
+# Pick THIS job's run directory, not merely the newest one: with several jobs in
+# flight `ls -td | head -1` returns whichever finished last, so each job used to
+# score another job's samples. Output dirs now end in -j$SLURM_JOB_ID.
+RUN=$(ls -d "$ROOT"/results/generation/*-j${SLURM_JOB_ID}/ 2>/dev/null | head -1)
+[ -n "$RUN" ] || RUN=$(ls -td "$ROOT"/results/generation/*/ | head -1)
 echo "### DONE. Run directory: $RUN ###"
 
 # Score the generations against the noise and shuffled-pairing baselines.

@@ -340,7 +340,11 @@ if __name__ == '__main__':
         print('Resuming from checkpoint: {}'.format(config.checkpoint_path))
 
     # Use root_path for results to ensure they appear in the main project folder
-    output_path = os.path.join(config.root_path, 'results', 'generation',  '%s'%(datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")))
+    # Two jobs launched in the same second used to collide on this path and
+    # overwrite each other's checkpoints. SLURM_JOB_ID makes it unique; the
+    # fallback keeps interactive runs working.
+    _run_tag = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + ("-j" + os.environ["SLURM_JOB_ID"] if os.environ.get("SLURM_JOB_ID") else "-p%d" % os.getpid())
+    output_path = os.path.join(config.root_path, 'results', 'generation', _run_tag)
     config.output_path = output_path
     os.makedirs(output_path, exist_ok=True)
     

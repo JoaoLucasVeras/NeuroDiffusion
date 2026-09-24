@@ -87,8 +87,9 @@ if __name__ == '__main__':
     config.root_path = root
 
 
-    output_path = os.path.join(config.root_path, 'results', 'eval',  
-                    '%s'%(datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")))
+    # Unique per job: two evaluations launched in the same second used to collide.
+    _run_tag = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + ("-j" + os.environ["SLURM_JOB_ID"] if os.environ.get("SLURM_JOB_ID") else "-p%d" % os.getpid())
+    output_path = os.path.join(config.root_path, 'results', 'eval', _run_tag)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 

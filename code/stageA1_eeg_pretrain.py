@@ -106,7 +106,11 @@ def main(config):
     if torch.cuda.device_count() > 1:
         torch.cuda.set_device(config.local_rank) 
         torch.distributed.init_process_group(backend='nccl')
-    output_path = os.path.join(config.root_path, 'results', 'eeg_pretrain',  '%s'%(datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")))
+    # Two jobs launched in the same second used to collide on this path and
+    # overwrite each other's checkpoints. SLURM_JOB_ID makes it unique; the
+    # fallback keeps interactive runs working.
+    _run_tag = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + ("-j" + os.environ["SLURM_JOB_ID"] if os.environ.get("SLURM_JOB_ID") else "-p%d" % os.getpid())
+    output_path = os.path.join(config.root_path, 'results', 'eeg_pretrain', _run_tag)
     config.output_path = output_path
     # logger = wandb_logger(config) if config.local_rank == 0 else None
     logger = None
