@@ -177,3 +177,44 @@ CC BY-NC-ND 4.0
 - [ ] Approve S1 (classical baselines) as a detour from the diffusion pipeline
 - [ ] Decide whether to pull in the Gao et al. dataset as a second track
 - [ ] Fold approved items into IMPROVEMENT_PLAN.md's priority ordering
+
+---
+
+## 6. Source protocol details (verified from the paper, 2026-09-24)
+
+Quoted verbatim from Shimizu & Srinivasan 2022 Methods. These settle several
+questions that were previously assumed.
+
+| Detail | What the paper says | Why it matters |
+|---|---|---|
+| Eyes during imagery | *"told to imagine the image with eyes opened"* | **Eyes OPEN.** A secondhand summary circulating as "eyes closed" is wrong. Eyes closed would flood occipital alpha with the idle rhythm and swamp the content-specific modulation we are trying to decode. Open is the condition the imagery literature works in. |
+| Windowing | *"each 10 second recording was split into 20 trials of 500 ms without overlap"* | Non-overlapping and contiguous, so the 20 windows tile the full 10 s. **We can concatenate adjacent windows to build 2 s or 4 s segments** from the published files -- this unblocks S3 with no new data. |
+| Acquisition | *"128-channel NeuroScan EEG system with 2 kHz sampling rate"* | The raw 2 kHz data is NOT what is published. |
+| Downsampling | *"After removing artifacts, all trials were downsampled to 250 Hz"* | We have the cleaned, decimated version. 125 samples = 500 ms. |
+| Filtering | *"filtered by a band-pass filter with frequency of 1-50 Hz"* | Alpha (8-13 Hz) is intact, so the S1/S2 strategy is safe. Shimizu's own >35 Hz perception finding is only partly preserved. |
+
+**Inherited caveat.** Artifact removal was applied before the data were shared.
+Kessler, Enge & Skeide (section 2) found every artifact-correction step reduces
+decoding accuracy. Our numbers may be slightly depressed by 2022 preprocessing
+choices, and we cannot undo them. Worth stating in any writeup.
+
+---
+
+## 7. Candidate datasets evaluated and rejected
+
+Four criteria a candidate must meet for this project: **(a) visual imagery, not
+perception or motor imagery; (b) multiple real repetitions per class; (c)
+occipital / parieto-occipital coverage; (d) ideally >1 session for an honest holdout.**
+
+A fifth, practical: our encoder starts with `Conv1d(128 -> 1024)`, so the channel
+count is baked into the architecture. A different montage is not "more data" -- it
+requires rebuilding the input layer and retraining Stage 1. The bar is high.
+
+| Dataset | What it is | Verdict |
+|---|---|---|
+| [MindBigData ImageNet](https://www.mindbigdata.com/opendb/imagenet.html) | **One subject** (the author), Emotiv Insight 5 ch @ 128 Hz: AF3, AF4, T7, T8, Pz. 14,012 images, ~1 rep each, 3 s while **viewing**. ODbL. | **No.** Disqualifying: **no occipital electrodes at all** -- Pz is parietal midline; O1/O2/Oz absent. We would be looking for alpha imagery signal where the device cannot see. Also perception not imagery, and 1 rep per image repeats our own dataset's flaw. Note: the advertised "70,060 brain signals" is 14,012 trials x 5 channels, not 70,060 trials. |
+| [OpenNeuro ds007162](https://openneuro.org/datasets/ds007162/versions/1.0.0) | "Adaptive recruitment of cortex-wide recurrence for visual object recognition". 34 participants, 1 session, 64 ch actiCHamp @ 1000 Hz. 242 images (121 "challenge" selected where humans beat AlexNet, 121 control). RSVP: 200 ms image + 100 ms blank, sequences of 14; task was **paperclip detection**. CC0. [preprint](https://www.biorxiv.org/content/10.1101/2025.10.17.682937v2) | **No.** Excellent dataset, wrong problem: 100% perception, and participants were not even attending to object category. 200 ms presentations are the opposite of the 2-4 s windows imagery needs. Our perception pipeline already works; perception is not where we are blocked. |
+| [PhysioNet EEG MMI](https://www.physionet.org/content/eegmmidb/1.0.0/) | 109 subjects, 64 ch @ 160 Hz, BCI2000, EDF+. Imagining fist / foot movements. ODC-BY. | **No.** *Motor* imagery -- mu/beta over sensorimotor cortex. The decoded output is "left hand", not image content; there is nothing to reconstruct. Fine dataset, unrelated problem. |
+| [meagmohit/EEG-Datasets](https://github.com/meagmohit/EEG-Datasets) | Curated list. Categories: motor imagery, emotion, ErrP, VEP, ERP, SCP, resting state, music, eye movements, misc, clinical. | **Largely exhausted.** There is **no visual-imagery category**; the only image-related entries are MindBigData and a working-memory set. That scarcity is itself informative -- public *visual* imagery EEG barely exists, which is why Gao et al. 2026 stands out. |
+
+Still the only recommended addition: **Gao et al. 2026** (section 5).
