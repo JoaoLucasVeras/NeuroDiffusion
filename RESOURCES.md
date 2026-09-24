@@ -8,6 +8,9 @@ good science, carefully collected, and several are better built than the one we 
 using. They are recorded here with the specific reason they do not fit, so nobody
 has to re-derive it and so the reasoning can be challenged if it is wrong.
 
+Each entry is tagged with who surfaced it, so credit and follow-up questions land
+in the right place.
+
 Companions: [SIGNAL_QUALITY_RESEARCH.md](SIGNAL_QUALITY_RESEARCH.md) (the evidence
 on where the imagery signal lives) and [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md)
 (the engineering backlog).
@@ -43,6 +46,7 @@ datasets are not interchangeable the way image datasets are.
 ## In use
 
 ### Shimizu & Srinivasan (2022) — our current dataset
+*Found by: Joao*
 [Data (OSF)](https://osf.io/2fgks/) · [Paper](https://doi.org/10.1371/journal.pone.0274847) · [Code](https://github.com/shimihirouci/Improve_Imagination)
 
 4 subjects (3M/1F), 128-channel NeuroScan acquired at 2 kHz, shared at 250 Hz after
@@ -71,6 +75,7 @@ Two details worth knowing, both verified from the Methods:
 ## Recommended addition
 
 ### Gao et al. (2026) — EEG dataset for visual imagery BCI
+*Found by: Joao*
 [Paper](https://doi.org/10.1038/s41597-025-06512-5) · [Data (figshare)](https://doi.org/10.6084/m9.figshare.30227503) · CC BY-NC-ND 4.0
 
 22 participants (19 completed both sessions), 32 channels at 1000 Hz, 10 classes in
@@ -102,6 +107,7 @@ No perception trials, so the Shimizu joint-training trick does not carry over.
 ## Evaluated, not suitable for this project
 
 ### MindBigData "ImageNet of the Brain"
+*Found by: Aditya*
 [Site](https://www.mindbigdata.com/opendb/imagenet.html) · ODbL 1.0
 
 One subject (the dataset's author), Emotiv Insight consumer headset, **5 channels at
@@ -123,6 +129,7 @@ period), and one repetition per image reproduces the exact limitation we are try
 to escape.
 
 ### OpenNeuro ds007162 — cortex-wide recurrence in object recognition
+*Found by: Aditya*
 [Dataset](https://openneuro.org/datasets/ds007162/versions/1.0.0) · [Preprint](https://www.biorxiv.org/content/10.1101/2025.10.17.682937v2) · CC0
 
 34 participants, 1 session, 64-channel EASYCAP / BrainVision actiCHamp at 1000 Hz
@@ -141,6 +148,7 @@ imagery needs. Our perception pipeline already works; perception is not where we
 stuck.
 
 ### PhysioNet EEG Motor Movement/Imagery
+*Found by: Aditya*
 [Dataset](https://www.physionet.org/content/eegmmidb/1.0.0/) · ODC-BY 1.0
 
 109 subjects, 64 channels at 160 Hz, BCI2000, EDF+. 14 runs per subject.
@@ -155,6 +163,7 @@ simply answers a different question. Worth knowing it exists if the project ever
 branches into control rather than reconstruction.
 
 ### meagmohit/EEG-Datasets — curated list
+*Found by: Aditya*
 [Repository](https://github.com/meagmohit/EEG-Datasets)
 
 Categories: motor imagery, emotion recognition, error-related potentials, VEPs,
@@ -168,6 +177,7 @@ That explains why Gao et al. stands out as much as it does, and it is a concrete
 argument for collecting our own data rather than continuing to search.
 
 ### THINGS-EEG (OpenNeuro ds003825) — noted, not formally evaluated
+*Found by: Joao*
 [Dataset](https://openneuro.org/datasets/ds003825)
 
 50 subjects, 22,248 images from 1,854 object concepts, RSVP at 10 Hz. The field's
@@ -182,6 +192,8 @@ side.
 # Papers
 
 ## The dataset paper and its result we are measured against
+
+*Found by: Joao*
 
 **Shimizu H, Srinivasan R (2022).** *Improving classification and reconstruction of
 imagined images from EEG signals.* PLOS ONE 17(9): e0274847.
@@ -201,6 +213,8 @@ is why our numbers are lower on the same data.
 
 ## Where the imagery signal lives
 
+*Found by: Joao*
+
 **Xie S, Kaiser D, Cichy RM (2020).** *Visual Imagery and Perception Share Neural
 Representations in the Alpha Frequency Band.* Current Biology 30(13), 2621–2627.e5.
 [doi](https://doi.org/10.1016/j.cub.2020.04.074)
@@ -215,6 +229,8 @@ representation is probably wrong: we feed raw broadband signal from all 128 chan
 in 500 ms windows, when the target is induced alpha power over posterior channels
 across seconds.
 
+*Found by: Joao*
+
 **Stecher R, Kaiser D (2024).** *Representations of imaginary scenes and their
 properties in cortical alpha activity.* Scientific Reports 14, 12796.
 [doi](https://doi.org/10.1038/s41598-024-63320-4)
@@ -227,6 +243,8 @@ Used multitapers specifically because "imagery data tends to be noisy."
 feature-extraction recipe.
 
 ## Preprocessing
+
+*Found by: Joao*
 
 **Kessler R, Enge A, Skeide MA (2025).** *How EEG preprocessing shapes decoding
 performance.* Communications Biology.
@@ -241,6 +259,8 @@ noise, and ocular artifacts in particular covary with stimulus category.
 
 **Useful: yes, as a policy.** Do not add artifact correction hoping for better
 numbers. But if we obtain a positive result, it owes an ocular control.
+
+*Found by: Aditya*
 
 **Singh B, Wagatsuma H (2017).** *A removal of eye movement and blink artifacts from
 EEG data using morphological component analysis.* Computational and Mathematical
@@ -275,7 +295,78 @@ correction. MCA is a different mechanism and may be more surgical. Nobody appear
 have tested it for decoding specifically, so that is a genuine unknown rather than a
 settled point.
 
+## Artifact removal
+
+A coherent set surfaced by Aditya, all on ICA and artifact rejection. Read together
+with the Kessler entry above, which pulls in the opposite direction, and the
+Hajhassani entry below, which resolves the tension.
+
+*Found by: Aditya*
+**Jung T-P, Makeig S, Humphries C, Lee T-W, McKeown MJ, Iragui V, Sejnowski TJ
+(2000).** *Removing electroencephalographic artifacts by blind source separation.*
+Psychophysiology 37:163-178. [doi](https://doi.org/10.1111/1469-8986.3720163)
+
+**The foundational paper** for ICA-based EEG artifact removal -- eye movements,
+blinks, cardiac, muscle and line noise. Everything downstream, MCA included, is a
+response to this.
+
+**Useful: yes, as background.** Worth reading regardless of what we decide, because
+it defines the vocabulary the rest of the artifact literature uses.
+
+*Found by: Aditya*
+**Jiang X, Bian G-B, Tian Z (2019).** *Removal of artifacts from EEG signals: A
+review.* Sensors 19(5):987. [doi](https://doi.org/10.3390/s19050987)
+
+Survey of regression, wavelets, PCA/ICA/CCA, EMD and hybrid approaches. Concludes
+"there is no optimal choice for remove all types of artifacts": ICA handles diverse
+artifacts, CCA and EMD do better on muscle.
+
+**Useful: yes, as an orientation map** for choosing a method once we decide we want
+one.
+
+*Found by: Aditya*
+**Automatic removal of the eye blink artifact from EEG using an ICA-based template
+matching approach** (2006). [PubMed 16537983](https://pubmed.ncbi.nlm.nih.gov/16537983/)
+
+Automates the awkward part of ICA -- deciding *which* component is the blink -- by
+matching component scalp topographies against a fixed template. Validated on 18
+subjects.
+
+**Useful: yes, if we go the ICA route.** Manual component selection does not scale
+and is a source of experimenter bias; this removes both problems.
+
+*Found by: Aditya*
+**Denoising of EEG signal based on word imagination using ICA for artifact and noise
+removal on unspoken speech** (2021).
+[ResearchGate](https://www.researchgate.net/publication/350817495)
+
+ICA denoising applied to imagined *speech*. Could not fetch the full text
+(ResearchGate blocks automated access), so this summary is from the title alone.
+
+**Useful: possibly.** A different imagery modality with the same technique. Worth a
+skim for whether their artifact handling transfers to visual imagery.
+
+*Found by: Joao* (while following up Aditya's batch)
+**Hajhassani D, Aristimunha B, Graignic P-A, Mellot A, Kusch L, Delorme A, Semah T,
+Caillet AH (2026).** *From EEG cleaning to decoding: The role of artifact rejection
+in MI-based BCIs.* [arXiv:2605.12408](https://arxiv.org/abs/2605.12408)
+
+Benchmarks artifact rejection against decoding accuracy across **13 public
+datasets**. Key finding, verbatim: *"Rejection effects are strongly subject- and
+regime-dependent, with the largest gains in low-baseline/low-SNR conditions, so it
+should be used adaptively."*
+
+**Useful: yes -- and it changed our plan.** Kessler et al. found cleaning hurts, but
+their tasks were perception and visual search, which are high-SNR. Ours is imagery:
+low SNR, low baseline, subjects sitting at chance. That is precisely the regime where
+this paper says cleaning helps. So "do not add artifact removal" was too strong a
+policy, drawn from evidence in the wrong regime. The classical baseline (S1) now runs
+**both arms** -- cleaned and uncleaned -- and lets the data decide. Aditya's reading
+directly changed the experimental design.
+
 ## Architecture and method
+
+*Found by: Joao*
 
 **Li D, et al. (2024).** *Visual Decoding and Reconstruction via EEG Embeddings with
 Guided Diffusion (ATM-S).* NeurIPS 2024. [arXiv:2403.07721](https://arxiv.org/abs/2403.07721)
@@ -287,6 +378,8 @@ CLIP image embeddings, feeding a two-stage SDXL/IP-Adapter pipeline.
 **Useful: yes, as an architecture target.** Large pretrained encoders do not win
 here. Our Stage 2 trains 85M parameters on ~360 examples per subject.
 
+*Found by: Joao*
+
 **Riemannian Geometry-Based EEG Approaches: A Literature Review** (2024).
 [arXiv:2407.20250](https://arxiv.org/pdf/2407.20250)
 
@@ -295,6 +388,8 @@ ordinary Euclidean classifiers. These methods "only require small training sampl
 
 **Useful: yes — this is the basis of the S1 classical baseline.** It is the standard
 strong baseline in low-data EEG and runs in minutes on CPU.
+
+*Found by: Joao*
 
 **Interpretable EEG-to-Image Generation with Semantic Prompts** (2025).
 [arXiv:2507.07157](https://arxiv.org/abs/2507.07157)
@@ -307,6 +402,8 @@ that CLIP-style contrastive loss beat MSE in their ablations.
 independently implemented. The caption-conditioning idea is interesting but their
 headline numbers are on the EEGCVPR dataset, which has known block-design problems.
 
+*Found by: Joao*
+
 **Guess What I Think: Streamlined EEG-to-Image Generation with Latent Diffusion
 Models** (2024). [arXiv:2410.02780](https://arxiv.org/abs/2410.02780)
 
@@ -315,6 +412,8 @@ preprocessing.
 
 **Useful: marginally.** A simpler conditioning path than ours, worth a look if we
 rebuild the conditioning stage.
+
+*Found by: Joao*
 
 **Cross-Subject Generalization for EEG Decoding: A Survey.**
 [arXiv:2604.27033](https://arxiv.org/html/2604.27033v1)
@@ -328,6 +427,8 @@ ambitious for now. Two items stay relevant: per-subject alignment, and few-shot
 calibration — which is exactly the recipe for adapting a pretrained model to a new
 person with a short calibration session.
 
+*Found by: Joao*
+
 **EEG foundation models** — [CBraMod](https://github.com/wjq-learning/cbramod)
 (ICLR 2025, 9,000 h TUEG, 19 channels), LaBraM (2,000 h), REVE (25,000 subjects,
 arbitrary montages).
@@ -335,6 +436,8 @@ arbitrary montages).
 **Useful: not yet.** All pretrained on clinical EEG rather than visual tasks, and
 most assume 10-20 montages. REVE handles arbitrary channel sets, which makes it the
 one worth revisiting if the montage-mismatch problem ever becomes the bottleneck.
+
+*Found by: Joao*
 
 **The Perils and Pitfalls of Block Design for EEG Classification Experiments**
 (Li et al., IEEE TPAMI ~2021) — *citation not re-verified in this session.*
