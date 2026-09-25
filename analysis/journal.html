@@ -1,4 +1,4 @@
-<title>NeuroDiffusion Logbook</title>
+<title>NeuroDiffusion Documentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -12,7 +12,6 @@
   --alpha:#C07C12; --alpha-soft:#F7EDDB;
   --good:#1F7A5A; --good-soft:#E0F0E9;
   --warn:#A13D2D; --warn-soft:#F7E6E2;
-  --control:#A8B2BF; --control-2:#CBD2DB;
   --shadow:0 1px 2px rgba(20,27,38,.06),0 8px 24px -12px rgba(20,27,38,.18);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
@@ -23,7 +22,6 @@
   --alpha:#BE8A24; --alpha-soft:#2A2517;
   --good:#3D9B78; --good-soft:#15251F;
   --warn:#D2705C; --warn-soft:#2A1A16;
-  --control:#5A6675; --control-2:#3A4450;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
 }}
 :root[data-theme="dark"]{
@@ -34,73 +32,90 @@
   --alpha:#BE8A24; --alpha-soft:#2A2517;
   --good:#3D9B78; --good-soft:#15251F;
   --warn:#D2705C; --warn-soft:#2A1A16;
-  --control:#5A6675; --control-2:#3A4450;
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
 }
 
-body{background:var(--ground);color:var(--ink);
+*{box-sizing:border-box;}
+body{background:var(--ground);color:var(--ink);margin:0;
   font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.62;
   -webkit-font-smoothing:antialiased;}
-.wrap{max-width:820px;margin:0 auto;padding-inline:20px;padding-block:0 80px;}
+.wrap{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:0 72px;}
 
-h1,h2,h3,h4,.eyebrow,.tag,th,.dt,.toc a{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
-h1{font-size:clamp(2rem,5.4vw,3.1rem);line-height:1.04;letter-spacing:-.026em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
-h2{font-size:clamp(1.4rem,3.4vw,1.95rem);line-height:1.13;letter-spacing:-.02em;font-weight:700;margin:0 0 .15em;text-wrap:balance;}
-h3{font-size:1.16rem;line-height:1.24;letter-spacing:-.012em;font-weight:600;margin:1.9em 0 .4em;}
-h4{font-size:.97rem;line-height:1.3;font-weight:600;margin:1.5em 0 .3em;}
+h1,h2,h3,h4,.eyebrow,.tag,th,.dt,.tabs button,.sn b,.kicker{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
+h1{font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.06;letter-spacing:-.026em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
+h2{font-size:clamp(1.35rem,3.3vw,1.85rem);line-height:1.14;letter-spacing:-.02em;font-weight:700;margin:0 0 .2em;text-wrap:balance;}
+h3{font-size:1.14rem;line-height:1.25;letter-spacing:-.012em;font-weight:600;margin:1.9em 0 .4em;}
 p{margin:0 0 1.05em;}
-ul,ol{margin:0 0 1.05em;padding-left:1.25em;}
+ul,ol{margin:0 0 1.05em;padding-left:1.2em;}
 li{margin-bottom:.4em;}
 a{color:var(--signal);text-underline-offset:2px;}
 strong{font-weight:600;}
-code{font-family:"IBM Plex Mono",monospace;font-size:.88em;background:var(--surface-2);
-  border:1px solid var(--rule);border-radius:2px;padding:1px 5px;}
+em{font-style:italic;}
+code{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--surface-2);
+  border:1px solid var(--rule);border-radius:2px;padding:1px 5px;word-break:break-word;}
 .num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;}
 .eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:0 0 .5em;}
 
-header.mast{padding-block:46px 30px;border-bottom:1.5px solid var(--rule-strong);}
-.lede{font-size:1.15rem;line-height:1.52;color:var(--ink-2);margin-top:14px;}
+/* masthead */
+header.mast{padding-block:40px 24px;}
+.lede{font-size:1.1rem;line-height:1.55;color:var(--ink-2);margin-top:12px;}
 
-/* contents */
-.toc{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:18px 22px 20px;margin:28px 0 0;box-shadow:var(--shadow);}
-.toc p.eyebrow{margin-bottom:.7em;}
-.toc ol{margin:0;padding-left:1.4em;}
-.toc li{margin-bottom:.3em;}
-.toc a{font-size:.92rem;font-weight:500;text-decoration:none;color:var(--ink);}
-.toc a:hover{color:var(--signal);text-decoration:underline;}
-.toc .sub{color:var(--muted);font-weight:400;}
+/* status strip */
+.statusgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px;margin:24px 0 0;}
+.sc{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--signal);
+  border-radius:0 3px 3px 0;padding:10px 13px 11px;box-shadow:var(--shadow);}
+.sc.good{border-left-color:var(--good);} .sc.warn{border-left-color:var(--warn);}
+.sc .k{font-family:Archivo,sans-serif;font-size:.62rem;font-weight:600;letter-spacing:.12em;
+  text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.3em;}
+.sc .v{font-family:Archivo,sans-serif;font-size:.93rem;font-weight:600;line-height:1.3;color:var(--ink);display:block;}
+.sc .v small{display:block;font-family:"Source Serif 4",serif;font-weight:400;font-size:.82rem;
+  color:var(--ink-2);margin-top:.25em;line-height:1.4;}
 
-section.part{padding-block:44px 8px;border-bottom:1px solid var(--rule);}
-section.part:last-of-type{border-bottom:0;}
-.partnum{font-family:"IBM Plex Mono",monospace;font-size:.74rem;font-weight:600;
-  letter-spacing:.1em;color:var(--signal);display:block;margin-bottom:.5em;}
+/* tabs */
+.tabsbar{position:sticky;top:0;z-index:20;background:var(--ground);
+  border-bottom:1.5px solid var(--rule-strong);margin-top:26px;}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
+  padding:13px 13px 11px;font-size:.87rem;font-weight:600;color:var(--muted);
+  cursor:pointer;white-space:nowrap;letter-spacing:-.005em;}
+.tabs button .ix{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--rule-strong);margin-right:6px;}
+.tabs button:hover{color:var(--ink-2);}
+.tabs button[aria-selected="true"]{color:var(--signal);border-bottom-color:var(--signal);}
+.tabs button[aria-selected="true"] .ix{color:var(--signal);}
+
+section.panel{padding-block:34px 0;}
+.kicker{font-family:"IBM Plex Mono",monospace;font-size:.73rem;font-weight:600;
+  letter-spacing:.1em;color:var(--signal);display:block;margin-bottom:.55em;text-transform:uppercase;}
+.oneline{font-size:1.05rem;line-height:1.5;color:var(--ink-2);border-left:3px solid var(--rule-strong);
+  padding-left:14px;margin:14px 0 26px;}
+.oneline b{color:var(--ink);}
 
 /* definition blocks */
 .def{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--alpha);
-  border-radius:0 3px 3px 0;padding:15px 19px 16px;margin:20px 0;box-shadow:var(--shadow);}
-.def .dt{font-size:1rem;font-weight:700;letter-spacing:-.01em;margin-bottom:.35em;color:var(--ink);}
-.def .dd{font-size:.96rem;line-height:1.55;color:var(--ink-2);margin:0;}
-.def .ex{font-size:.92rem;line-height:1.5;color:var(--ink-2);margin:.65em 0 0;
+  border-radius:0 3px 3px 0;padding:14px 18px 15px;margin:20px 0;box-shadow:var(--shadow);}
+.def .dt{font-size:.99rem;font-weight:700;letter-spacing:-.01em;margin-bottom:.35em;color:var(--ink);}
+.def .dd{font-size:.95rem;line-height:1.55;color:var(--ink-2);margin:0;}
+.def .ex{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:.65em 0 0;
   padding-top:.65em;border-top:1px solid var(--rule);}
-.def .ex b{font-family:Archivo,sans-serif;font-size:.7rem;letter-spacing:.1em;
+.def .ex b{font-family:Archivo,sans-serif;font-size:.68rem;letter-spacing:.1em;
   text-transform:uppercase;color:var(--alpha);display:block;margin-bottom:.25em;font-weight:600;}
 
 /* callouts */
-.note{border-radius:0 3px 3px 0;padding:15px 19px;margin:22px 0;border-left:3px solid var(--signal);
+.note{border-radius:0 3px 3px 0;padding:14px 18px;margin:22px 0;border-left:3px solid var(--signal);
   background:var(--signal-soft);}
 .note.good{border-left-color:var(--good);background:var(--good-soft);}
 .note.warn{border-left-color:var(--warn);background:var(--warn-soft);}
-.note p{margin:0;font-size:.97rem;line-height:1.55;color:var(--ink-2);}
+.note p{margin:0;font-size:.96rem;line-height:1.55;color:var(--ink-2);}
 .note p+p{margin-top:.7em;}
 .note b{color:var(--ink);}
-.note .hd{font-family:Archivo,sans-serif;font-weight:600;color:var(--ink);display:block;margin-bottom:.35em;font-size:.95rem;}
+.note .hd{font-family:Archivo,sans-serif;font-weight:600;color:var(--ink);display:block;margin-bottom:.35em;font-size:.94rem;}
 
 /* tables */
 .tbl{overflow-x:auto;margin:22px 0;}
-table{border-collapse:collapse;width:100%;min-width:440px;font-size:.9rem;}
-th,td{text-align:left;padding:9px 14px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top;}
-th{font-size:.69rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+table{border-collapse:collapse;width:100%;min-width:430px;font-size:.89rem;}
+th,td{text-align:left;padding:9px 13px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top;}
+th{font-size:.67rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
   color:var(--muted);border-bottom-color:var(--rule-strong);}
 td.n{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;white-space:nowrap;}
 tbody tr:last-child td{border-bottom:0;}
@@ -109,317 +124,289 @@ tbody tr:last-child td{border-bottom:0;}
 
 /* frequency ladder */
 .ladder{margin:22px 0;display:grid;gap:3px;}
-.rung{display:grid;grid-template-columns:96px 1fr;gap:14px;align-items:center;
-  padding:9px 13px;border-radius:2px;background:var(--surface-2);border:1px solid var(--rule);}
+.rung{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:center;
+  padding:9px 12px;border-radius:2px;background:var(--surface-2);border:1px solid var(--rule);}
 .rung.hit{background:var(--alpha-soft);border-color:var(--alpha);}
-.rung .hz{font-family:"IBM Plex Mono",monospace;font-size:.82rem;font-weight:500;color:var(--ink);}
-.rung .what{font-size:.9rem;color:var(--ink-2);}
+.rung .hz{font-family:"IBM Plex Mono",monospace;font-size:.8rem;font-weight:500;color:var(--ink);}
+.rung .what{font-size:.89rem;color:var(--ink-2);}
 .rung.hit .what{color:var(--ink);font-weight:600;}
 
-/* pipeline steps */
-.steps{display:grid;gap:12px;margin:22px 0;}
+/* step cards */
+.steps{display:grid;gap:11px;margin:22px 0;}
 .step{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:14px 17px;display:grid;grid-template-columns:auto 1fr;gap:3px 15px;
+  padding:13px 16px;display:grid;grid-template-columns:auto 1fr;gap:3px 14px;
   align-items:baseline;box-shadow:var(--shadow);}
 .step .i{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
   color:var(--signal);grid-row:span 2;padding-top:3px;}
-.step .t{font-family:Archivo,sans-serif;font-weight:600;font-size:.98rem;}
-.step .b{font-size:.92rem;line-height:1.5;color:var(--ink-2);margin:0;}
-
-/* glossary */
-.gloss{display:grid;gap:0;margin-top:14px;border-top:1px solid var(--rule-strong);}
-.gitem{padding:15px 0;border-bottom:1px solid var(--rule);}
-.gitem .gt{font-family:Archivo,sans-serif;font-weight:600;font-size:1rem;margin-bottom:.25em;}
-.gitem .gd{font-size:.94rem;line-height:1.55;color:var(--ink-2);margin:0;}
-.gitem .ge{font-size:.9rem;line-height:1.5;color:var(--muted);margin:.4em 0 0;font-style:italic;}
-
-
-/* status strip */
-.statusgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));gap:10px;margin:26px 0 0;}
-.sc{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--signal);
-  border-radius:0 3px 3px 0;padding:11px 14px 12px;box-shadow:var(--shadow);}
-.sc.good{border-left-color:var(--good);} .sc.warn{border-left-color:var(--warn);}
-.sc .k{font-family:Archivo,sans-serif;font-size:.64rem;font-weight:600;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.3em;}
-.sc .v{font-family:Archivo,sans-serif;font-size:.95rem;font-weight:600;line-height:1.3;color:var(--ink);}
-.sc .v small{display:block;font-family:"Source Serif 4",serif;font-weight:400;font-size:.84rem;
-  color:var(--ink-2);margin-top:.25em;line-height:1.4;}
+.step .t{font-family:Archivo,sans-serif;font-weight:600;font-size:.96rem;}
+.step .b{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:0;}
 
 /* journal entries */
 .entry{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:19px 22px 20px;margin:16px 0;box-shadow:var(--shadow);}
-.entry .when{font-family:"IBM Plex Mono",monospace;font-size:.73rem;font-weight:600;
+  padding:17px 20px 18px;margin:14px 0;box-shadow:var(--shadow);}
+.entry .when{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
   letter-spacing:.08em;color:var(--signal);}
-.entry h3{margin:.35em 0 .55em;font-size:1.12rem;}
-.entry p{font-size:.95rem;line-height:1.56;margin:0 0 .75em;color:var(--ink-2);}
+.entry h3{margin:.35em 0 .5em;font-size:1.08rem;}
+.entry p{font-size:.94rem;line-height:1.55;margin:0 0 .7em;color:var(--ink-2);}
 .entry p:last-child{margin-bottom:0;}
 .entry p b,.entry p strong{color:var(--ink);}
-.entry ul{font-size:.95rem;line-height:1.55;color:var(--ink-2);margin:0 0 .75em;}
-.entry .lbl{font-family:Archivo,sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.15em;}
+.entry .lbl{font-family:Archivo,sans-serif;font-size:.66rem;font-weight:600;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.12em;}
 .tags{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 .2em;}
-.tag{font-size:.64rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
+.tag{font-size:.63rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;
   padding:2px 8px;border-radius:2px;background:var(--surface-2);border:1px solid var(--rule);color:var(--muted);}
 .tag.res{background:var(--good-soft);border-color:var(--good);color:var(--good);}
 .tag.fix{background:var(--signal-soft);border-color:var(--signal);color:var(--signal);}
 .tag.nul{background:var(--warn-soft);border-color:var(--warn);color:var(--warn);}
 .tag.dec{background:var(--alpha-soft);border-color:var(--alpha);color:var(--alpha);}
 
-.divider{padding-block:40px 0;}
-.divider p.eyebrow{margin-bottom:.4em;}
-.divider p:not(.eyebrow){color:var(--muted);font-size:.95rem;margin-top:.5em;}
+/* resource rows */
+.rsrc{border-top:1px solid var(--rule-strong);margin:16px 0 26px;}
+.ritem{padding:14px 0;border-bottom:1px solid var(--rule);}
+.rhead{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-bottom:.3em;}
+.rhead .rt{font-family:Archivo,sans-serif;font-weight:600;font-size:.99rem;}
+.who{font-size:.63rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 7px;border-radius:2px;border:1px solid var(--rule);color:var(--muted);background:var(--surface-2);}
+.ritem .rd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;}
+.ritem .rv{font-size:.91rem;line-height:1.5;margin:.45em 0 0;color:var(--ink);}
+.ritem .rv b{font-family:Archivo,sans-serif;font-size:.67rem;letter-spacing:.09em;
+  text-transform:uppercase;display:block;margin-bottom:.2em;font-weight:600;color:var(--muted);}
 
-footer{padding-block:30px 0;border-top:1.5px solid var(--rule-strong);}
-footer p{font-family:Archivo,sans-serif;font-size:.79rem;color:var(--muted);margin:0;}
+/* glossary */
+.gloss{display:grid;gap:0;margin-top:14px;border-top:1px solid var(--rule-strong);}
+.gitem{padding:14px 0;border-bottom:1px solid var(--rule);}
+.gitem .gt{font-family:Archivo,sans-serif;font-weight:600;font-size:.99rem;margin-bottom:.25em;}
+.gitem .gd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;}
+.gitem .ge{font-size:.89rem;line-height:1.5;color:var(--muted);margin:.4em 0 0;font-style:italic;}
+
+/* step navigation */
+.stepnav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:40px 0 0;
+  padding-top:22px;border-top:1.5px solid var(--rule-strong);}
+.sn{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:11px 14px;text-align:left;cursor:pointer;color:var(--ink);box-shadow:var(--shadow);
+  display:block;font-family:inherit;}
+.sn:hover{border-color:var(--signal);}
+.sn span{font-family:Archivo,sans-serif;font-size:.64rem;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.25em;}
+.sn b{font-size:.94rem;font-weight:600;}
+.sn.next{text-align:right;}
+.sn.empty{visibility:hidden;}
+
+footer{padding-block:28px 0;border-top:1.5px solid var(--rule-strong);margin-top:44px;}
+footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;line-height:1.6;}
+
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
 :focus-visible{outline:2px solid var(--signal);outline-offset:2px;}
 @media (max-width:560px){
   body{font-size:16px;}
   .step{grid-template-columns:1fr;} .step .i{grid-row:auto;}
-  .rung{grid-template-columns:76px 1fr;gap:10px;}
+  .rung{grid-template-columns:74px 1fr;gap:10px;}
+  .stepnav{grid-template-columns:1fr;}
+  .sn.next{text-align:left;}
+  .sn.empty{display:none;}
 }
 </style>
 
 <div class="wrap">
 
 <header class="mast">
-  <p class="eyebrow">NeuroDiffusion &middot; Project logbook</p>
-  <h1>NeuroDiffusion: the running record</h1>
-  <p class="lede">One place for everything this project has done, found and decided. The top half is a journal, newest first, updated as work happens. The bottom half is the standing reference: how the machine works, what EEG is, why decoding it is hard, and a glossary of every term. Nothing here gets deleted when it stops being true, it gets dated and superseded.</p>
+  <p class="eyebrow">NeuroDiffusion &middot; Project documentation</p>
+  <h1>Turning imagined pictures back into pictures</h1>
+  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. It is written to be read in order, one tab at a time, and assumes you know nothing about EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
     <div class="sc"><span class="k">Updated</span><span class="v">25 Sep 2026<small>Stage: classical baseline complete</small></span></div>
-    <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, confirmed<small>Alpha band, 11 of 12 tests above chance</small></span></div>
-    <div class="sc good"><span class="k">Perception pipeline</span><span class="v">Works<small>+4.3 SEM on unseen images</small></span></div>
-    <div class="sc warn"><span class="k">Imagination pipeline</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
-    <div class="sc"><span class="k">Number to beat</span><span class="v">~3&times; chance<small>From a few-hundred-parameter model</small></span></div>
-    <div class="sc warn"><span class="k">Next action</span><span class="v">Cross-subject test<small>Separates real signal from drift fingerprint</small></span></div>
+    <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, confirmed<small>11 of 12 tests above chance</small></span></div>
+    <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
+    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
   </div>
-
-  <nav class="toc">
-    <p class="eyebrow">Contents</p>
-    <ol>
-      <li><a href="#log">Journal <span class="sub">&mdash; what happened, newest first</span></a></li>
-      <li><a href="#ledger">Run ledger <span class="sub">&mdash; every experiment and its number</span></a></li>
-      <li><a href="#next">Open queue <span class="sub">&mdash; what is waiting, and why</span></a></li>
-      <li><a href="#p1">Reference: the project</a></li>
-      <li><a href="#p2">Reference: the pipeline</a></li>
-      <li><a href="#p3">Reference: what EEG actually is</a></li>
-      <li><a href="#p4">Reference: the leakage problem</a></li>
-      <li><a href="#p5">Reference: the classical baseline</a></li>
-      <li><a href="#p6">Reference: the four conditions</a></li>
-      <li><a href="#p7">Reference: the results</a></li>
-      <li><a href="#p8">Reference: what this changes</a></li>
-      <li><a href="#p9">Glossary</a></li>
-    </ol>
-  </nav>
 </header>
 
-<!-- ================= JOURNAL ================= -->
-<section class="part" id="log">
-  <span class="partnum">Journal</span>
-  <h2>What happened, newest first</h2>
-  <p>Each entry records what we did, what it showed, and what it changed. Numbers are kept exactly as measured, including the ones that got worse.</p>
+<div class="tabsbar">
+  <div class="tabs" role="tablist" aria-label="Documentation sections">
+    <button role="tab" id="tab-start"    aria-controls="p-start"    data-k="start"><span class="ix">00</span>Start here</button>
+    <button role="tab" id="tab-signal"   aria-controls="p-signal"   data-k="signal"><span class="ix">01</span>The signal</button>
+    <button role="tab" id="tab-data"     aria-controls="p-data"     data-k="data"><span class="ix">02</span>The data</button>
+    <button role="tab" id="tab-pipeline" aria-controls="p-pipeline" data-k="pipeline"><span class="ix">03</span>The pipeline</button>
+    <button role="tab" id="tab-results"  aria-controls="p-results"  data-k="results"><span class="ix">04</span>Training results</button>
+    <button role="tab" id="tab-baseline" aria-controls="p-baseline" data-k="baseline"><span class="ix">05</span>The baseline</button>
+    <button role="tab" id="tab-status"   aria-controls="p-status"   data-k="status"><span class="ix">06</span>Where we are</button>
+    <button role="tab" id="tab-journal"  aria-controls="p-journal"  data-k="journal"><span class="ix">07</span>Journal</button>
+    <button role="tab" id="tab-reading"  aria-controls="p-reading"  data-k="reading"><span class="ix">08</span>Resources</button>
+    <button role="tab" id="tab-glossary" aria-controls="p-glossary" data-k="glossary"><span class="ix">09</span>Glossary</button>
+  </div>
+</div>
 
-  <div class="entry">
-    <div class="tags"><span class="tag dec">decision</span></div>
-    <span class="when">25 SEP 2026</span>
-    <h3>This page became the project's record</h3>
-    <p>Everything from here on gets logged here rather than living only in a chat window. The source file sits in the repository at <code>analysis/journal.html</code>, so the record survives independently of any one tool.</p>
+<!-- ============ 00 START ============ -->
+<section class="panel" id="p-start" role="tabpanel" aria-labelledby="tab-start" tabindex="0">
+  <span class="kicker">Step 00</span>
+  <h2>Start here</h2>
+  <p class="oneline"><b>The goal:</b> record someone's brain activity while they imagine a picture, and produce that picture.</p>
+
+  <p>That sentence promises more than is physically possible, so here is the honest version straight away. We are not reading a picture out of the brain. We extract a weak hint about the <strong>category</strong> of what someone is thinking about, dog or car or flower, and hand that hint to an image generator that already knows what dogs look like. Nearly all the visual detail in the output comes from the generator's knowledge, not from the brain.</p>
+
+  <div class="note warn">
+    <span class="hd">The one thing to keep in mind while reading everything else</span>
+    <p>The image generator always produces a good-looking picture, whether or not the brain data means anything at all. So "the output looks like a dog" proves nothing. The only meaningful question is: <b>does the output match the picture the person actually had in mind, more often than it matches some random other picture?</b> Every number in this documentation is built around that question.</p>
   </div>
 
-  <div class="entry">
-    <div class="tags"><span class="tag res">result</span><span class="tag nul">trap found</span></div>
-    <span class="when">24 SEP 2026 &middot; JOB 81619</span>
-    <h3>The classical baseline ran, and answered the question it was built for</h3>
-    <p>Four subjects by four conditions by three methods, five CPU-minutes. Chance is <span class="num">3.03%</span>.</p>
-    <p><span class="lbl">Found</span><b>There is decodable imagery signal in this EEG.</b> In the alpha band, 11 of 12 results landed above chance, roughly 2&ndash;3.5&times; chance, across four different people and three independent methods. Broadband roughly doubled every number, which is the drift shortcut rather than extra signal. Two-second windows were inconclusive on too few samples. Artifact rejection came out neutral.</p>
-    <p><span class="lbl">Changed</span>The worst possibility, that this data is a dead end, is off the table. We now have a benchmark any complex model has to clear. Alpha-band input moves from a speculative improvement to a correction of a measured problem. The artifact-removal reading list is closed. And every previous broadband deep-model number is provisional until re-checked.</p>
-    <p>Full breakdown in <a href="#p5">Reference 5&ndash;8</a>.</p>
+  <h3>Where the project stands, in three lines</h3>
+  <ul>
+    <li><strong>Seeing works.</strong> Feed it EEG recorded while someone <em>looks at</em> an image and the generated pictures match the real stimulus significantly better than chance pairings, on images and a person the model had never seen. The machine is wired correctly.</li>
+    <li><strong>Imagining does not, yet.</strong> The same pipeline on imagination EEG comes back at chance. That is a measured result with working controls, not a crash.</li>
+    <li><strong>The data does contain imagery signal.</strong> A deliberately simple method finds it at about three times chance. So the remaining problem is ours to fix, not a dead end in the data.</li>
+  </ul>
+
+  <h3>How to read this</h3>
+  <p>The tabs run in order and build on each other. Steps 01 to 03 are the setup: what the signal is, what data we have, how the machine is put together. Steps 04 and 05 are what happened when we ran it. Step 06 is the current state and what is next. The last three tabs are for looking things up rather than reading straight through.</p>
+
+  <div class="note">
+    <span class="hd">Who is doing this</span>
+    <p>A small team project, run on the San Jos&eacute; State University College of Engineering HPC cluster. The code is a fork of DreamDiffusion. Findings are tagged by who found them in the Resources tab. Nothing here is a published result; it is a working record, and numbers that got worse are kept in place rather than quietly dropped.</p>
   </div>
 
-  <div class="entry">
-    <div class="tags"><span class="tag fix">tooling</span></div>
-    <span class="when">24 SEP 2026</span>
-    <h3>Built the baseline itself</h3>
-    <p><code>code/classical_baseline.py</code>: band power plus logistic regression, Riemannian tangent space, and EEGNet, all written directly against numpy and torch because the cluster environment has no scikit-learn, no pyriemann and no mne. The <code>.mat</code> files turned out to carry no channel names, so posterior electrodes cannot be picked by label; the script instead ranks channel indices by how well they separate the classes.</p>
-    <p>This is a reusable instrument now. It is also the first thing to run on day one of our own recordings, to ask whether the data is any good before collecting hundreds of trials on a protocol that might be broken.</p>
-  </div>
-
-  <div class="entry">
-    <div class="tags"><span class="tag res">result</span><span class="tag fix">bug fixed</span></div>
-    <span class="when">23 SEP 2026</span>
-    <h3>Per-subject training, and a collision that ate the test reports</h3>
-    <p><span class="lbl">Found</span>Best validation scores against 3.03% chance: subject 1 <b>26.3%</b> at epoch 95, subject 3 12.1%, subject 2 7.1%, subject 4 3.0%. Training on imagination and perception together made subject 1 <em>worse</em> at 6.1%, the opposite of the source paper's 13.4% to 25.2%. The likely reason is volume: 6,789 perception trials swamp 363 imagination trials.</p>
-    <p><span class="lbl">Bug</span>Run directories were named by timestamp to the second, so four simultaneous jobs collided in two pairs and overwrote each other's checkpoints, while the scoring step picked the newest directory and had jobs scoring each other's samples. Fixed by putting the Slurm job ID in the path and selecting by job ID, commit <code>5764299</code>. Validation numbers survived in the per-job logs; the test reports were lost and need re-running from the saved checkpoints.</p>
-  </div>
-
-  <div class="entry">
-    <div class="tags"><span class="tag dec">decision</span></div>
-    <span class="when">22 SEP 2026</span>
-    <h3>Pivot to one subject at a time, and a triage of everything on the table</h3>
-    <p><span class="lbl">Decided</span>Train per subject rather than trying to transfer across people. Cross-subject is the harder problem and was costing us clarity on the easier one.</p>
-    <p><span class="lbl">Reviewed</span>Four candidate datasets from the team, checked against the same four criteria: visual imagery, real repetitions, posterior electrode coverage, multiple sessions. MindBigData has no occipital electrodes and one subject; OpenNeuro ds007162 is perception only, though the best-built of the set; PhysioNet EEG-MMI is motor imagery, the wrong substrate. Gao et al. 2026 remains the only dataset worth adding. It is all written up in <code>RESOURCES.md</code> with who found what.</p>
-    <p><span class="lbl">Also</span>The cluster policy check came back clean. The real constraint is storage: <code>/home</code> is 96% full and we hold 260 GB of it, 69 GB of that a redundant nested copy of the upstream repository. Nothing deleted yet.</p>
-  </div>
-
-  <div class="entry">
-    <div class="tags"><span class="tag nul">null result</span><span class="tag fix">harness rebuilt</span></div>
-    <span class="when">21 SEP 2026 &middot; JOB 80178</span>
-    <h3>The honest null on imagination</h3>
-    <p><span class="lbl">Found</span>Model 0.5581, shuffled-pairing control 0.5541, noise control 0.4746. The gap over the control is <b>0.5 standard errors, which is nothing</b>. The noise control separating cleanly proves the measurement works; imagination simply is not there yet.</p>
-    <p><span class="lbl">Changed</span>Before this, the evaluation could not have told us either way. Rebuilt in the same pass: a retrieval metric that needs no image sampling, a validation set carved from the training subjects' late windows instead of peeking at test, best-checkpoint selection, early stopping, the weight decay the config specified and the code silently ignored, input augmentation, and an optional contrastive objective. Also fixed a crash where a saved CPU random-number state was being loaded into the GPU generator.</p>
-    <p><span class="lbl">Correction</span>Parameter counts I had been quoting were wrong. Stage 2 v2 trains <b>84.6M</b> parameters, measured; v1 was about 199M, not the 300M I had said.</p>
-  </div>
-
-  <div class="entry">
-    <div class="tags"><span class="tag res">result</span></div>
-    <span class="when">2 SEP 2026</span>
-    <h3>Perception works, on images and a person the model never saw</h3>
-    <p>Model 0.5848 against a shuffled control of 0.5484 and a noise control of 0.4761: <b>+4.3 standard errors</b>. It names the right category 9.5% of the time out of 40 options, against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint, on 173 images that never appeared in training.</p>
-    <p><span class="lbl">Why it matters</span>This is the load-bearing result of the project. It says the machine is wired correctly end to end, so every later failure is about the difficulty of imagination rather than a broken pipeline.</p>
-  </div>
-
-  <div class="entry">
-    <div class="tags"><span class="tag fix">built</span></div>
-    <span class="when">EARLIER</span>
-    <h3>The pipeline itself</h3>
-    <p>A fork of DreamDiffusion running on the SJSU COE HPC cluster: a masked EEG autoencoder in Stage 1, then Stable Diffusion 1.5 in Stage 2 with the EEG encoder substituted for the text encoder. Data from Shimizu and Srinivasan, 2022: four people, 128 electrodes, each picture imagined once for ten seconds with eyes open.</p>
-  </div>
+  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ================= LEDGER ================= -->
-<section class="part" id="ledger">
-  <span class="partnum">Ledger</span>
-  <h2>Every experiment, and its number</h2>
-  <p>The short version of the journal. Deep-model figures are best-validation rather than test, and are provisional.</p>
+<!-- ============ 01 SIGNAL ============ -->
+<section class="panel" id="p-signal" role="tabpanel" aria-labelledby="tab-signal" tabindex="0" hidden>
+  <span class="kicker">Step 01</span>
+  <h2>The signal: what EEG actually is</h2>
+  <p class="oneline"><b>In one sentence:</b> an electrode on the scalp measures a voltage that is mostly not brain activity, and the trick is knowing which part is.</p>
+
+  <p>An electrode on your scalp measures voltage, the tiny electrical field produced by millions of neurons firing together beneath it. In our data there are 128 of these, each sampled 250 times per second.</p>
+
+  <p>That voltage is not "brain activity". It is a <strong>sum of several things stacked on top of each other</strong>, and several of the non-brain contributions are <em>larger</em> than the brain signal:</p>
 
   <div class="tbl">
   <table>
-    <thead><tr><th>Date</th><th>Run</th><th>What</th><th class="n">Headline</th><th>Standing</th></tr></thead>
+    <thead><tr><th>What contributes</th><th class="n">Typical size</th><th>Is it brain?</th></tr></thead>
     <tbody>
-      <tr><td class="n">2 Sep</td><td>eval 02-09&hellip;07-56</td><td>Perception, stimulus-disjoint</td><td class="n hi">+4.3 SEM</td><td>Solid</td></tr>
-      <tr><td class="n">21 Sep</td><td>job 80178</td><td>Imagination, corrected eval</td><td class="n lo">+0.5 SEM</td><td>Honest null</td></tr>
-      <tr><td class="n">23 Sep</td><td>per-subject v2</td><td>Subject 1, broadband</td><td class="n">26.3%</td><td>Provisional</td></tr>
-      <tr><td class="n">23 Sep</td><td>per-subject v2</td><td>Subjects 3 / 2 / 4</td><td class="n">12.1 / 7.1 / 3.0%</td><td>Provisional</td></tr>
-      <tr><td class="n">23 Sep</td><td>Mix, subject 1</td><td>Imagination and perception jointly</td><td class="n lo">6.1%</td><td>Worse, explained</td></tr>
-      <tr><td class="n">23 Sep</td><td>cross-subject v2</td><td>All subjects pooled</td><td class="n">8.8%</td><td>Superseded by the pivot</td></tr>
-      <tr><td class="n">24 Sep</td><td>job 81619 &middot; A</td><td>Classical, alpha 500 ms</td><td class="n hi">2.0&ndash;3.5&times;</td><td>The real finding</td></tr>
-      <tr><td class="n">24 Sep</td><td>job 81619 &middot; B</td><td>Classical, broadband 500 ms</td><td class="n">3.5&ndash;12.2&times;</td><td>Drift shortcut</td></tr>
-      <tr><td class="n">24 Sep</td><td>job 81619 &middot; C</td><td>Classical, alpha 2 s</td><td class="n">0.0&ndash;6.0&times;</td><td>Too few samples</td></tr>
-      <tr><td class="n">24 Sep</td><td>job 81619 &middot; D</td><td>Classical, alpha + rejection</td><td class="n">1.3&ndash;4.2&times;</td><td>Neutral, closed</td></tr>
+      <tr><td>Brain rhythms (what we want)</td><td class="n">10&ndash;50 &micro;V</td><td class="hi">yes</td></tr>
+      <tr><td>Eye blinks and eye movement</td><td class="n">100&ndash;200 &micro;V</td><td class="lo">no</td></tr>
+      <tr><td>Neck and jaw muscle</td><td class="n">varies</td><td class="lo">no</td></tr>
+      <tr><td>Heartbeat</td><td class="n">small</td><td class="lo">no</td></tr>
+      <tr><td>Electrode drift</td><td class="n">can be large</td><td class="lo">no</td></tr>
+      <tr><td>Mains hum (60 Hz)</td><td class="n">varies</td><td class="lo">no</td></tr>
     </tbody>
   </table>
   </div>
-</section>
 
-<!-- ================= QUEUE ================= -->
-<section class="part" id="next">
-  <span class="partnum">Queue</span>
-  <h2>What is waiting, and why</h2>
+  <p>That is the basic condition of the field: the thing you want is one of the smaller components of what you record.</p>
 
-  <div class="steps">
-    <div class="step">
-      <span class="i">1</span>
-      <span class="t">Cross-subject stimulus test &mdash; next up</span>
-      <p class="b">Train on subject 1, test on subject 2, same 33 pictures. Drift cannot transfer between people but imagery content can, so this separates genuine signal from fingerprint. A few CPU-minutes.</p>
-    </div>
-    <div class="step">
-      <span class="i">2</span>
-      <span class="t">Alpha-band input to the main pipeline</span>
-      <p class="b">Stage 2 currently trains on raw broadband, the exact condition that produced up to 12&times; chance through drift. No longer a guess at an improvement, it is a fix to a measured problem.</p>
-    </div>
-    <div class="step">
-      <span class="i">3</span>
-      <span class="t">Recover the four lost test reports</span>
-      <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs, and they turn four provisional validation numbers into real test numbers.</p>
-    </div>
-    <div class="step">
-      <span class="i">4</span>
-      <span class="t">Permutation test on the baseline</span>
-      <p class="b">With 33 stimuli across 4 windows the effective sample size is about 33, not 132. A permutation test gives a significance claim we can actually defend.</p>
-    </div>
-    <div class="step">
-      <span class="i">5</span>
-      <span class="t">Window length, properly</span>
-      <p class="b">Condition C was inconclusive because 2-second segments leave only 99 training samples. Worth revisiting on a dataset with real repetitions.</p>
-    </div>
-    <div class="step">
-      <span class="i">6</span>
-      <span class="t">A small encoder</span>
-      <p class="b">EEGNet class, a few thousand parameters instead of 85 million. If the baseline reaches 3&times; chance with hundreds of parameters, the answer to 360 training trials may be a smaller model rather than a better-regularised large one.</p>
-    </div>
-    <div class="step">
-      <span class="i">7</span>
-      <span class="t">The Gao et al. 2026 dataset</span>
-      <p class="b">22 participants, 10 classes, 40 repetitions per class per session, two sessions. Roughly 800 real imagery events per person against our 33. Second track and validation target.</p>
-    </div>
-    <div class="step">
-      <span class="i">8</span>
-      <span class="t">Our own recordings</span>
-      <p class="b">The long game, and the only path past the data ceiling. Hardware hunt with the team, then the classical baseline on day one to check the protocol before collecting at volume.</p>
-    </div>
-    <div class="step">
-      <span class="i">9</span>
-      <span class="t">Storage cleanup</span>
-      <p class="b">260 GB on a filesystem at 96%. The 69 GB nested duplicate of the upstream repository is the easy win. Needs a walk-through before anything is deleted.</p>
-    </div>
-  </div>
-</section>
-
-<section class="divider">
-  <p class="eyebrow">Part two</p>
-  <h2>Reference</h2>
-  <p>The standing explanation. This half changes only when our understanding does, not when a run finishes.</p>
-</section>
-
-<!-- ================= PART 1 ================= -->
-<section class="part" id="p1">
-  <span class="partnum">Reference 1</span>
-  <h2>The project</h2>
-
-  <p>The goal is to take a recording of someone's brain activity while they <em>imagine</em> a picture, and produce that picture.</p>
-
-  <p>That sentence needs immediate narrowing, because it promises more than is physically possible. We are not reading a picture out of the brain. We extract a weak hint about the <strong>category</strong> of what someone is thinking about — dog, car, flower — and hand that hint to an image generator that already knows what dogs look like. Nearly all the visual detail in the output comes from the generator's knowledge, not from the brain.</p>
-
-  <div class="note warn">
-    <span class="hd">Why this framing matters for every result</span>
-    <p>The image generator always produces a good-looking picture, whether or not the brain data means anything. So "the output looks like a dog" proves nothing. The only meaningful question is: <b>does the output match the picture the person actually had in mind, more often than it matches some random other picture?</b> Every evaluation in this project is built around that question.</p>
+  <div class="def">
+    <p class="dt">Microvolt (&micro;V)</p>
+    <p class="dd">One millionth of a volt. Brain rhythms at the scalp are tens of microvolts.</p>
+    <p class="ex"><b>For scale</b>An AA battery is 1.5 volts, roughly fifty thousand times larger.</p>
   </div>
 
-  <h3>Where the project stands</h3>
+  <h3>Frequency is how you pull them apart</h3>
 
-  <p><strong>Perception works.</strong> When we feed it EEG recorded while someone is <em>looking at</em> an image, the generated pictures match the real stimulus significantly better than chance pairings — <span class="num">4.3</span> standard errors better, and it names the right category out of 40 options <span class="num">9.5%</span> of the time against <span class="num">2.5%</span> chance. On images and a person the model had never seen. The machine works.</p>
+  <p>Different sources oscillate at different speeds, so you can separate them by frequency: how many times per second the signal cycles up and down. That unit is the <strong>hertz (Hz)</strong>.</p>
 
-  <p><strong>Imagination does not, yet.</strong> The same pipeline on imagination EEG comes back at chance. That is a measured result with working controls, not a crash.</p>
+  <div class="ladder">
+    <div class="rung"><span class="hz">below 1 Hz</span><span class="what">Drift, electrodes settling, sweat, temperature. Not brain.</span></div>
+    <div class="rung"><span class="hz">1&ndash;4 Hz</span><span class="what">Delta, deep sleep, and where slow artifact lives</span></div>
+    <div class="rung"><span class="hz">4&ndash;8 Hz</span><span class="what">Theta, drowsiness, some memory processes</span></div>
+    <div class="rung hit"><span class="hz">8&ndash;13 Hz</span><span class="what">ALPHA &mdash; the visual cortex idle rhythm. Where imagery lives.</span></div>
+    <div class="rung"><span class="hz">13&ndash;30 Hz</span><span class="what">Beta, active concentration, motor control</span></div>
+    <div class="rung"><span class="hz">above 30 Hz</span><span class="what">Gamma, often really muscle activity in scalp recordings</span></div>
+  </div>
 
-  <h3>The data</h3>
+  <div class="def">
+    <p class="dt">Alpha rhythm</p>
+    <p class="dd">Your visual cortex has a resting oscillation near 10 cycles per second. When you see something, or imagine something, that rhythm is modulated in a way that depends on <em>what</em> you are seeing or imagining.</p>
+    <p class="ex"><b>Why we care</b>Three independent studies, including the paper behind our own dataset, found imagined content carried in this band and essentially nowhere else. That is why we filter to 8&ndash;13 Hz: it is where theory says the answer is.</p>
+  </div>
 
-  <p>Four people. Each was shown a picture for half a second, then a noise mask, then spent ten seconds imagining that picture with their eyes open. 128 electrodes recorded the whole time.</p>
+  <div class="def">
+    <p class="dt">Band-pass filter</p>
+    <p class="dd">A processing step that keeps a chosen range of frequencies and discards everything outside it.</p>
+    <p class="ex"><b>Example</b>The bass and treble knobs on a stereo. Band-passing to 8&ndash;13 Hz is like turning everything down except one narrow slice of the spectrum. You hear less, but what remains is the part you care about.</p>
+  </div>
+
+  <div class="note">
+    <span class="hd">Carry this forward</span>
+    <p>Two ideas from this tab decide almost everything later: <b>alpha is where imagery lives</b>, and <b>drift below 1 Hz is not brain but can be huge</b>. Step 02 shows why that second one is dangerous in our particular dataset.</p>
+  </div>
+
+  <nav class="stepnav" data-nav></nav>
+</section>
+
+<!-- ============ 02 DATA ============ -->
+<section class="panel" id="p-data" role="tabpanel" aria-labelledby="tab-data" tabindex="0" hidden>
+  <span class="kicker">Step 02</span>
+  <h2>The data, and the trap inside it</h2>
+  <p class="oneline"><b>In one sentence:</b> we have four people who each imagined 33 pictures exactly once, which is far less data than it looks like and creates a shortcut a model will happily take.</p>
+
+  <h3>What was recorded</h3>
+  <p>Four people. Each was shown a picture for half a second, then a noise mask, then spent ten seconds imagining that picture <strong>with their eyes open</strong>. 128 electrodes recorded throughout, at 250 measurements per second. The dataset is from Shimizu and Srinivasan, 2022, and the same four people also did a separate perception task where they simply looked at images.</p>
 
   <div class="note">
     <span class="hd">The single most important fact about this dataset</span>
     <p>Each person imagined each picture <b>exactly once</b>. That ten-second recording was later chopped into 20 half-second pieces, so the file looks like it holds 660 examples per person. It holds <b>33 events, sliced thin</b>. Twenty slices of one event are not twenty measurements.</p>
-    <p>A comparable modern dataset has around <b>800</b> real imagery events per person. We have 33. That ratio governs the ceiling on everything below.</p>
+    <p>A comparable modern dataset has around <b>800</b> real imagery events per person. We have 33. That ratio governs the ceiling on everything in this documentation.</p>
   </div>
+
+  <div class="def">
+    <p class="dt">Window</p>
+    <p class="dd">One of those half-second slices. Ours are <strong>non-overlapping and contiguous</strong>: they tile the full ten seconds end to end with no shared samples.</p>
+    <p class="ex"><b>Why that detail matters</b>Because they do not overlap, gluing windows 0 to 3 back together reconstructs the genuine continuous signal from 0 to 2 seconds. Had they overlapped, concatenating them would have produced a waveform that never actually happened. This is what made one of our experiments possible at all.</p>
+  </div>
+
+  <h3>The leakage problem</h3>
+  <p>This is the part that makes EEG decoding unusual, and it is the key to understanding every result later.</p>
+
+  <div class="def">
+    <p class="dt">Electrode drift</p>
+    <p class="dd">Over seconds and minutes the electrical contact between an electrode and your scalp slowly changes: gel settles, skin warms, you shift in the chair. The measured voltage wanders slowly, below 1 Hz. It has nothing to do with thinking.</p>
+    <p class="ex"><b>The problem</b>That wander is <b>unique to that recording, at that moment, on that person</b>. It is a fingerprint on the data.</p>
+  </div>
+
+  <p>Two half-second clips cut from the same ten-second recording share that fingerprint. Clips from a different recording have a completely different one. And a machine learning model will happily learn the fingerprint instead of the thing you wanted it to learn, because the fingerprint is <em>easier</em>.</p>
+
+  <div class="note warn">
+    <span class="hd">The smudged lens</span>
+    <p>Imagine photographing 33 objects, one per day, with a slightly different smudge on your lens each day. Now train a model to answer "which object is this?"</p>
+    <p>It can learn <b>the smudges</b> rather than the objects. Test it on more photos from those same days and it scores brilliantly. Hand it photographs someone else took and it fails completely, because it never learned what the objects look like.</p>
+  </div>
+
+  <p>Each subject imagined each picture exactly once, so there is a perfect one-to-one correspondence:</p>
+
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:.88rem;background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;line-height:1.7;">picture&nbsp;#7 &nbsp;&harr;&nbsp; one 10-second recording &nbsp;&harr;&nbsp; one unique drift pattern</p>
+
+  <p>Which means <strong>"identify the recording" and "identify the picture" are the same task</strong>. Anything unique to that recording, including drift, posture, or how the cap was sitting, is a perfect predictor of the label. The model never has to decode imagery at all.</p>
+
+  <div class="def">
+    <p class="dt">Data leakage</p>
+    <p class="dd">When information from the test set reaches the model during training, making its score look better than its real ability.</p>
+    <p class="ex"><b>Worth knowing</b>In ordinary machine learning, leakage is a mistake you avoid. <b>In EEG it is the default state</b>, and you have to deliberately engineer it out. Several well-known EEG image-decoding papers have been invalidated for exactly this.</p>
+  </div>
+
+  <div class="def">
+    <p class="dt">Split protocol</p>
+    <p class="dd">The rule deciding which trials are used for training and which are held back for testing. In EEG this choice matters more than almost anything else.</p>
+    <p class="ex"><b>Ours</b>We train on windows 0 to 10 of each recording and test on windows 16 to 19, discarding the ones in between as buffers so no training window sits next to a test window. The original paper split those 20 windows <em>randomly</em>, which put a test window's immediate neighbours, nearly identical signal, into training. That is why their number is higher than ours on the same data.</p>
+  </div>
+
+  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ================= PART 2 ================= -->
-<section class="part" id="p2">
-  <span class="partnum">Reference 2</span>
-  <h2>The pipeline</h2>
-
-  <p>The system has two stages, trained separately.</p>
+<!-- ============ 03 PIPELINE ============ -->
+<section class="panel" id="p-pipeline" role="tabpanel" aria-labelledby="tab-pipeline" tabindex="0" hidden>
+  <span class="kicker">Step 03</span>
+  <h2>The pipeline: how the machine is built</h2>
+  <p class="oneline"><b>In one sentence:</b> teach a network what EEG looks like, then use it to replace the text box on an image generator.</p>
 
   <div class="steps">
     <div class="step">
       <span class="i">01</span>
-      <span class="t">Stage 1 — teach a network the shape of EEG</span>
-      <p class="b">A <em>masked autoencoder</em>: hide random chunks of an EEG recording and train a network to fill them back in. No labels needed — the recording is its own answer key. The point is to learn what EEG normally looks like, so the next stage starts from something better than random.</p>
+      <span class="t">Stage 1 &mdash; teach a network the shape of EEG</span>
+      <p class="b">A <em>masked autoencoder</em>: hide random chunks of an EEG recording and train a network to fill them back in. No labels needed, because the recording is its own answer key. The point is to learn what EEG normally looks like, so the next stage starts from something better than random.</p>
     </div>
     <div class="step">
       <span class="i">02</span>
-      <span class="t">Stage 2 — steer an image generator with brain signal</span>
+      <span class="t">Stage 2 &mdash; steer an image generator with brain signal</span>
       <p class="b">Take Stable Diffusion, a system that normally turns text into images, and replace the text input with the EEG encoder from Stage 1. The generator's own image knowledge stays frozen; we train only the parts that translate brain signal into something it understands.</p>
     </div>
   </div>
@@ -427,12 +414,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.79rem;color:var(--muted);marg
   <div class="def">
     <p class="dt">Masked autoencoder</p>
     <p class="dd">A network trained by hiding part of its input and asking it to reconstruct the hidden part. Because the answer is the input itself, it needs no human labelling, so it can learn from large amounts of raw data.</p>
-    <p class="ex"><b>Example</b>Cover a quarter of a photograph and ask someone to draw the missing region. To do it well they must learn how photographs generally work — edges continue, textures repeat, shadows fall consistently. That understanding is the real product, not the patch.</p>
+    <p class="ex"><b>Example</b>Cover a quarter of a photograph and ask someone to draw the missing region. To do it well they must learn how photographs generally work: edges continue, textures repeat, shadows fall consistently. That understanding is the real product, not the patch.</p>
   </div>
 
   <div class="def">
     <p class="dt">Diffusion model</p>
-    <p class="dd">An image generator that starts from pure random static and removes noise in small steps until a picture emerges. What it removes at each step can be steered by a conditioning signal — normally a text prompt, here an EEG recording.</p>
+    <p class="dd">An image generator that starts from pure random static and removes noise in small steps until a picture emerges. What it removes at each step can be steered by a conditioning signal, normally a text prompt, here an EEG recording.</p>
     <p class="ex"><b>Example</b>Like watching a badly tuned TV gradually sharpen into a scene. The conditioning signal is what decides <em>which</em> scene it sharpens into.</p>
   </div>
 
@@ -444,333 +431,553 @@ footer p{font-family:Archivo,sans-serif;font-size:.79rem;color:var(--muted);marg
 
   <div class="def">
     <p class="dt">Parameters</p>
-    <p class="dd">The adjustable numbers inside a network, tuned during training. More parameters means more flexibility — and more capacity to memorise instead of learn.</p>
-    <p class="ex"><b>Example</b>Our Stage 2 adjusts about <b>85 million</b> parameters using roughly <b>360</b> training examples per subject. That is about 235,000 adjustable knobs per example. A student given 360 practice questions and unlimited memory will memorise the answers rather than learn the subject.</p>
+    <p class="dd">The adjustable numbers inside a network, tuned during training. More parameters means more flexibility, and more capacity to memorise instead of learn.</p>
+    <p class="ex"><b>Our situation</b>Stage 2 adjusts about <b>85 million</b> parameters using roughly <b>360</b> training examples per subject. That is about 235,000 adjustable knobs per example. A student given 360 practice questions and unlimited memory will memorise the answers rather than learn the subject.</p>
   </div>
+
+  <div class="note warn">
+    <span class="hd">The structural tension of the whole project</span>
+    <p>Step 02 said we have 33 real events per person. This tab says the model has 85 million adjustable parameters. Those two facts are the reason this is hard, and most of what follows is either a consequence of that mismatch or an attempt to work around it.</p>
+  </div>
+
+  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ================= PART 3 ================= -->
-<section class="part" id="p3">
-  <span class="partnum">Reference 3</span>
-  <h2>What EEG actually is</h2>
+<!-- ============ 04 RESULTS ============ -->
+<section class="panel" id="p-results" role="tabpanel" aria-labelledby="tab-results" tabindex="0" hidden>
+  <span class="kicker">Step 04</span>
+  <h2>Training results: what the pipeline did</h2>
+  <p class="oneline"><b>In one sentence:</b> perception decodes clearly and significantly, imagination comes back at chance, and we can prove both statements are measurements rather than accidents.</p>
 
-  <p>An electrode on your scalp measures voltage — the tiny electrical field produced by millions of neurons firing together beneath it. You have 128 of these, each sampled 250 times per second.</p>
+  <h3>How we judge a result at all</h3>
+  <p>Since the generator always makes a plausible picture, we score every result against deliberately broken versions of itself.</p>
 
-  <p>That voltage is not "brain activity". It is a <strong>sum of several things stacked on top of each other</strong>:</p>
+  <div class="def">
+    <p class="dt">Shuffled-pairing control</p>
+    <p class="dd">Score the generated images against <em>deliberately mismatched</em> ground truth. Image quality is identical either way, so any gap between real pairings and shuffled ones must come from the brain signal.</p>
+    <p class="ex"><b>And a second control</b>Feed the pipeline pure noise instead of EEG. If that scores as well as real data, nothing is working.</p>
+  </div>
+
+  <div class="def">
+    <p class="dt">SEM (standard error of the mean)</p>
+    <p class="dd">A measure of how much a measured average would bounce around if you repeated the experiment. It converts "this number is bigger" into "this number is bigger than the noise in the measurement".</p>
+    <p class="ex"><b>Rule of thumb</b>Below about 2 SEM, a gap is not worth believing. Above 4, it is hard to explain away as luck.</p>
+  </div>
+
+  <h3>Result 1 &mdash; seeing a picture works</h3>
+  <div class="note good">
+    <p>Model <b>0.5848</b>, shuffled control 0.5484, noise control 0.4761. The gap over the shuffled control is <b>+4.3 SEM</b>.</p>
+    <p>It names the right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint: the 173 test images never appeared in training, on a person the model had not seen.</p>
+    <p><b>This is the load-bearing result of the project.</b> It says the machine is wired correctly end to end, so every later failure is about the difficulty of imagination rather than a broken pipeline.</p>
+  </div>
+
+  <h3>Result 2 &mdash; imagining a picture does not, yet</h3>
+  <div class="note warn">
+    <p>Model <b>0.5581</b>, shuffled control 0.5541, noise control 0.4746. The gap over the control is <b>+0.5 SEM</b>, which is nothing.</p>
+    <p>Note that the noise control still separates cleanly. The measurement works; imagination simply is not there. This is an honest null, not a bug.</p>
+  </div>
+
+  <h3>Result 3 &mdash; one subject at a time</h3>
+  <p>Pooling all four people made things worse, so we followed the source paper and trained each person separately. Best scores against 3.03% chance, one correct guess in 33:</p>
 
   <div class="tbl">
   <table>
-    <thead><tr><th>What contributes</th><th class="n">Typical size</th><th>Is it brain?</th></tr></thead>
+    <thead><tr><th>Run</th><th class="n">Best score</th><th>Reading</th></tr></thead>
     <tbody>
-      <tr><td>Brain rhythms (what we want)</td><td class="n">10–50 µV</td><td class="hi">yes</td></tr>
-      <tr><td>Eye blinks and eye movement</td><td class="n">100–200 µV</td><td class="lo">no</td></tr>
-      <tr><td>Neck and jaw muscle</td><td class="n">varies</td><td class="lo">no</td></tr>
-      <tr><td>Heartbeat</td><td class="n">small</td><td class="lo">no</td></tr>
-      <tr><td>Electrode drift</td><td class="n">can be large</td><td class="lo">no</td></tr>
-      <tr><td>Mains hum (60 Hz)</td><td class="n">varies</td><td class="lo">no</td></tr>
+      <tr><td>Subject 1</td><td class="n hi">26.3%</td><td>Encouraging, and provisional for two reasons below</td></tr>
+      <tr><td>Subject 3</td><td class="n">12.1%</td><td>Above chance</td></tr>
+      <tr><td>Subject 2</td><td class="n">7.1%</td><td>Weak</td></tr>
+      <tr><td>Subject 4</td><td class="n lo">3.0%</td><td>Chance</td></tr>
+      <tr><td>Subject 1, imagination + perception together</td><td class="n lo">6.1%</td><td>Much worse than 26.3%</td></tr>
+      <tr><td>All subjects pooled</td><td class="n">8.8%</td><td>Superseded by the per-subject pivot</td></tr>
     </tbody>
   </table>
   </div>
 
-  <p>Several of the non-brain contributions are <em>larger</em> than the brain signal. That is the basic condition of the field: the thing you want is one of the smaller components of what you record.</p>
-
-  <div class="def">
-    <p class="dt">Microvolt (µV)</p>
-    <p class="dd">One millionth of a volt. Brain rhythms at the scalp are tens of microvolts. An AA battery is 1.5 volts — roughly fifty thousand times larger.</p>
-  </div>
-
-  <h3>Frequency is how you pull them apart</h3>
-
-  <p>Different sources oscillate at different speeds, so you can separate them by frequency — how many times per second the signal cycles up and down. That unit is the <strong>hertz (Hz)</strong>.</p>
-
-  <div class="ladder">
-    <div class="rung"><span class="hz">below 1 Hz</span><span class="what">Drift — electrodes settling, sweat, temperature. Not brain.</span></div>
-    <div class="rung"><span class="hz">1–4 Hz</span><span class="what">Delta — deep sleep; also where slow artifact lives</span></div>
-    <div class="rung"><span class="hz">4–8 Hz</span><span class="what">Theta — drowsiness, some memory processes</span></div>
-    <div class="rung hit"><span class="hz">8–13 Hz</span><span class="what">ALPHA — the visual cortex idle rhythm. Where imagery lives.</span></div>
-    <div class="rung"><span class="hz">13–30 Hz</span><span class="what">Beta — active concentration, motor control</span></div>
-    <div class="rung"><span class="hz">above 30 Hz</span><span class="what">Gamma — often really muscle activity in scalp recordings</span></div>
-  </div>
-
-  <div class="def">
-    <p class="dt">Alpha rhythm</p>
-    <p class="dd">Your visual cortex has a resting oscillation near 10 cycles per second. When you see something — or imagine something — that rhythm is modulated in a way that depends on <em>what</em> you are seeing or imagining.</p>
-    <p class="ex"><b>Example</b>Three independent studies, including the paper behind our own dataset, found imagined content carried in this band and essentially nowhere else. That is why we filter to 8–13 Hz: it is where theory says the answer is.</p>
-  </div>
-
-  <div class="def">
-    <p class="dt">Band-pass filter</p>
-    <p class="dd">A processing step that keeps a chosen range of frequencies and discards everything outside it.</p>
-    <p class="ex"><b>Example</b>The bass and treble knobs on a stereo. Band-passing to 8–13 Hz is like turning everything down except one narrow slice of the spectrum — you hear less, but what remains is the part you care about.</p>
-  </div>
-</section>
-
-<!-- ================= PART 4 ================= -->
-<section class="part" id="p4">
-  <span class="partnum">Reference 4</span>
-  <h2>The leakage problem</h2>
-
-  <p>This is the part that makes EEG decoding unusual, and it is the key to understanding our results.</p>
-
-  <div class="def">
-    <p class="dt">Electrode drift</p>
-    <p class="dd">Over seconds and minutes, the electrical contact between an electrode and your scalp slowly changes — gel settles, skin warms, you shift in the chair. The measured voltage wanders slowly, below 1 Hz. It has nothing to do with thinking.</p>
-    <p class="ex"><b>Example</b>Crucially, that wander is <b>unique to that recording session, at that moment, on that person</b>. It is a fingerprint on the data.</p>
-  </div>
-
-  <p>Two half-second clips cut from the same ten-second recording share that fingerprint. Clips from a different recording have a completely different one. And a machine learning model will happily learn the fingerprint instead of the thing you wanted it to learn — because the fingerprint is <em>easier</em>.</p>
+  <p>That last-but-one row is the interesting failure. The source paper reports joint training <em>improving</em> a subject from 13.4% to 25.2%. Ours went the other way, and the likely reason is volume: 6,789 perception trials swamp 363 imagination trials, so the model optimises the task it sees most of.</p>
 
   <div class="note warn">
-    <span class="hd">The smudged lens</span>
-    <p>Imagine photographing 33 objects, one per day, with a slightly different smudge on your lens each day. Now train a model to answer "which object is this?"</p>
-    <p>It can learn <b>the smudges</b> rather than the objects. Test it on more photos from those same days and it scores brilliantly. Hand it photographs someone else took and it fails completely — because it never learned what the objects look like.</p>
+    <span class="hd">Why every number in the table above says provisional</span>
+    <p>First, these are best-validation scores, the peak across many training rounds on a lenient measure, which always flatters. The matching test numbers were lost to a bug: four jobs ran at the same time, their output directories were named by timestamp to the second, and they overwrote each other. Fixed since, by putting the job ID in the path, and the checkpoints survived, so the numbers are recoverable.</p>
+    <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem.</p>
   </div>
 
-  <h3>Why our dataset makes this unavoidable</h3>
+  <h3>What we fixed along the way</h3>
+  <p>Getting to a trustworthy null took rebuilding the measurement apparatus: a retrieval metric that needs no image sampling, a validation set carved from the training subjects' late windows instead of quietly reusing test data, best-checkpoint selection, early stopping, the weight decay the configuration asked for and the code silently ignored, input augmentation, and an optional contrastive objective. A crash where a saved CPU random-number state was loaded into the GPU generator was fixed too.</p>
 
-  <p>Each subject imagined each picture <strong>exactly once</strong>. So there is a perfect one-to-one correspondence:</p>
-
-  <p style="font-family:'IBM Plex Mono',monospace;font-size:.9rem;background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;line-height:1.7;">picture&nbsp;#7 &nbsp;↔&nbsp; one 10-second recording &nbsp;↔&nbsp; one unique drift pattern</p>
-
-  <p>Which means <strong>"identify the recording" and "identify the picture" are the same task</strong>. Anything unique to that recording — drift, posture, how the cap was sitting — is a perfect predictor of the label. The model never has to decode imagery at all.</p>
-
-  <div class="def">
-    <p class="dt">Data leakage</p>
-    <p class="dd">When information from the test set reaches the model during training, making its score look better than its real ability.</p>
-    <p class="ex"><b>Example</b>In ordinary machine learning, leakage is a mistake you avoid. <b>In EEG it is the default state</b>, and you have to deliberately engineer it out. Several well-known EEG image-decoding papers have been invalidated for exactly this.</p>
-  </div>
-
-  <div class="def">
-    <p class="dt">Split protocol</p>
-    <p class="dd">The rule deciding which trials are used for training and which are held back for testing. In EEG this choice matters more than almost anything else.</p>
-    <p class="ex"><b>Example</b>Our <em>window protocol</em> trains on windows 0–10 of each recording and tests on windows 16–19, throwing away windows 11 and 15 as buffers so no training window sits next to a test window. The original paper split those 20 windows <em>randomly</em>, which put a test window's immediate neighbours — nearly identical signal — into training. That is why their number is higher than ours on the same data.</p>
-  </div>
+  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ================= PART 5 ================= -->
-<section class="part" id="p5">
-  <span class="partnum">Reference 5</span>
+<!-- ============ 05 BASELINE ============ -->
+<section class="panel" id="p-baseline" role="tabpanel" aria-labelledby="tab-baseline" tabindex="0" hidden>
+  <span class="kicker">Step 05</span>
   <h2>The classical baseline</h2>
+  <p class="oneline"><b>In one sentence:</b> we stopped and ran the simplest possible method, which proved the data does contain imagery signal and simultaneously caught the pipeline taking a shortcut.</p>
 
   <h3>The problem it exists to solve</h3>
-
-  <p>Every time the diffusion pipeline came back at chance, that single result could have meant four entirely different things:</p>
-
+  <p>Every time the pipeline came back at chance, that single result could have meant four entirely different things:</p>
   <ol>
     <li><strong>There is no imagery signal in this EEG.</strong> The data is a dead end.</li>
-    <li><strong>There is signal, but our model is too large.</strong> 85 million parameters, ~360 examples — it memorises instead of learning.</li>
+    <li><strong>There is signal, but our model is too large.</strong> 85 million parameters, 360 examples, so it memorises instead of learning.</li>
     <li><strong>There is signal, but the input representation is wrong.</strong> Raw broadband samples when the answer lives in one narrow band.</li>
     <li><strong>There is signal and the encoder finds it, but the image-generation stage loses it.</strong></li>
   </ol>
-
-  <p>All four produce the identical output — "not distinguishable from chance" — and each diffusion run costs one to two GPU-days while resolving none of them individually. That is an expensive place to be stuck.</p>
+  <p>All four produce the identical output, "not distinguishable from chance", and each pipeline run costs one to two GPU-days while resolving none of them individually. That is an expensive place to be stuck.</p>
 
   <h3>What a classical baseline is</h3>
-
   <p>A deliberately simple, well-understood method. No diffusion, no image generation, no learned representation. Its power comes from what it <em>cannot</em> do:</p>
-
   <ul>
     <li><strong>It cannot memorise.</strong> A logistic regression on 128 features has nowhere to hide an answer key for 33 classes.</li>
     <li><strong>It has no generation stage</strong>, so nothing downstream can lose the signal.</li>
     <li><strong>It runs in minutes on a CPU</strong>, not days on a GPU.</li>
   </ul>
+  <p>So it isolates exactly one question: <strong>is there decodable imagery information in this EEG at all?</strong> If yes, explanation (1) is eliminated and every remaining failure is ours, which means fixable. If no, we stop optimising a pipeline pointed at noise.</p>
 
-  <p>So it isolates exactly one question: <strong>is there decodable imagery information in this EEG at all?</strong> If yes, explanation (1) is eliminated and every remaining failure is ours — which means fixable. If no, we stop optimising a pipeline pointed at noise.</p>
-
-  <h3>The three methods we ran</h3>
-
+  <h3>The three methods</h3>
   <div class="def">
     <p class="dt">Band power + logistic regression</p>
-    <p class="dd">For each electrode, measure how much energy sits in the alpha band, then fit the simplest possible classifier — a weighted sum of those 128 numbers.</p>
-    <p class="ex"><b>Example</b>The direct test of "is alpha power informative?" If this works, the signal is strong and simple.</p>
+    <p class="dd">For each electrode, measure how much energy sits in the alpha band, then fit the simplest possible classifier, a weighted sum of those 128 numbers.</p>
+    <p class="ex"><b>What it tests</b>Directly: is alpha power informative? If this works, the signal is strong and simple.</p>
   </div>
-
   <div class="def">
     <p class="dt">Riemannian tangent space</p>
-    <p class="dd">Instead of each electrode separately, measure how electrodes <em>co-vary</em> — which pairs rise and fall together. Those relationships form a mathematical object that does not live in ordinary flat space, so it is mapped onto a flat surface ("tangent space") before classification.</p>
-    <p class="ex"><b>Example</b>Think of measuring not each musician's volume but which instruments play together. That pattern of coordination is often more informative than the individual levels. This is the standard strong baseline when EEG training data is scarce.</p>
+    <p class="dd">Instead of each electrode separately, measure how electrodes <em>co-vary</em>, which pairs rise and fall together. Those relationships form a mathematical object that does not live in ordinary flat space, so it is mapped onto a flat surface, the "tangent space", before classification.</p>
+    <p class="ex"><b>Example</b>Measure not each musician's volume but which instruments play together. That pattern of coordination is often more informative than the individual levels. This is the standard strong baseline when EEG training data is scarce.</p>
   </div>
-
   <div class="def">
     <p class="dt">EEGNet</p>
-    <p class="dd">A compact neural network built specifically for EEG — about 2,000 parameters, versus our main model's 85 million. It learns its own spatial and temporal filters.</p>
-    <p class="ex"><b>Example</b>This is the architecture that reached 75.8% on a modern imagery dataset. It is the most flexible of our three methods — which turns out to matter a great deal.</p>
+    <p class="dd">A compact neural network built specifically for EEG, about 2,000 parameters versus our main model's 85 million. It learns its own spatial and temporal filters.</p>
+    <p class="ex"><b>Note</b>This is the architecture that reached 75.8% on a modern imagery dataset. It is the most flexible of the three, which turns out to matter a great deal.</p>
   </div>
-</section>
 
-<!-- ================= PART 6 ================= -->
-<section class="part" id="p6">
-  <span class="partnum">Reference 6</span>
-  <h2>The four conditions</h2>
-
-  <p>We ran the baseline four ways. Each answers one question.</p>
-
+  <h3>The four conditions</h3>
+  <p>We ran all three methods four ways. Each condition answers one question.</p>
   <div class="steps">
-    <div class="step">
-      <span class="i">A</span>
-      <span class="t">Alpha band, 500 ms windows</span>
-      <p class="b"><strong>Keep only 8–13 Hz.</strong> Is there imagery signal in the band that theory predicts? This is the real test — the other three are controls around it.</p>
-    </div>
-    <div class="step">
-      <span class="i">B</span>
-      <span class="t">Broadband, 500 ms windows</span>
-      <p class="b"><strong>Keep everything, 1–50 Hz.</strong> Does band-limiting actually help, or was the alpha theory wrong for our data? A control.</p>
-    </div>
-    <div class="step">
-      <span class="i">C</span>
-      <span class="t">Alpha band, 2-second windows</span>
-      <p class="b"><strong>Glue four adjacent windows together.</strong> Is 500 ms too short? At 10 Hz that is only five cycles of the rhythm we are trying to measure — marginal. The imagery literature uses 2–4 seconds.</p>
-    </div>
-    <div class="step">
-      <span class="i">D</span>
-      <span class="t">Alpha band + artifact rejection</span>
-      <p class="b"><strong>Throw away the 10% most extreme trials</strong>, which are mostly blinks. One paper says cleaning hurts decoding; another says it helps in low-signal cases like ours. Cheap enough to settle on our own data.</p>
-    </div>
+    <div class="step"><span class="i">A</span><span class="t">Alpha band, 500 ms windows</span>
+      <p class="b"><strong>Keep only 8&ndash;13 Hz.</strong> Is there imagery signal in the band theory predicts? This is the real test; the other three are controls around it.</p></div>
+    <div class="step"><span class="i">B</span><span class="t">Broadband, 500 ms windows</span>
+      <p class="b"><strong>Keep everything, 1&ndash;50 Hz.</strong> Does band-limiting actually help, or was the alpha theory wrong for our data?</p></div>
+    <div class="step"><span class="i">C</span><span class="t">Alpha band, 2-second windows</span>
+      <p class="b"><strong>Glue four adjacent windows together.</strong> Is 500 ms too short? At 10 Hz that is only five cycles of the rhythm we are measuring. The imagery literature uses 2 to 4 seconds.</p></div>
+    <div class="step"><span class="i">D</span><span class="t">Alpha band + artifact rejection</span>
+      <p class="b"><strong>Throw away the 10% most extreme trials</strong>, mostly blinks. One paper says cleaning hurts decoding, another says it helps in low-signal cases like ours. Cheap enough to settle on our own data.</p></div>
   </div>
 
-  <div class="note">
-    <span class="hd">Why condition C was possible at all</span>
-    <p>The original 20 windows are <b>non-overlapping and contiguous</b> — they tile the full ten seconds end to end, with no shared samples. So gluing windows 0–3 back together reconstructs the genuine continuous signal from 0 to 2 seconds. Had they overlapped, concatenating would have produced a waveform that never actually happened.</p>
-  </div>
-</section>
-
-<!-- ================= PART 7 ================= -->
-<section class="part" id="p7">
-  <span class="partnum">Reference 7</span>
-  <h2>The results</h2>
-
-  <p>All four subjects, all four conditions. Chance is <span class="num">3.03%</span> (one correct guess in 33). Numbers are "times better than chance", ranged across the three methods.</p>
-
+  <h3>The results</h3>
+  <p>All four subjects, all four conditions. Chance is <span class="num">3.03%</span>. Numbers are "times better than chance", ranged across the three methods.</p>
   <div class="tbl">
   <table>
     <thead><tr><th>Condition</th><th class="n">Subj 1</th><th class="n">Subj 2</th><th class="n">Subj 3</th><th class="n">Subj 4</th></tr></thead>
     <tbody>
-      <tr><td><b>A. Alpha, 500 ms</b></td><td class="n hi">2.0–3.2×</td><td class="n">0.5–2.5×</td><td class="n hi">2.5–3.5×</td><td class="n hi">2.2–3.0×</td></tr>
-      <tr><td>B. Broadband, 500 ms</td><td class="n">6.8–12.2×</td><td class="n">0.8–8.0×</td><td class="n">3.5–5.8×</td><td class="n">3.7–4.8×</td></tr>
-      <tr><td>C. Alpha, 2 s</td><td class="n">—</td><td class="n">2.0–4.0×</td><td class="n">0.0–6.0×</td><td class="n">0.0–2.0×</td></tr>
-      <tr><td>D. Alpha + rejection</td><td class="n">2.4–3.3×</td><td class="n">1.3–2.7×</td><td class="n">1.9–4.2×</td><td class="n">1.6–3.7×</td></tr>
+      <tr><td><b>A. Alpha, 500 ms</b></td><td class="n hi">2.0&ndash;3.2&times;</td><td class="n">0.5&ndash;2.5&times;</td><td class="n hi">2.5&ndash;3.5&times;</td><td class="n hi">2.2&ndash;3.0&times;</td></tr>
+      <tr><td>B. Broadband, 500 ms</td><td class="n">6.8&ndash;12.2&times;</td><td class="n">0.8&ndash;8.0&times;</td><td class="n">3.5&ndash;5.8&times;</td><td class="n">3.7&ndash;4.8&times;</td></tr>
+      <tr><td>C. Alpha, 2 s</td><td class="n">&mdash;</td><td class="n">2.0&ndash;4.0&times;</td><td class="n">0.0&ndash;6.0&times;</td><td class="n">0.0&ndash;2.0&times;</td></tr>
+      <tr><td>D. Alpha + rejection</td><td class="n">2.4&ndash;3.3&times;</td><td class="n">1.3&ndash;2.7&times;</td><td class="n">1.9&ndash;4.2&times;</td><td class="n">1.6&ndash;3.7&times;</td></tr>
     </tbody>
   </table>
   </div>
 
-  <h3>Condition A — the finding</h3>
+  <h4>Condition A &mdash; the finding</h4>
   <div class="note good">
-    <p><b>Eleven of twelve results above chance</b>, across four different people and three independent methods, in the band theory predicted. Top-5 accuracy sat at 21–31% against a 15% chance baseline.</p>
+    <p><b>Eleven of twelve results above chance</b>, across four different people and three independent methods, in the band theory predicted. Top-5 accuracy sat at 21 to 31% against a 15% chance baseline.</p>
     <p>Modest. But it says plainly: <b>there is decodable imagery signal in this EEG.</b> Explanation (1) is eliminated.</p>
   </div>
 
-  <h3>Condition B — the trap, caught</h3>
-
-  <p>Broadband roughly doubled every number. That is not extra signal — it is the drift shortcut from Part 4. Three reasons to be confident:</p>
-
+  <h4>Condition B &mdash; the trap, caught</h4>
+  <p>Broadband roughly doubled every number. That is not extra signal, it is the drift shortcut from Step 02. Three reasons to be confident:</p>
   <ul>
     <li><strong>It is too good relative to the field.</strong> The original paper got 13.4% on 40 options <em>with</em> a leaky split. Subject 1's broadband 37.1% on 33 options would beat everything published.</li>
-    <li><strong>The pattern gives it away.</strong> EEGNet — the most flexible method — was the <em>worst</em> on alpha (2.0×) and the <em>best</em> on broadband (12.2×). When your most powerful model gains most from data that shouldn't matter, it is exploiting a shortcut.</li>
-    <li><strong>The mechanism is known.</strong> Broadband keeps everything from 1 Hz up, including slow drift. Band-passing to 8–13 Hz filters that drift away — which is exactly why the number drops.</li>
+    <li><strong>The pattern gives it away.</strong> EEGNet, the most flexible method, was the <em>worst</em> on alpha at 2.0&times; and the <em>best</em> on broadband at 12.2&times;. When your most powerful model gains most from data that should not matter, it is exploiting a shortcut.</li>
+    <li><strong>The mechanism is known.</strong> Broadband keeps everything from 1 Hz up, including slow drift. Band-passing to 8&ndash;13 Hz filters that drift away, which is exactly why the number drops.</li>
   </ul>
-
   <div class="note warn">
-    <p><b>The lower number is the honest one.</b> This is genuinely counterintuitive: removing data made the result worse but more trustworthy. It is also why this field is littered with results that did not replicate.</p>
+    <p><b>The lower number is the honest one.</b> Genuinely counterintuitive: removing data made the result worse but more trustworthy. It is also why this field is littered with results that did not replicate.</p>
   </div>
 
-  <h3>Condition C — inconclusive</h3>
-  <p>Subjects 2 and 3 improved; subject 4 did not. But gluing windows into 2-second segments leaves only 99 training and 33 test samples, so these numbers bounce around badly. Suggestive, not settled.</p>
+  <h4>Condition C &mdash; inconclusive</h4>
+  <p>Subjects 2 and 3 improved, subject 4 did not. But gluing windows into 2-second segments leaves only 99 training and 33 test samples, so these numbers bounce around badly. Suggestive, not settled.</p>
 
-  <h3>Condition D — cleanly negative, and useful</h3>
-  <p>Artifact rejection came out roughly neutral — sometimes up, sometimes down, no consistent direction. That resolves the disagreement between the two papers for <em>our</em> data: it does not matter much here. We can stop spending effort on it, including the artifact-removal papers currently on the reading list.</p>
-</section>
+  <h4>Condition D &mdash; cleanly negative, and useful</h4>
+  <p>Artifact rejection came out roughly neutral, sometimes up, sometimes down, no consistent direction. That resolves a disagreement between two papers for <em>our</em> data: it does not matter much here, so we can stop spending effort on it.</p>
 
-<!-- ================= PART 8 ================= -->
-<section class="part" id="p8">
-  <span class="partnum">Reference 8</span>
-  <h2>What this changes</h2>
-
-  <h3>Four things gained</h3>
+  <h3>What the baseline changed</h3>
   <ol>
-    <li><strong>The worst possibility is eliminated.</strong> "There is no imagery signal here" is off the table. Every remaining failure points at something we control, and those are fixable.</li>
-    <li><strong>We have a number to beat.</strong> About 3× chance from a model with a few hundred parameters. Any complex model that cannot clear that is not earning its complexity.</li>
-    <li><strong>We found a trap before it cost weeks.</strong> Condition B revealed a shortcut large enough to fake a breakthrough. Finding that in a five-minute CPU job rather than after a month of GPU training is the entire point of the exercise.</li>
-    <li><strong>We built a reusable instrument.</strong> Five CPU-minutes instead of a GPU-week per experiment. This is the tool for everything ahead — and the first thing to run on day one of our own recordings, to answer "is this data any good?" before collecting hundreds of trials on a protocol that might be broken.</li>
+    <li><strong>The worst possibility is eliminated.</strong> "There is no imagery signal here" is off the table. Every remaining failure points at something we control.</li>
+    <li><strong>We have a number to beat.</strong> About 3&times; chance from a model with a few hundred parameters. Any complex model that cannot clear that is not earning its complexity.</li>
+    <li><strong>We found a trap before it cost weeks.</strong> Condition B revealed a shortcut large enough to fake a breakthrough. Finding it in a five-minute CPU job rather than after a month of GPU training is the entire point.</li>
+    <li><strong>We built a reusable instrument.</strong> Five CPU-minutes instead of a GPU-week per experiment, and the first thing to run on day one of our own recordings to ask whether the data is any good.</li>
   </ol>
 
-  <h3>The uncomfortable implication</h3>
-
   <div class="note warn">
-    <p>Our Stage 2 deep model trains on <b>raw broadband EEG</b> — exactly the condition that just produced up to 12× chance through drift fingerprinting.</p>
-    <p>Which means subject 1's headline <b>26.3%</b> validation score may be substantially drift-driven rather than imagery decoding. That number was already flagged as provisional for other reasons — it is a peak across many training rounds on a lenient measure — but we now have a <em>mechanism</em> for why it might be inflated, and an estimate of the size.</p>
+    <span class="hd">The uncomfortable implication</span>
+    <p>Our Stage 2 model trains on <b>raw broadband EEG</b>, exactly the condition that just produced up to 12&times; chance through drift fingerprinting. So subject 1's headline <b>26.3%</b> may be substantially drift-driven rather than imagery decoding.</p>
     <p>Read correctly, this is the baseline doing its job: it found a problem in the expensive pipeline that the expensive pipeline could not find in itself.</p>
   </div>
 
-  <h3>Is this forward or backward?</h3>
-
-  <p><strong>Forward, decisively</strong> — but it is the kind of forward step that makes some earlier numbers look worse. That is what honest instrumentation does. It does not only deliver good news.</p>
-
-  <p>The project this morning: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: confirmed signal in the data, a known-size shortcut to avoid, a benchmark to beat, a settled question about artifact removal, and a fast way to test the next idea.</p>
-
-  <h3>What happens next</h3>
-  <ul>
-    <li><strong>Feed the pipeline alpha-band input</strong> — no longer a speculative improvement but a correction to a known shortcut</li>
-    <li><strong>Run the cross-subject test</strong> — all four subjects imagined the <em>same 33 pictures</em>, so training on subject 1 and testing on subject 2 separates genuine content from drift fingerprint. Drift cannot transfer between people; imagery content can</li>
-    <li><strong>Drop artifact removal</strong> from the plan — condition D says it is not worth it here</li>
-    <li><strong>Treat every previous broadband result as provisional</strong> until re-checked on alpha input</li>
-  </ul>
+  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ================= GLOSSARY ================= -->
-<section class="part" id="p9">
-  <span class="partnum">Reference 9</span>
+<!-- ============ 06 STATUS ============ -->
+<section class="panel" id="p-status" role="tabpanel" aria-labelledby="tab-status" tabindex="0" hidden>
+  <span class="kicker">Step 06</span>
+  <h2>Where we are, and what is next</h2>
+  <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
+
+  <p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: confirmed signal in the data, a known-size shortcut to avoid, a benchmark to beat, a settled question about artifact removal, and a fast way to test the next idea.</p>
+
+  <h3>Every experiment, and its number</h3>
+  <p>Deep-model figures are best-validation rather than test, and are provisional.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Date</th><th>Run</th><th>What</th><th class="n">Headline</th><th>Standing</th></tr></thead>
+    <tbody>
+      <tr><td class="n">2 Sep</td><td>eval 02-09</td><td>Perception, stimulus-disjoint</td><td class="n hi">+4.3 SEM</td><td>Solid</td></tr>
+      <tr><td class="n">21 Sep</td><td>job 80178</td><td>Imagination, corrected eval</td><td class="n lo">+0.5 SEM</td><td>Honest null</td></tr>
+      <tr><td class="n">23 Sep</td><td>per-subject</td><td>Subject 1, broadband</td><td class="n">26.3%</td><td>Provisional</td></tr>
+      <tr><td class="n">23 Sep</td><td>per-subject</td><td>Subjects 3 / 2 / 4</td><td class="n">12.1 / 7.1 / 3.0%</td><td>Provisional</td></tr>
+      <tr><td class="n">23 Sep</td><td>Mix, subj 1</td><td>Imagination and perception jointly</td><td class="n lo">6.1%</td><td>Worse, explained</td></tr>
+      <tr><td class="n">23 Sep</td><td>pooled</td><td>All four subjects together</td><td class="n">8.8%</td><td>Superseded</td></tr>
+      <tr><td class="n">24 Sep</td><td>81619 &middot; A</td><td>Classical, alpha 500 ms</td><td class="n hi">2.0&ndash;3.5&times;</td><td>The real finding</td></tr>
+      <tr><td class="n">24 Sep</td><td>81619 &middot; B</td><td>Classical, broadband 500 ms</td><td class="n">3.5&ndash;12.2&times;</td><td>Drift shortcut</td></tr>
+      <tr><td class="n">24 Sep</td><td>81619 &middot; C</td><td>Classical, alpha 2 s</td><td class="n">0.0&ndash;6.0&times;</td><td>Too few samples</td></tr>
+      <tr><td class="n">24 Sep</td><td>81619 &middot; D</td><td>Classical, alpha + rejection</td><td class="n">1.3&ndash;4.2&times;</td><td>Neutral, closed</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3>The queue, in order</h3>
+  <div class="steps">
+    <div class="step"><span class="i">1</span><span class="t">Cross-subject stimulus test &mdash; next up</span>
+      <p class="b">Train on subject 1, test on subject 2, same 33 pictures. Drift cannot transfer between people but imagery content can, so this separates genuine signal from fingerprint. A few CPU-minutes.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Alpha-band input to the main pipeline</span>
+      <p class="b">Stage 2 currently trains on raw broadband, the exact condition that produced up to 12&times; chance through drift. No longer a guess at an improvement, it is a fix to a measured problem.</p></div>
+    <div class="step"><span class="i">3</span><span class="t">Recover the four lost test reports</span>
+      <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers.</p></div>
+    <div class="step"><span class="i">4</span><span class="t">Permutation test on the baseline</span>
+      <p class="b">With 33 stimuli across 4 windows the effective sample size is about 33, not 132. A permutation test gives a significance claim we can defend.</p></div>
+    <div class="step"><span class="i">5</span><span class="t">Window length, properly</span>
+      <p class="b">Condition C was inconclusive because 2-second segments leave only 99 training samples. Worth revisiting on a dataset with real repetitions.</p></div>
+    <div class="step"><span class="i">6</span><span class="t">A small encoder</span>
+      <p class="b">EEGNet class, a few thousand parameters instead of 85 million. If a few hundred parameters reach 3&times; chance, the answer to 360 training trials may be a smaller model rather than a better-regularised large one.</p></div>
+    <div class="step"><span class="i">7</span><span class="t">The Gao et al. 2026 dataset</span>
+      <p class="b">22 participants, 10 classes, 40 repetitions per class per session, two sessions. Roughly 800 real imagery events per person against our 33. Second track and validation target.</p></div>
+    <div class="step"><span class="i">8</span><span class="t">Our own recordings</span>
+      <p class="b">The long game, and the only path past the data ceiling. Hardware first, then the classical baseline on day one to check the protocol before collecting at volume.</p></div>
+  </div>
+
+  <div class="note">
+    <span class="hd">If you want to help</span>
+    <p>The binding constraint is <b>data, not compute or cleverness</b>. The most valuable contributions are access to EEG hardware, participants willing to sit for repeated imagery sessions, or a dataset that has real repetitions of imagined content with posterior electrode coverage. The Resources tab lists what we have already checked and why most candidates do not fit.</p>
+  </div>
+
+  <nav class="stepnav" data-nav></nav>
+</section>
+
+<!-- ============ 07 JOURNAL ============ -->
+<section class="panel" id="p-journal" role="tabpanel" aria-labelledby="tab-journal" tabindex="0" hidden>
+  <span class="kicker">Log</span>
+  <h2>Journal, newest first</h2>
+  <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
+
+  <div class="entry">
+    <div class="tags"><span class="tag dec">decision</span></div>
+    <span class="when">25 SEP 2026</span>
+    <h3>This page became the project's documentation</h3>
+    <p>Restructured from a single essay into step-by-step tabs so it can be handed to anyone who is interested. Everything from here on gets logged here rather than living only in a chat window. The source file sits in the repository at <code>analysis/journal.html</code>, so the record survives independently of any one tool.</p>
+  </div>
+
+  <div class="entry">
+    <div class="tags"><span class="tag res">result</span><span class="tag nul">trap found</span></div>
+    <span class="when">24 SEP 2026 &middot; JOB 81619</span>
+    <h3>The classical baseline ran, and answered the question it was built for</h3>
+    <p>Four subjects by four conditions by three methods, five CPU-minutes. Chance is 3.03%.</p>
+    <p><span class="lbl">Found</span><b>There is decodable imagery signal in this EEG.</b> In the alpha band, 11 of 12 results landed above chance, roughly 2 to 3.5 times chance, across four people and three independent methods. Broadband roughly doubled every number, which is the drift shortcut rather than extra signal. Two-second windows were inconclusive on too few samples. Artifact rejection came out neutral.</p>
+    <p><span class="lbl">Changed</span>The worst possibility, that this data is a dead end, is off the table. We have a benchmark any complex model has to clear. Alpha-band input moves from a speculative improvement to a correction of a measured problem. The artifact-removal reading list is closed. Every previous broadband deep-model number is provisional until re-checked.</p>
+  </div>
+
+  <div class="entry">
+    <div class="tags"><span class="tag fix">tooling</span></div>
+    <span class="when">24 SEP 2026</span>
+    <h3>Built the baseline itself</h3>
+    <p><code>code/classical_baseline.py</code>: band power plus logistic regression, Riemannian tangent space, and EEGNet, all written directly against numpy and torch because the cluster environment has no scikit-learn, no pyriemann and no mne. The <code>.mat</code> files turned out to carry no channel names, so posterior electrodes cannot be picked by label; the script instead ranks channel indices by how well they separate the classes.</p>
+  </div>
+
+  <div class="entry">
+    <div class="tags"><span class="tag res">result</span><span class="tag fix">bug fixed</span></div>
+    <span class="when">23 SEP 2026</span>
+    <h3>Per-subject training, and a collision that ate the test reports</h3>
+    <p><span class="lbl">Found</span>Best validation against 3.03% chance: subject 1 <b>26.3%</b> at epoch 95, subject 3 12.1%, subject 2 7.1%, subject 4 3.0%. Training on imagination and perception together made subject 1 <em>worse</em> at 6.1%, the opposite of the source paper's 13.4% to 25.2%. Likely reason is volume: 6,789 perception trials swamp 363 imagination trials.</p>
+    <p><span class="lbl">Bug</span>Run directories were named by timestamp to the second, so four simultaneous jobs collided in two pairs and overwrote each other's checkpoints, while the scoring step picked the newest directory and had jobs scoring each other's samples. Fixed by putting the Slurm job ID in the path and selecting by job ID, commit <code>5764299</code>. Validation numbers survived in the per-job logs; the test reports were lost and need re-running from the saved checkpoints.</p>
+  </div>
+
+  <div class="entry">
+    <div class="tags"><span class="tag dec">decision</span></div>
+    <span class="when">22 SEP 2026</span>
+    <h3>Pivot to one subject at a time, and a triage of everything on the table</h3>
+    <p><span class="lbl">Decided</span>Train per subject rather than trying to transfer across people. Cross-subject is the harder problem and was costing us clarity on the easier one.</p>
+    <p><span class="lbl">Reviewed</span>Four candidate datasets from the team, against the same four criteria: visual imagery, real repetitions, posterior electrode coverage, multiple sessions. Only Gao et al. 2026 clears them. Written up in <code>RESOURCES.md</code> and in the Resources tab.</p>
+    <p><span class="lbl">Also</span>The cluster policy check came back clean. The real constraint is storage: <code>/home</code> is 96% full and we hold 260 GB of it, 69 GB of that a redundant nested copy of the upstream repository.</p>
+  </div>
+
+  <div class="entry">
+    <div class="tags"><span class="tag nul">null result</span><span class="tag fix">harness rebuilt</span></div>
+    <span class="when">21 SEP 2026 &middot; JOB 80178</span>
+    <h3>The honest null on imagination</h3>
+    <p><span class="lbl">Found</span>Model 0.5581, shuffled control 0.5541, noise control 0.4746. The gap over the control is <b>0.5 standard errors, which is nothing</b>. The noise control separating cleanly proves the measurement works.</p>
+    <p><span class="lbl">Changed</span>Before this, the evaluation could not have told us either way. Rebuilt in the same pass: a retrieval metric needing no image sampling, a validation set carved from the training subjects' late windows instead of peeking at test, best-checkpoint selection, early stopping, the weight decay the config specified and the code silently ignored, input augmentation, and an optional contrastive objective. Also fixed a crash where a saved CPU random-number state was loaded into the GPU generator.</p>
+    <p><span class="lbl">Correction</span>Parameter counts quoted earlier were wrong. Stage 2 trains <b>84.6M</b> parameters, measured; the earlier version was about 199M, not the 300M previously stated.</p>
+  </div>
+
+  <div class="entry">
+    <div class="tags"><span class="tag res">result</span></div>
+    <span class="when">2 SEP 2026</span>
+    <h3>Perception works, on images and a person the model never saw</h3>
+    <p>Model 0.5848 against a shuffled control of 0.5484 and a noise control of 0.4761: <b>+4.3 standard errors</b>. Right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint, on 173 images that never appeared in training.</p>
+    <p><span class="lbl">Why it matters</span>The load-bearing result of the project. It says the machine is wired correctly end to end.</p>
+  </div>
+
+  <div class="entry">
+    <div class="tags"><span class="tag fix">built</span></div>
+    <span class="when">EARLIER</span>
+    <h3>The pipeline itself</h3>
+    <p>A fork of DreamDiffusion running on the SJSU COE HPC cluster: a masked EEG autoencoder in Stage 1, then Stable Diffusion 1.5 in Stage 2 with the EEG encoder substituted for the text encoder. Data from Shimizu and Srinivasan, 2022.</p>
+  </div>
+
+  <nav class="stepnav" data-nav></nav>
+</section>
+
+<!-- ============ 08 READING ============ -->
+<section class="panel" id="p-reading" role="tabpanel" aria-labelledby="tab-reading" tabindex="0" hidden>
+  <span class="kicker">Reference</span>
+  <h2>Resources: datasets and papers</h2>
+  <p class="oneline"><b>What this is:</b> everything the team has proposed, with a verdict on each. Tagged by who found it. The full write-ups are in <code>RESOURCES.md</code> in the repository.</p>
+
+  <div class="note">
+    <span class="hd">The four criteria we judge a dataset by</span>
+    <p><b>1.</b> Visual imagery, not perception and not motor imagery. <b>2.</b> Real repetitions of each imagined item, not one event sliced into windows. <b>3.</b> Posterior electrode coverage, since that is where visual imagery shows up. <b>4.</b> More than one session, so a result can be shown to survive a new cap placement.</p>
+  </div>
+
+  <h3>Datasets</h3>
+  <div class="rsrc">
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Shimizu &amp; Srinivasan (2022)</span><span class="who">Joao</span></div>
+      <p class="rd">Our current dataset. Four subjects, 128 channels, 40 stimuli imagined once each for ten seconds, plus a separate perception task with 2,000 stimuli.</p>
+      <p class="rv"><b>Verdict</b>In use, and the source of the project's one positive result. Its limit is the hard one: 33 imagery events per person, not the 660 the file appears to hold.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Gao et al. (2026), visual imagery BCI</span><span class="who">Joao</span></div>
+      <p class="rd">22 participants, 10 classes, 40 repetitions per class per session, two sessions, 32 channels. Published EEGNet baseline of 75.8% on three classes.</p>
+      <p class="rv"><b>Verdict</b>The one dataset worth adding. The only candidate that clears all four criteria, and roughly 800 real imagery events per person against our 33.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">MindBigData "ImageNet of the Brain"</span><span class="who">Aditya</span></div>
+      <p class="rd">Very large by trial count, which is the right instinct, and easy to obtain.</p>
+      <p class="rv"><b>Verdict</b>Not suitable. There are no occipital electrodes, so the region where visual imagery appears is not recorded at all; it is also one subject, and perception rather than imagery. The headline count counts each channel as a separate signal.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">OpenNeuro ds007162</span><span class="who">Aditya</span></div>
+      <p class="rd">Cortex-wide recurrence in object recognition. Openly licensed and carefully documented.</p>
+      <p class="rv"><b>Verdict</b>Not suitable for the imagery goal, but the best-built dataset anyone has proposed. Perception only, and the task is paperclip objects rather than natural images. Worth keeping as a reference for how to document a dataset properly.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">PhysioNet EEG Motor Movement/Imagery</span><span class="who">Aditya</span></div>
+      <p class="rd">109 subjects, a classic and very clean dataset.</p>
+      <p class="rv"><b>Verdict</b>Not suitable. "Imagery" here means imagining moving a hand or foot, which lives in motor cortex at different frequencies. Wrong substrate for visual content.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">meagmohit/EEG-Datasets, curated list</span><span class="who">Aditya</span></div>
+      <p class="rd">The standard community index of public EEG datasets.</p>
+      <p class="rv"><b>Verdict</b>Largely exhausted for our purposes, and that is itself a finding. The list has no visual-imagery category at all, which is a direct measure of how rare this data is and why collecting our own is on the plan.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">THINGS-EEG (ds003825)</span><span class="who">Joao</span></div>
+      <p class="rd">Large, well-built perception dataset with many repetitions.</p>
+      <p class="rv"><b>Verdict</b>Perception, so not directly useful, but worth keeping in view as a pretraining source for the encoder.</p>
+    </div>
+  </div>
+
+  <h3>Papers that changed what we do</h3>
+  <div class="rsrc">
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Xie, Kaiser &amp; Cichy (2020), imagery and perception share neural representations</span><span class="who">Joao</span></div>
+      <p class="rd">Locates imagined content in the alpha band, at posterior electrodes, in a specific time window after the cue.</p>
+      <p class="rv"><b>Useful</b>Yes, the most actionable paper we have. It is why the classical baseline tested alpha first, and why alpha-band input to the pipeline is now a priority.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Stecher &amp; Kaiser (2024), representations of imaginary scenes</span><span class="who">Joao</span></div>
+      <p class="rd">Second independent source for the same conclusion, with a concrete time window.</p>
+      <p class="rv"><b>Useful</b>Yes. Two independent papers agreeing is what turned "try alpha" into the default assumption.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Shimizu &amp; Srinivasan (2022), the dataset paper</span><span class="who">Joao</span></div>
+      <p class="rd">The result we are measured against: 13.4% on 40 options, rising to 25.2% when imagination and perception are trained jointly.</p>
+      <p class="rv"><b>Useful</b>Yes, centrally, with two caveats we have to carry: their window split was random, which leaks, and their joint-training gain did not reproduce for us.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Kessler, Enge &amp; Skeide (2025), how preprocessing shapes decoding</span><span class="who">Joao</span></div>
+      <p class="rd">Finds that aggressive cleaning can remove decodable information along with the artifacts.</p>
+      <p class="rv"><b>Useful</b>Yes, as a policy. Do not add artifact correction hoping for a better number. Condition D of our baseline tested this on our own data and agreed: neutral.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Hajhassani et al., cleaning in low-signal regimes</span><span class="who">Joao, following up Aditya's batch</span></div>
+      <p class="rd">The opposite finding to Kessler: cleaning helps when signal is weak.</p>
+      <p class="rv"><b>Useful</b>Yes, and it changed the plan. Two credible papers disagreeing is why we ran both arms rather than picking a side. Aditya's reading list is what surfaced the disagreement.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Li et al. (2024), EEG embeddings and large pretrained models</span><span class="who">Joao</span></div>
+      <p class="rd">Finds that large pretrained encoders do not automatically win on small EEG datasets.</p>
+      <p class="rv"><b>Useful</b>Yes, as an architecture target, and it supports trying a small encoder before a bigger one.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Riemannian geometry approaches for EEG (2024 review)</span><span class="who">Joao</span></div>
+      <p class="rd">The standard strong baseline family when EEG training data is scarce.</p>
+      <p class="rv"><b>Useful</b>Yes, this is the basis of one of the three baseline methods.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt">Perils and pitfalls of block design for EEG classification</span><span class="who">Joao</span></div>
+      <p class="rd">Shows how presenting one category at a time lets a model learn the block rather than the content.</p>
+      <p class="rv"><b>Useful</b>Yes, as a design constraint. This dictates how our own recording protocol has to be randomised when we collect data.</p>
+    </div>
+  </div>
+
+  <h3>Papers on artifact removal</h3>
+  <p>Aditya's batch on ICA-based artifact removal: the foundational Jung et al. paper, the Jiang, Bian &amp; Tian review, an ICA template method for blinks, and an ICA denoising study on word imagination. <strong>Useful as background rather than as a next step.</strong> Our condition D found rejection neutral on this data, so this line is parked rather than dismissed; it becomes relevant again when we record our own sessions and control the noise ourselves.</p>
+
+  <nav class="stepnav" data-nav></nav>
+</section>
+
+<!-- ============ 09 GLOSSARY ============ -->
+<section class="panel" id="p-glossary" role="tabpanel" aria-labelledby="tab-glossary" tabindex="0" hidden>
+  <span class="kicker">Reference</span>
   <h2>Glossary</h2>
-  <p>Every technical term used in this project, in plain language.</p>
+  <p class="oneline"><b>What this is:</b> every technical term used in this documentation, in plain language, alphabetically.</p>
 
   <div class="gloss">
-    <div class="gitem"><p class="gt">Artifact</p><p class="gd">Anything in an EEG recording that is not brain activity — blinks, muscle tension, heartbeat, electrode drift, mains hum.</p><p class="ge">Often larger than the brain signal itself.</p></div>
-
-    <div class="gitem"><p class="gt">Chance level</p><p class="gd">The accuracy you would get by guessing randomly. With 33 possible answers, that is 1/33 = 3.03%.</p><p class="ge">Every accuracy number is meaningless without it. 9% sounds bad until you know chance is 3%.</p></div>
-
-    <div class="gitem"><p class="gt">Checkpoint</p><p class="gd">A saved snapshot of a model partway through training.</p><p class="ge">We save the checkpoint that scored best on held-out data, rather than whichever happened to be last.</p></div>
-
-    <div class="gitem"><p class="gt">Contrastive loss</p><p class="gd">A training objective that pulls matching pairs together and pushes non-matching pairs apart, rather than asking the model to hit an exact target.</p><p class="ge">We switched to this because the old objective could be satisfied by predicting the same average answer for everything.</p></div>
-
-    <div class="gitem"><p class="gt">Covariance</p><p class="gd">A measure of how two signals move together. Positive if they rise and fall in step, negative if they move oppositely.</p><p class="ge">For EEG, the pattern of covariance <em>between</em> electrodes is often more informative than any single electrode.</p></div>
-
-    <div class="gitem"><p class="gt">Cross-attention</p><p class="gd">The mechanism inside an image generator that lets an external signal influence what gets drawn. Normally fed a text prompt; here it is fed EEG.</p></div>
-
-    <div class="gitem"><p class="gt">Early stopping</p><p class="gd">Halting training when performance on held-out data stops improving, instead of running a fixed number of rounds.</p><p class="ge">Prevents the model from continuing to memorise the training set long after it has stopped learning anything general.</p></div>
-
-    <div class="gitem"><p class="gt">Epoch</p><p class="gd">One complete pass through the training data. Confusingly, in EEG research "epoch" can also mean a segment of a recording — context decides.</p></div>
-
+    <div class="gitem"><p class="gt">Alpha rhythm</p><p class="gd">The visual cortex's resting oscillation near 10 cycles per second, in the 8 to 13 Hz band. Modulated by what you see or imagine.</p><p class="ge">Where the imagery signal lives, according to three independent studies and our own baseline.</p></div>
+    <div class="gitem"><p class="gt">Artifact</p><p class="gd">Anything in an EEG recording that is not brain activity: blinks, muscle tension, heartbeat, electrode drift, mains hum.</p><p class="ge">Often larger than the brain signal itself.</p></div>
+    <div class="gitem"><p class="gt">Band-pass filter</p><p class="gd">A step that keeps a chosen range of frequencies and discards the rest.</p><p class="ge">Like turning down every part of a stereo except one narrow slice.</p></div>
+    <div class="gitem"><p class="gt">Chance level</p><p class="gd">The accuracy you would get by guessing randomly. With 33 possible answers that is 1/33 = 3.03%.</p><p class="ge">Every accuracy number is meaningless without it. 9% sounds bad until you know chance is 3%.</p></div>
+    <div class="gitem"><p class="gt">Checkpoint</p><p class="gd">A saved snapshot of a model partway through training.</p><p class="ge">We save the one that scored best on held-out data rather than whichever happened to be last.</p></div>
+    <div class="gitem"><p class="gt">CLIP embedding</p><p class="gd">About 768 numbers describing an image's meaning, such that similar images land near each other.</p><p class="ge">The target the EEG encoder is trained to hit.</p></div>
+    <div class="gitem"><p class="gt">Contrastive loss</p><p class="gd">A training objective that pulls matching pairs together and pushes non-matching pairs apart, rather than asking the model to hit an exact target.</p><p class="ge">We added this because the old objective could be satisfied by predicting the same average answer for everything.</p></div>
+    <div class="gitem"><p class="gt">Covariance</p><p class="gd">A measure of how two signals move together: positive if they rise and fall in step, negative if they move oppositely.</p><p class="ge">For EEG, the pattern of covariance <em>between</em> electrodes is often more informative than any single electrode.</p></div>
+    <div class="gitem"><p class="gt">Cross-attention</p><p class="gd">The mechanism inside an image generator that lets an external signal influence what gets drawn. Normally fed a text prompt, here fed EEG.</p></div>
+    <div class="gitem"><p class="gt">Diffusion model</p><p class="gd">An image generator that starts from random static and removes noise step by step until a picture emerges.</p></div>
+    <div class="gitem"><p class="gt">Early stopping</p><p class="gd">Halting training when performance on held-out data stops improving, instead of running a fixed number of rounds.</p><p class="ge">Prevents a model from continuing to memorise long after it has stopped learning anything general.</p></div>
+    <div class="gitem"><p class="gt">EEGNet</p><p class="gd">A compact neural network designed for EEG, roughly 2,000 parameters.</p><p class="ge">One of our three baseline methods, and a candidate replacement for the 85-million-parameter encoder.</p></div>
+    <div class="gitem"><p class="gt">Electrode drift</p><p class="gd">Slow wandering of measured voltage, below 1 Hz, caused by the electrode's contact with the scalp changing over time.</p><p class="ge">Not brain activity, and unique to each recording, which makes it a fingerprint a model can exploit.</p></div>
+    <div class="gitem"><p class="gt">Epoch</p><p class="gd">One complete pass through the training data. Confusingly, in EEG research "epoch" can also mean a segment of a recording; context decides.</p></div>
     <div class="gitem"><p class="gt">Hertz (Hz)</p><p class="gd">Cycles per second. 10 Hz means the signal completes ten up-and-down cycles every second.</p></div>
-
+    <div class="gitem"><p class="gt">Data leakage</p><p class="gd">When information from the test set reaches the model during training, making its score better than its real ability.</p><p class="ge">In EEG this is the default state rather than an occasional mistake.</p></div>
     <div class="gitem"><p class="gt">Latent space</p><p class="gd">A compressed numerical representation. The diffusion model works in a small latent space rather than on full-size pixels, which makes it far faster.</p></div>
-
-    <div class="gitem"><p class="gt">n-way accuracy</p><p class="gd">Accuracy when choosing between n options. 2-way means picking between the right answer and one distractor (chance 50%); 33-way means choosing among all 33 (chance 3%).</p><p class="ge">Reporting the n matters enormously — 60% on 2-way is weak, 60% on 33-way would be extraordinary.</p></div>
-
+    <div class="gitem"><p class="gt">Masked autoencoder</p><p class="gd">A network trained by hiding part of its input and reconstructing the hidden part, so it needs no labels.</p></div>
+    <div class="gitem"><p class="gt">Microvolt (&micro;V)</p><p class="gd">One millionth of a volt. Brain rhythms at the scalp are tens of microvolts.</p></div>
+    <div class="gitem"><p class="gt">n-way accuracy</p><p class="gd">Accuracy when choosing between n options. 2-way means the right answer against one distractor, chance 50%; 33-way means choosing among all 33, chance 3%.</p><p class="ge">Reporting the n matters enormously. 60% on 2-way is weak; 60% on 33-way would be extraordinary.</p></div>
     <div class="gitem"><p class="gt">Overfitting / memorisation</p><p class="gd">When a model learns the specific training examples rather than the general pattern. It scores well on data it has seen and poorly on anything new.</p><p class="ge">We watched this happen: our alignment objective fell to 0.0001, meaning the model had effectively memorised which answer belonged to each training clip.</p></div>
-
-    <div class="gitem"><p class="gt">Regularisation</p><p class="gd">Techniques that discourage memorisation — penalising large parameter values, freezing parts of the network, adding noise to the inputs.</p></div>
-
-    <div class="gitem"><p class="gt">Sampling rate</p><p class="gd">How many measurements per second are taken. Ours is 250 Hz, so a half-second window contains 125 numbers per electrode.</p></div>
-
-    <div class="gitem"><p class="gt">SEM (standard error of the mean)</p><p class="gd">A measure of how much a measured average would bounce around if you repeated the experiment. Used to judge whether a difference is real.</p><p class="ge">Our perception result beat its control by 4.3 SEM — far too large to be luck. The imagination result was 0.5 SEM — indistinguishable from nothing.</p></div>
-
-    <div class="gitem"><p class="gt">Shuffled-pairing control</p><p class="gd">Scoring generated images against <em>deliberately mismatched</em> ground truth. Since the image quality is identical either way, any gap between real pairings and shuffled ones must come from the brain signal.</p><p class="ge">This is the control that makes our perception result meaningful rather than just "the generator makes nice pictures".</p></div>
-
+    <div class="gitem"><p class="gt">Parameters</p><p class="gd">The adjustable numbers inside a network. Ours: about 85 million trainable, against roughly 360 training examples per subject.</p></div>
+    <div class="gitem"><p class="gt">Permutation test</p><p class="gd">Shuffling the labels many times to see how often a result as good as yours appears by pure chance.</p><p class="ge">On our queue, because with 33 stimuli the effective sample size is small enough that the usual assumptions do not hold.</p></div>
+    <div class="gitem"><p class="gt">Regularisation</p><p class="gd">Techniques that discourage memorisation: penalising large parameter values, freezing parts of the network, adding noise to the inputs.</p></div>
+    <div class="gitem"><p class="gt">Riemannian tangent space</p><p class="gd">A way of classifying covariance patterns by mapping them from their own curved space onto a flat one first.</p><p class="ge">The standard strong baseline when EEG data is scarce, and one of our three methods.</p></div>
+    <div class="gitem"><p class="gt">Sampling rate</p><p class="gd">How many measurements per second are taken. Ours is 250 Hz, so a half-second window holds 125 numbers per electrode.</p></div>
+    <div class="gitem"><p class="gt">SEM (standard error of the mean)</p><p class="gd">How much a measured average would bounce around if the experiment were repeated. Used to judge whether a difference is real.</p><p class="ge">Our perception result beat its control by 4.3 SEM, too large to be luck. The imagination result was 0.5 SEM, indistinguishable from nothing.</p></div>
+    <div class="gitem"><p class="gt">Shuffled-pairing control</p><p class="gd">Scoring generated images against deliberately mismatched ground truth. Since image quality is identical either way, any gap must come from the brain signal.</p><p class="ge">The control that makes our perception result meaningful rather than just "the generator makes nice pictures".</p></div>
     <div class="gitem"><p class="gt">Signal-to-noise ratio (SNR)</p><p class="gd">How large the thing you want is compared to everything else. EEG imagery has famously poor SNR.</p></div>
-
+    <div class="gitem"><p class="gt">Split protocol</p><p class="gd">The rule deciding which trials train the model and which test it.</p><p class="ge">In EEG this choice affects the final number more than almost any modelling decision.</p></div>
     <div class="gitem"><p class="gt">Stimulus-disjoint split</p><p class="gd">A test where the images used for testing never appeared in training at all. The strictest protocol available.</p><p class="ge">Our perception result used this, which is why it is the strongest claim the project has.</p></div>
-
-    <div class="gitem"><p class="gt">Top-1 / Top-5 accuracy</p><p class="gd">Top-1 asks whether the model's single best guess was right. Top-5 asks whether the right answer appeared anywhere in its top five guesses.</p><p class="ge">Top-5 is more forgiving and often reveals partial knowledge that top-1 hides.</p></div>
-
-    <div class="gitem"><p class="gt">Trial averaging</p><p class="gd">Combining several recordings of the same thing before deciding, so random noise cancels out while consistent signal accumulates.</p><p class="ge">Averaging 40 repeats improves signal-to-noise roughly sixfold. This is why repetitions matter so much — and why having only one recording per picture hurts us so badly.</p></div>
-
-    <div class="gitem"><p class="gt">Validation vs test set</p><p class="gd">Validation data is held out to make decisions during development (which checkpoint, which settings). Test data is held out to produce the final number and touched only once.</p><p class="ge">Using test data to make decisions quietly inflates your result — the number stops being an honest estimate of performance on genuinely new data.</p></div>
-
-    <div class="gitem"><p class="gt">Weight decay</p><p class="gd">A regularisation method that penalises large parameter values, nudging the model toward simpler solutions.</p><p class="ge">Ours was defined in the config but silently never applied — one of the faults we found and fixed.</p></div>
+    <div class="gitem"><p class="gt">Top-1 / Top-5 accuracy</p><p class="gd">Top-1 asks whether the model's single best guess was right. Top-5 asks whether the right answer appeared anywhere in its top five.</p><p class="ge">Top-5 is more forgiving and often reveals partial knowledge that top-1 hides.</p></div>
+    <div class="gitem"><p class="gt">Trial averaging</p><p class="gd">Combining several recordings of the same thing before deciding, so random noise cancels while consistent signal accumulates.</p><p class="ge">Averaging 40 repeats improves signal-to-noise roughly sixfold. This is why repetitions matter, and why one recording per picture hurts us badly.</p></div>
+    <div class="gitem"><p class="gt">Validation vs test set</p><p class="gd">Validation data is held out to make decisions during development. Test data is held out to produce the final number and touched once.</p><p class="ge">Using test data to make decisions quietly inflates your result.</p></div>
+    <div class="gitem"><p class="gt">Weight decay</p><p class="gd">A regularisation method that penalises large parameter values, nudging a model toward simpler solutions.</p><p class="ge">Ours was defined in the config but silently never applied, one of the faults we found and fixed.</p></div>
+    <div class="gitem"><p class="gt">Window</p><p class="gd">One half-second slice of a recording. Ours are non-overlapping and tile the full ten seconds end to end.</p><p class="ge">Twenty windows of one imagery event are not twenty measurements of it.</p></div>
   </div>
+
+  <nav class="stepnav" data-nav></nav>
 </section>
 
 <footer>
-  <p>NeuroDiffusion &middot; a living record, maintained as work happens. Source at <code>analysis/journal.html</code> in the project repository, alongside the improvement plan, signal-quality notes, resource evaluations and code. Deep-model per-subject figures are best-validation and provisional. Results from the SJSU COE HPC cluster.</p>
+  <p>NeuroDiffusion &middot; living documentation, updated as work happens. Source at <code>analysis/journal.html</code> in the project repository, alongside the improvement plan, signal-quality notes, resource evaluations and code. Deep-model per-subject figures are best-validation and provisional. Results from the SJSU COE HPC cluster.</p>
 </footer>
 
 </div>
+
+<script>
+(function(){
+  var order = [
+    {k:'start',    label:'Start here'},
+    {k:'signal',   label:'01 · The signal'},
+    {k:'data',     label:'02 · The data'},
+    {k:'pipeline', label:'03 · The pipeline'},
+    {k:'results',  label:'04 · Training results'},
+    {k:'baseline', label:'05 · The baseline'},
+    {k:'status',   label:'06 · Where we are'},
+    {k:'journal',  label:'07 · Journal'},
+    {k:'reading',  label:'08 · Resources'},
+    {k:'glossary', label:'09 · Glossary'}
+  ];
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
+  var panels = {};
+  order.forEach(function(o){ panels[o.k] = document.getElementById('p-' + o.k); });
+
+  function idx(k){ for (var i=0;i<order.length;i++){ if (order[i].k===k) return i; } return 0; }
+
+  function show(k, push){
+    if (!panels[k]) k = 'start';
+    tabs.forEach(function(b){
+      var on = b.dataset.k === k;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.setAttribute('tabindex', on ? '0' : '-1');
+      panels[b.dataset.k].hidden = !on;
+      if (on) { try { b.scrollIntoView({block:'nearest', inline:'nearest'}); } catch(e){} }
+    });
+    try { localStorage.setItem('nd-tab', k); } catch(e){}
+    if (push) {
+      try { history.replaceState(null, '', '#' + k); } catch(e){ location.hash = k; }
+      window.scrollTo({top:0, behavior:'auto'});
+    }
+  }
+
+  // build prev/next navigation inside each panel
+  order.forEach(function(o, i){
+    var nav = panels[o.k] && panels[o.k].querySelector('[data-nav]');
+    if (!nav) return;
+    var prev = order[i-1], next = order[i+1];
+    var html = '';
+    html += prev
+      ? '<button class="sn prev" data-go="' + prev.k + '"><span>Previous</span><b>' + prev.label + '</b></button>'
+      : '<span class="sn empty"></span>';
+    html += next
+      ? '<button class="sn next" data-go="' + next.k + '"><span>Next step</span><b>' + next.label + '</b></button>'
+      : '<span class="sn empty"></span>';
+    nav.innerHTML = html;
+  });
+
+  tabs.forEach(function(b){
+    b.addEventListener('click', function(){ show(b.dataset.k, true); });
+  });
+  document.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('[data-go]') : null;
+    if (t) { show(t.dataset.go, true); }
+  });
+
+  // keyboard: left/right across the tab bar
+  document.querySelector('.tabs').addEventListener('keydown', function(e){
+    var cur = tabs.findIndex(function(b){ return b.getAttribute('aria-selected') === 'true'; });
+    var to = null;
+    if (e.key === 'ArrowRight') to = Math.min(cur+1, tabs.length-1);
+    if (e.key === 'ArrowLeft')  to = Math.max(cur-1, 0);
+    if (e.key === 'Home') to = 0;
+    if (e.key === 'End')  to = tabs.length-1;
+    if (to !== null) { e.preventDefault(); show(tabs[to].dataset.k, true); tabs[to].focus(); }
+  });
+
+  window.addEventListener('hashchange', function(){
+    show((location.hash || '').replace('#',''), false);
+  });
+
+  var startK = (location.hash || '').replace('#','');
+  if (!panels[startK]) {
+    try { var saved = localStorage.getItem('nd-tab'); if (saved && panels[saved]) startK = saved; } catch(e){}
+  }
+  show(panels[startK] ? startK : 'start', false);
+})();
+</script>
