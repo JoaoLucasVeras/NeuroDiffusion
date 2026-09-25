@@ -71,6 +71,26 @@ def load_split(dataset_path, splits_path, subject):
     return take(sp["train"]), take(sp["test"]), labels
 
 
+def load_all_subjects(dataset_path):
+    """Every trial of every subject, grouped by subject. Loaded once, reused.
+
+    The cross-subject test does not need the window split: train and test come from
+    different people, so no window of the test recording is ever anywhere near
+    training. That lets us use all 20 windows of each stimulus on both sides.
+    """
+    payload = torch.load(dataset_path, map_location="cpu")
+    by_subject = {}
+    for e in payload["dataset"]:
+        by_subject.setdefault(int(e["subject"]), []).append({
+            "eeg": e["eeg"].numpy().astype(np.float64),
+            "label": int(e["label"]),
+            "image": e["image"],
+            "window": int(e["window"]),
+            "subject": int(e["subject"]),
+        })
+    return by_subject, payload["labels"]
+
+
 def concat_windows(trials, n):
     """Glue n adjacent windows of the same recording into one longer segment.
 
@@ -293,6 +313,36 @@ def score(probs, trials, n_classes):
 
 # -------------------------------------------------------------------------- main
 
+def _zscore_per_subject(F):
+    """Centre and scale features using only this subject's own trials.
+
+    Label-free, so it leaks nothing. Necessary because log band power carries each
+    subject's absolute amplitude, and two people's scalps differ more than two of
+    their imagined pictures do.
+    """
+    mu = F.mean(0)
+    sd = F.std(0) + 1e-9
+    return (F - mu) / sd
+
+
+def _permute_by_stimulus(trials, ytr, seed):
+    """Shuffle the label attached to each whole recording, not each window.
+
+    Permuting individual windows would scatter the 20 windows of one recording
+    across 33 labels, which no real signal ever does, and would give a null that
+    is far too easy to beat.
+    """
+    rng = np.random.RandomState(seed)
+    stems = [t["image"] for t in trials]
+    uniq = sorted(set(stems))
+    lab_of = {}
+    for st, y in zip(stems, ytr):
+        lab_of[st] = y
+    shuffled = rng.permutation([lab_of[u] for u in uniq])
+    remap = dict(zip(uniq, shuffled))
+    return np.array([remap[st] for st in stems])
+
+
 def run_subject(args, subject, dataset, splits):
     tr, te, synsets = load_split(dataset, splits, subject)
     if not tr or not te:
@@ -354,6 +404,30 @@ def run_subject(args, subject, dataset, splits):
         except Exception as e:
             res["eegnet"] = {"error": "%s: %s" % (type(e).__name__, e)}
 
+    # ---- permutation null: refit on shuffled stimulus labels, so "above chance"
+    #      becomes a claim we can defend. With 33 stimuli the effective sample size
+    #      is ~33, not the 132 test windows, and the usual assumptions do not hold.
+    if getattr(args, "permute", 0) > 0:
+        l2 = res["bandpower"].get("l2", 1e-2)
+        null_top1, null_avg = [], []
+        for k in range(args.permute):
+            yp = _permute_by_stimulus(tr, ytr, seed=2000 + k)
+            pr = logreg(Ftr, yp, Fte, n_classes, l2)
+            sc = score(pr, te, n_classes)
+            null_top1.append(sc["top1"])
+            null_avg.append(sc["trial_avg_top1"])
+        obs = res["bandpower"]["top1"]
+        res["permutation"] = {
+            "n": args.permute, "method": "bandpower", "l2": l2,
+            "null_top1_mean": float(np.mean(null_top1)),
+            "null_top1_p95": float(np.percentile(null_top1, 95)),
+            "null_top1_max": float(np.max(null_top1)),
+            "p_value": float((np.sum(np.array(null_top1) >= obs) + 1.0)
+                             / (args.permute + 1.0)),
+            "null_trial_avg_mean": float(np.mean(null_avg)),
+            "null_trial_avg_p95": float(np.percentile(null_avg, 95)),
+        }
+
     # ---- which channels carry the signal (we have no electrode labels, so rank
     #      them by between-class separability of log band power)
     F = np.concatenate([Ftr, Fte])
@@ -367,6 +441,140 @@ def run_subject(args, subject, dataset, splits):
     within = F.var(0) * len(F) + 1e-12
     res["top_channels"] = [int(i) for i in np.argsort(-(between / within))[:10]]
     return res
+
+
+def run_cross(args, train_subj, test_subj, by_subject):
+    """Train on one person, test on another, on the 33 stimuli they share.
+
+    This is the test that separates imagery content from recording fingerprint.
+    Electrode drift, posture and cap placement cannot transfer between people, so
+    anything that survives the crossing has to be about the pictures.
+    """
+    tr = by_subject.get(train_subj, [])
+    te = by_subject.get(test_subj, [])
+    if not tr or not te:
+        return {"train_subject": train_subj, "test_subject": test_subj,
+                "error": "no trials for one of the subjects"}
+
+    tr = concat_windows(tr, args.window_len)
+    te = concat_windows(te, args.window_len)
+
+    band = None if args.band[0] <= 0 else (args.band[0], args.band[1])
+    Xtr, tr, thresh = prepare(tr, band, args.reject_artifacts)
+    Xte, te, _ = prepare(te, band, args.reject_artifacts, thresh)
+
+    # keep only the stimuli both people were actually given
+    shared = sorted({t["label"] for t in tr} & {t["label"] for t in te})
+    if len(shared) < 2:
+        return {"train_subject": train_subj, "test_subject": test_subj,
+                "error": "fewer than 2 shared classes"}
+    keep_tr = [i for i, t in enumerate(tr) if t["label"] in shared]
+    keep_te = [i for i, t in enumerate(te) if t["label"] in shared]
+    Xtr, tr = [Xtr[i] for i in keep_tr], [tr[i] for i in keep_tr]
+    Xte, te = [Xte[i] for i in keep_te], [te[i] for i in keep_te]
+
+    remap = {c: i for i, c in enumerate(shared)}
+    n_classes = len(shared)
+    ytr = np.array([remap[t["label"]] for t in tr])
+    for t in tr + te:
+        t["label"] = remap[t["label"]]
+
+    res = {"train_subject": train_subj, "test_subject": test_subj,
+           "n_train": len(tr), "n_test": len(te), "n_classes": n_classes,
+           "chance": 1.0 / n_classes, "band": band,
+           "window_len": args.window_len,
+           "reject_artifacts": bool(args.reject_artifacts)}
+
+    # ---- bandpower + logistic regression, each subject standardised to itself
+    Ftr = _zscore_per_subject(feat_bandpower(Xtr))
+    Fte = _zscore_per_subject(feat_bandpower(Xte))
+    best = None
+    for l2 in args.l2:
+        pr = logreg(Ftr, ytr, Fte, n_classes, l2)
+        sc = score(pr, te, n_classes)
+        sc["l2"] = l2
+        if best is None or sc["top1"] > best["top1"]:
+            best = sc
+    res["bandpower"] = best
+
+    # ---- riemannian, each subject re-centred on its OWN mean covariance
+    #      (the standard label-free alignment for crossing subjects)
+    try:
+        proj = fit_channel_pca(Xtr, args.pca)
+        Rtr, _ = feat_riemann_fit(Xtr, proj)
+        Rte, _ = feat_riemann_fit(Xte, proj)
+        best = None
+        for l2 in args.l2:
+            pr = logreg(Rtr, ytr, Rte, n_classes, l2)
+            sc = score(pr, te, n_classes)
+            sc["l2"] = l2
+            if best is None or sc["top1"] > best["top1"]:
+                best = sc
+        best["n_features"] = int(Rtr.shape[1])
+        res["riemann"] = best
+    except Exception as e:
+        res["riemann"] = {"error": "%s: %s" % (type(e).__name__, e)}
+
+    # ---- eegnet, on per-subject amplitude-normalised input
+    if not args.skip_eegnet:
+        try:
+            def norm(X):
+                sd = np.concatenate([x for x in X], axis=1).std(axis=1, keepdims=True) + 1e-9
+                return [x / sd for x in X]
+            pr = run_eegnet(norm(Xtr), ytr, norm(Xte), n_classes,
+                            epochs=args.eegnet_epochs)
+            res["eegnet"] = score(pr, te, n_classes)
+        except Exception as e:
+            res["eegnet"] = {"error": "%s: %s" % (type(e).__name__, e)}
+
+    # ---- permutation null: refit on shuffled stimulus labels
+    if args.permute > 0:
+        l2 = res["bandpower"].get("l2", 1e-2)
+        null_top1, null_avg = [], []
+        for k in range(args.permute):
+            yp = _permute_by_stimulus(tr, ytr, seed=1000 + k)
+            pr = logreg(Ftr, yp, Fte, n_classes, l2)
+            sc = score(pr, te, n_classes)
+            null_top1.append(sc["top1"])
+            null_avg.append(sc["trial_avg_top1"])
+        obs = res["bandpower"]["top1"]
+        res["permutation"] = {
+            "n": args.permute, "method": "bandpower", "l2": l2,
+            "null_top1_mean": float(np.mean(null_top1)),
+            "null_top1_p95": float(np.percentile(null_top1, 95)),
+            "null_top1_max": float(np.max(null_top1)),
+            "p_value": float((np.sum(np.array(null_top1) >= obs) + 1.0)
+                             / (args.permute + 1.0)),
+            "null_trial_avg_mean": float(np.mean(null_avg)),
+            "null_trial_avg_p95": float(np.percentile(null_avg, 95)),
+        }
+    return res
+
+
+def print_cross(r):
+    if "error" in r:
+        print("  S%s -> S%s : %s" % (r.get("train_subject"), r.get("test_subject"),
+                                     r["error"]))
+        return
+    ch = r["chance"]
+    print("\n" + "=" * 72)
+    print("TRAIN S%s  ->  TEST S%s  |  train %s  test %s  |  %s classes, chance %.4f"
+          % (r["train_subject"], r["test_subject"], r["n_train"], r["n_test"],
+             r["n_classes"], ch))
+    for name in ("bandpower", "riemann", "eegnet"):
+        m = r.get(name)
+        if not m:
+            continue
+        if "error" in m:
+            print("  %-10s ERROR %s" % (name, m["error"]))
+            continue
+        print("  %-10s top1 %.4f (%.2fx)  top5 %.4f  per-stimulus %.4f"
+              % (name, m["top1"], m["top1"] / ch, m["top5"], m["trial_avg_top1"]))
+    pm = r.get("permutation")
+    if pm:
+        print("  null (%d shuffles, %s): mean %.4f  p95 %.4f  max %.4f  ->  p = %.4f"
+              % (pm["n"], pm["method"], pm["null_top1_mean"], pm["null_top1_p95"],
+                 pm["null_top1_max"], pm["p_value"]))
 
 
 def main():
@@ -385,8 +593,47 @@ def main():
                    help="drop the top-decile peak-to-peak trials (ocular arm)")
     p.add_argument("--eegnet_epochs", type=int, default=150)
     p.add_argument("--skip_eegnet", action="store_true")
+    p.add_argument("--cross", type=int, nargs=2, metavar=("TRAIN", "TEST"),
+                   default=None, help="train on subject TRAIN, test on subject TEST")
+    p.add_argument("--all_pairs", action="store_true",
+                   help="every ordered pair of subjects (12 runs)")
+    p.add_argument("--permute", type=int, default=0,
+                   help="permutation null: refit this many times on shuffled "
+                        "stimulus labels (0 = off)")
     p.add_argument("--json", default=None)
     args = p.parse_args()
+
+    # ---- cross-subject mode: a different question, so a separate path
+    if args.cross or args.all_pairs:
+        by_subject, _ = load_all_subjects(args.dataset)
+        avail = sorted(by_subject)
+        if args.all_pairs:
+            pairs = [(a, b) for a in avail for b in avail if a != b]
+        else:
+            pairs = [tuple(args.cross)]
+        out = {"config": vars(args), "mode": "cross_subject", "results": []}
+        for a, b in pairs:
+            r = run_cross(args, a, b, by_subject)
+            out["results"].append(r)
+            print_cross(r)
+        ok = [r for r in out["results"] if "bandpower" in r and "top1" in r["bandpower"]]
+        if ok:
+            print("\n" + "=" * 72)
+            print("SUMMARY  |  %d pairs  |  bandpower top1 as a multiple of chance"
+                  % len(ok))
+            for r in ok:
+                print("  S%s -> S%s : %.2fx   (per-stimulus %.2fx)"
+                      % (r["train_subject"], r["test_subject"],
+                         r["bandpower"]["top1"] / r["chance"],
+                         r["bandpower"]["trial_avg_top1"] / r["chance"]))
+            mult = [r["bandpower"]["top1"] / r["chance"] for r in ok]
+            print("  mean %.2fx   median %.2fx   best %.2fx"
+                  % (float(np.mean(mult)), float(np.median(mult)), float(np.max(mult))))
+        if args.json:
+            with open(args.json, "w") as f:
+                json.dump(out, f, indent=2, default=str)
+            print("\nwrote %s" % args.json)
+        return
 
     subjects = [1, 2, 3, 4] if args.all_subjects else [args.subject]
     out = {"config": vars(args), "results": []}
