@@ -114,7 +114,7 @@ Three things that are easy to get wrong:
 
 ## Documentation
 
-The project documentation is a single HTML file, `analysis/journal.html`, published as a
+The project documentation is a single HTML file, `docs/journal.html`, published as a
 live page. If your change alters a result or an explanation that appears there, update it
 in the same pull request: add a dated entry to the Journal tab, add or amend the row in the
 ledger, and adjust the affected step tab.

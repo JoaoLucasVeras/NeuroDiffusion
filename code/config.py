@@ -151,7 +151,7 @@ class Config_Generative_Model:
         self.generate_limit = 200
         self.cfg_scale = 8.0 # Critical for Imagination Paradigm
 
-        # --- regularisation / model selection (IMPROVEMENT_PLAN.md P0-P2) ---
+        # --- regularisation / model selection (docs/IMPROVEMENT_PLAN.md P0-P2) ---
         # The first LOSO run memorised the 33 training stimuli (train/loss_clip -> 1e-4)
         # with the whole 24-block encoder trainable, weight decay never reaching AdamW,
         # and no held-out metric. These defaults are the "v2" regime.

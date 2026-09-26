@@ -193,7 +193,7 @@ class eLDM:
         self.model.unfreeze_whole_model()
         self.model.freeze_first_stage()
 
-        # Regularisation knobs (see IMPROVEMENT_PLAN.md, P1/P2).
+        # Regularisation knobs (see docs/IMPROVEMENT_PLAN.md, P1/P2).
         self.model.weight_decay = float(getattr(config, 'weight_decay', 0.01))
         self.model.clip_weight = float(getattr(config, 'clip_weight', 1.0))
         self.model.val_preview_every = int(getattr(config, 'val_preview_every', 0))
