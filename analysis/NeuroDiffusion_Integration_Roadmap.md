@@ -44,9 +44,9 @@ Verify the data structure before feeding it into the model.
     ```
 
 6.  **Run the Inspection Script:**
-    Use `analysis/inspect_mat.py` to verify the variable names and matrix shapes.
+    Use `code/check_data.py` to verify the variable names and matrix shapes.
     ```bash
-    python analysis/inspect_mat.py
+    python code/check_data.py
     ```
 
 7.  **Verify Findings (Checkpoint):**
