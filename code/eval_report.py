@@ -1,0 +1,255 @@
+"""
+Produce the quantitative evaluation report: model scores next to the baselines that
+say whether those scores mean anything.
+
+Consumes the samples.npz written by eeg_ldm.py / gen_eval_eeg.py:
+    gt      (n, h, w, 3)      uint8   ground-truth stimulus
+    pred    (n, k, h, w, 3)   uint8   k generations per trial
+    labels  (n,)              int     class index
+    synsets (n_classes,)      str     synset id per class index
+
+Usage:
+    python code/eval_report.py --samples results/generation/<run>/samples.npz \\
+        --output results/generation/<run>/report
+"""
+import argparse
+import json
+import os
+
+import numpy as np
+
+NL = chr(10)
+
+from clip_metrics import CLIPScorer, make_noise_baseline, shuffle_pairs, synset_to_name
+
+
+def load_samples(path):
+    d = np.load(path, allow_pickle=True)
+    gt = d["gt"]
+    pred = d["pred"]
+    labels = d["labels"]
+    synsets = [str(s) for s in d["synsets"]]
+    if pred.ndim == 4:            # single generation per trial
+        pred = pred[:, None]
+    stems = [str(x) for x in d["stems"]] if "stems" in d.files else None
+    return gt, pred, labels, synsets, stems
+
+
+def summarise(values):
+    v = np.asarray(values, dtype=float)
+    n = len(v)
+    return {
+        "mean": float(v.mean()),
+        "std": float(v.std(ddof=1)) if n > 1 else 0.0,
+        "sem": float(v.std(ddof=1) / np.sqrt(n)) if n > 1 else 0.0,
+        "n": int(n),
+    }
+
+
+def main():
+    p = argparse.ArgumentParser(description="EEG-to-image evaluation report")
+    p.add_argument("--samples", required=True)
+    p.add_argument("--output", default=None)
+    # The full-way case is appended automatically from the classes actually present,
+    # so the headline n-way figure never overstates the number of alternatives.
+    p.add_argument("--n_way", type=int, nargs="+", default=[2, 10])
+    p.add_argument("--seed", type=int, default=2022)
+    p.add_argument("--device", default=None)
+    p.add_argument("--clip_model", default=None,
+                   help="override the CLIP checkpoint (default: openai/clip-vit-large-patch14)")
+    args = p.parse_args()
+
+    gt, pred, labels, synsets, stems = load_samples(args.samples)
+    n, k = pred.shape[0], pred.shape[1]
+
+    # Two different denominators, and conflating them misstates the headline claim.
+    #   n_prompts  : how many class prompts the zero-shot classifier chooses between.
+    #                Chance for that decision is 1/n_prompts.
+    #   n_present  : how many classes actually occur in this test set. Stimuli whose
+    #                images could not be sourced were dropped from the splits, so the
+    #                imagination set has 33 of 40 classes -- chance 0.0303, not 0.0250.
+    # Report against the classes actually present; that is the honest baseline.
+    n_prompts = len(synsets)
+    present = sorted(set(int(l) for l in labels))
+    n_present = len(present)
+    print("Loaded %d trials, %d generation(s) each, %d classes present of %d prompts"
+          % (n, k, n_present, n_prompts))
+    if n_present not in args.n_way:
+        args.n_way = list(args.n_way) + [n_present]
+
+    scorer = CLIPScorer(device=args.device,
+                        **({"model_name": args.clip_model} if args.clip_model else {}))
+    results = {
+        "n_trials": n,
+        "n_generations_per_trial": k,
+        "n_classes": n_present,
+        "n_prompts": n_prompts,
+        "chance_accuracy": 1.0 / n_present,
+        "chance_accuracy_over_prompts": 1.0 / n_prompts,
+        "samples_file": os.path.abspath(args.samples),
+    }
+
+    # ---- model: average the k generations per trial ----
+    print("\nScoring model generations ...")
+    sims, top1, probs_acc = [], [], []
+    for j in range(k):
+        pj = pred[:, j]
+        sims.append(scorer.image_similarity(pj, gt))
+        acc, probs = scorer.topk_accuracy(pj, labels, synsets, k=1)
+        top1.append(acc)
+        probs_acc.append(probs)
+    model_sim = np.mean(sims, axis=0)
+    mean_probs = np.mean(probs_acc, axis=0)
+
+    results["model"] = {
+        "clip_image_similarity": summarise(model_sim),
+        "clip_zeroshot_top1": float(np.mean(top1)),
+        "clip_zeroshot_top5": float(np.mean([
+            int(l in np.argsort(-mean_probs[i])[:5]) for i, l in enumerate(labels)
+        ])),
+    }
+    for w in args.n_way:
+        if w <= n_present:
+            results["model"]["clip_%d_way" % w] = scorer.n_way_accuracy(
+                mean_probs, labels, n_way=w, seed=args.seed)
+
+    # ---- baseline: random noise ----
+    print("Scoring noise baseline ...")
+    noise = make_noise_baseline(n, gt.shape[1], gt.shape[2], seed=args.seed)
+    noise_sim = scorer.image_similarity(noise, gt)
+    noise_acc, noise_probs = scorer.topk_accuracy(noise, labels, synsets, k=1)
+    results["baseline_noise"] = {
+        "clip_image_similarity": summarise(noise_sim),
+        "clip_zeroshot_top1": noise_acc,
+    }
+    for w in args.n_way:
+        if w <= n_present:
+            results["baseline_noise"]["clip_%d_way" % w] = scorer.n_way_accuracy(
+                noise_probs, labels, n_way=w, seed=args.seed)
+
+    # ---- baseline: shuffled pairing (the one that matters) ----
+    print("Scoring shuffled-pairing baseline ...")
+    shuffled_gt, _ = shuffle_pairs(gt, labels, seed=args.seed)
+    shuf_sim = scorer.image_similarity(pred[:, 0], shuffled_gt)
+    results["baseline_shuffled"] = {
+        "clip_image_similarity": summarise(shuf_sim),
+        "note": "model generations scored against mismatched ground truth; "
+                "isolates EEG-image correspondence from raw image quality",
+    }
+
+    # ---- trial averaging: pool the windows of each stimulus before deciding ----
+    # Standard in EEG decoding (THINGS-EEG averages up to 80 repeats). One decision
+    # per stimulus, so n is the number of distinct stimuli, not windows.
+    if stems is not None and len(set(stems)) < n:
+        print("Scoring trial-averaged (per-stimulus) metrics ...")
+        uniq = sorted(set(stems))
+        sidx = {s_: i for i, s_ in enumerate(uniq)}
+        tgt = np.array([sidx[s_] for s_ in stems])
+        pe = scorer.embed_images(pred[:, 0]).numpy()
+        ge = scorer.embed_images(gt).numpy()
+        avg = np.zeros((len(uniq), pe.shape[1]))
+        gavg = np.zeros((len(uniq), ge.shape[1]))
+        for i, t in enumerate(tgt):
+            avg[t] += pe[i]; gavg[t] = ge[i]
+        avg /= np.linalg.norm(avg, axis=1, keepdims=True) + 1e-12
+        sims = avg @ gavg.T
+        stim_label = np.array([labels[np.where(tgt == t)[0][0]] for t in range(len(uniq))])
+        ret_top1 = float(np.mean(sims.argmax(1) == np.arange(len(uniq))))
+        ret_class = float(np.mean(stim_label[sims.argmax(1)] == stim_label))
+        rng_ = np.random.RandomState(args.seed)
+        perm = rng_.permutation(len(uniq))
+        results["trial_averaged"] = {
+            "n_stimuli": len(uniq),
+            "windows_per_stimulus_mean": float(n / len(uniq)),
+            "clip_image_similarity_mean": float(np.mean(np.diag(sims))),
+            "clip_image_similarity_shuffled": float(np.mean(sims[np.arange(len(uniq)), perm])),
+            "retrieval_top1": ret_top1,
+            "retrieval_chance": 1.0 / len(uniq),
+            "retrieval_class_top1": ret_class,
+        }
+
+    # ---- per-class breakdown (a null overall can hide a decodable subset) ----
+    per_class = {}
+    for c in present:
+        m_ = labels == c
+        per_class[synsets[c]] = {
+            "n": int(m_.sum()),
+            "clip_sim": float(model_sim[m_].mean()),
+            "top1": float(np.mean([int(np.argmax(mean_probs[i]) == c) for i in np.where(m_)[0]])),
+        }
+    results["per_class"] = per_class
+
+    # ---- headline: does the model beat the controls? ----
+    m = results["model"]["clip_image_similarity"]
+    s = results["baseline_shuffled"]["clip_image_similarity"]
+    pooled_sem = np.sqrt(m["sem"] ** 2 + s["sem"] ** 2)
+    delta = m["mean"] - s["mean"]
+    results["headline"] = {
+        "clip_similarity_delta_vs_shuffled": float(delta),
+        "delta_in_sems": float(delta / pooled_sem) if pooled_sem > 0 else 0.0,
+        "top1_over_chance": results["model"]["clip_zeroshot_top1"] - results["chance_accuracy"],
+        "verdict": ("EEG-conditioned signal present"
+                    if pooled_sem > 0 and delta > 2 * pooled_sem
+                    else "NOT distinguishable from chance pairing"),
+    }
+
+    out = args.output or os.path.splitext(args.samples)[0] + "_report"
+    os.makedirs(os.path.dirname(out) or ".", exist_ok=True)
+    with open(out + ".json", "w") as f:
+        json.dump(results, f, indent=2)
+
+    lines = []
+    lines.append("# EEG-to-Image Evaluation Report\n")
+    lines.append("- Trials: **%d**, generations/trial: **%d**, classes present: **%d** "
+                 "(of %d prompts)" % (n, k, n_present, n_prompts))
+    lines.append("- Chance accuracy: **%.4f** (1/%d, classes actually in the test set)\n"
+                 % (results["chance_accuracy"], n_present))
+    lines.append("## CLIP image similarity (higher is better)\n")
+    lines.append("| Condition | Mean | SEM |")
+    lines.append("|---|---|---|")
+    for key, name in [("model", "Model"), ("baseline_shuffled", "Shuffled pairing"),
+                      ("baseline_noise", "Random noise")]:
+        d = results[key]["clip_image_similarity"]
+        lines.append("| %s | %.4f | %.4f |" % (name, d["mean"], d["sem"]))
+    lines.append("\n## Zero-shot classification of generated images\n")
+    lines.append("| Metric | Model | Noise | Chance |")
+    lines.append("|---|---|---|---|")
+    lines.append("| top-1 | %.4f | %.4f | %.4f |" % (
+        results["model"]["clip_zeroshot_top1"],
+        results["baseline_noise"]["clip_zeroshot_top1"],
+        results["chance_accuracy"]))
+    for w in args.n_way:
+        kk = "clip_%d_way" % w
+        if kk in results["model"]:
+            lines.append("| %d-way | %.4f | %.4f | %.4f |" % (
+                w, results["model"][kk], results["baseline_noise"][kk], 1.0 / w))
+    if "trial_averaged" in results:
+        ta = results["trial_averaged"]
+        lines.append("%s## Trial-averaged (one decision per stimulus, %d stimuli, ~%.0f windows each)%s"
+                     % (NL, ta["n_stimuli"], ta["windows_per_stimulus_mean"], NL))
+        lines.append("| Metric | Model | Control |")
+        lines.append("|---|---|---|")
+        lines.append("| CLIP similarity (avg) | %.4f | %.4f (shuffled) |"
+                     % (ta["clip_image_similarity_mean"], ta["clip_image_similarity_shuffled"]))
+        lines.append("| retrieval top-1 (%d-way) | %.4f | %.4f (chance) |"
+                     % (ta["n_stimuli"], ta["retrieval_top1"], ta["retrieval_chance"]))
+        lines.append("| retrieval class top-1 | %.4f | - |" % ta["retrieval_class_top1"])
+    top = sorted(results["per_class"].items(), key=lambda kv: -kv[1]["clip_sim"])[:5]
+    lines.append("%s## Best-decoded classes (by CLIP similarity)%s" % (NL, NL))
+    lines.append("| Class | n | CLIP sim | top-1 |")
+    lines.append("|---|---|---|---|")
+    for syn, d_ in top:
+        lines.append("| %s (%s) | %d | %.4f | %.3f |" % (synset_to_name(syn), syn, d_["n"], d_["clip_sim"], d_["top1"]))
+    lines.append("\n## Verdict\n")
+    lines.append("CLIP similarity exceeds the shuffled-pairing control by "
+                 "**%.4f** (%.1f SEM).\n" % (delta, results["headline"]["delta_in_sems"]))
+    lines.append("**%s**\n" % results["headline"]["verdict"])
+    with open(out + ".md", "w") as f:
+        f.write("\n".join(lines))
+
+    print("\n" + "\n".join(lines))
+    print("\nWrote %s.json and %s.md" % (out, out))
+
+
+if __name__ == "__main__":
+    main()

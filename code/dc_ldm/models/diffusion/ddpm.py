@@ -16,7 +16,7 @@ from contextlib import contextmanager
 from functools import partial
 from tqdm import tqdm
 from torchvision.utils import make_grid
-from pytorch_lightning.utilities.distributed import rank_zero_only
+from pytorch_lightning.utilities.rank_zero import rank_zero_only
 
 from dc_ldm.util import log_txt_as_img, exists, default, ismap, isimage, mean_flat, count_params, instantiate_from_config
 from dc_ldm.modules.ema import LitEma
@@ -42,6 +42,38 @@ def disabled_train(self, mode=True):
 
 def uniform_on_device(r1, r2, shape, device):
     return (r1 - r2) * torch.rand(*shape, device=device) + r2
+
+
+def retrieval_metrics(pred, img, label, stems):
+    """EEG->CLIP retrieval among the distinct stimuli present.
+
+    pred  (n, d) predicted CLIP embeddings from EEG
+    img   (n, d) CLIP embeddings of the true stimulus
+    label (n,)   class index
+    stems list   stimulus id per trial (windows of one stimulus share a stem)
+    """
+    uniq = sorted(set(stems))
+    sidx = {s: i for i, s in enumerate(uniq)}
+    tgt = torch.tensor([sidx[s] for s in stems])
+    cand = torch.zeros(len(uniq), img.shape[1])
+    cand_label = torch.zeros(len(uniq), dtype=torch.long)
+    for i, s in enumerate(stems):
+        cand[sidx[s]] = img[i]            # identical for every window of a stimulus
+        cand_label[sidx[s]] = label[i]
+    pn = torch.nn.functional.normalize(pred, dim=-1)
+    cn = torch.nn.functional.normalize(cand, dim=-1)
+    sims = pn @ cn.T
+    top1 = (sims.argmax(1) == tgt).float().mean()
+    class_top1 = (cand_label[sims.argmax(1)] == label).float().mean()
+    k5 = min(5, len(uniq))
+    top5 = (sims.topk(k5, dim=1).indices == tgt[:, None]).any(1).float().mean()
+    # Trial averaging: mean the predictions of all windows of a stimulus first.
+    avg = torch.zeros(len(uniq), pred.shape[1]).index_add_(0, tgt, pn)
+    avg = torch.nn.functional.normalize(avg, dim=-1)
+    top1_avg = ((avg @ cn.T).argmax(1) == torch.arange(len(uniq))).float().mean()
+    return {'retrieval_top1': top1.item(), 'retrieval_top5': top5.item(),
+            'retrieval_class_top1': class_top1.item(), 'retrieval_top1_avg': top1_avg.item(),
+            'retrieval_n_way': len(uniq)}
 
 
 class DDPM(pl.LightningModule):
@@ -113,9 +145,11 @@ class DDPM(pl.LightningModule):
         self.loss_type = loss_type
 
         self.learn_logvar = learn_logvar
-        self.logvar = torch.full(fill_value=logvar_init, size=(self.num_timesteps,))
+        logvar = torch.full(fill_value=logvar_init, size=(self.num_timesteps,))
         if self.learn_logvar:
-            self.logvar = nn.Parameter(self.logvar, requires_grad=True)
+            self.logvar = nn.Parameter(logvar, requires_grad=True)
+        else:
+            self.register_buffer('logvar', logvar)
 
         self.validation_count = 0
         self.ddim_steps = ddim_steps
@@ -125,6 +159,7 @@ class DDPM(pl.LightningModule):
         self.best_val = 0.0 
         self.run_full_validation_threshold = 0.0
         self.eval_avg = True
+        # (self.z_cache removed -- see get_input: it cached one batch of latents forever)
 
     def re_init_ema(self):
         if self.use_ema:
@@ -444,13 +479,19 @@ class DDPM(pl.LightningModule):
                                     
     def full_validation(self, batch, state=None):
         print('###### run full validation! ######\n')
-        grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=5, limit=None, state=state)
+        grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=2, limit=3, state=state)
         metric, metric_list = self.get_eval_metric(all_samples)
         self.save_images(all_samples, suffix='%.4f'%metric[-1])
         metric_dict = {f'val/{k}_full':v for k, v in zip(metric_list, metric)}
         # self.logger.log_metrics(metric_dict)
         grid_imgs = Image.fromarray(grid.astype(np.uint8))
-        # self.logger.log_image(key=f'samples_test_full', images=[grid_imgs])
+        # Auto-display in notebook
+        try:
+            from IPython.display import display
+            print(f"\n🎨 [EPOCH {self.current_epoch}] NEW BRAIN DECODING PREVIEW:")
+            display(grid_imgs)
+        except:
+            pass
         if metric[-1] > self.best_val:
             self.best_val = metric[-1]
             torch.save(
@@ -464,23 +505,66 @@ class DDPM(pl.LightningModule):
             )
 
     @torch.no_grad()
-    def validation_step(self, batch, batch_idx):
-        if batch_idx != 0:
-            return
-        
-        if self.validation_count % 5 == 0 and self.trainer.current_epoch != 0:
-            self.full_validation(batch)
-        else:
-            # pass
-            grid, all_samples, state = self.generate(batch, ddim_steps=self.ddim_steps, num_samples=3, limit=5)
-            metric, metric_list = self.get_eval_metric(all_samples, avg=self.eval_avg)
-            grid_imgs = Image.fromarray(grid.astype(np.uint8))
-            # self.logger.log_image(key=f'samples_test', images=[grid_imgs])
-            metric_dict = {f'val/{k}':v for k, v in zip(metric_list, metric)}
-            # self.logger.log_metrics(metric_dict)
-            if metric[-1] > self.run_full_validation_threshold:
-                self.full_validation(batch, state=state)
-        self.validation_count += 1
+    def validation_step(self, batch, batch_idx, dataloader_idx=0):
+        """Cheap held-out metrics every epoch: diffusion/CLIP losses and, for the
+        EEG->CLIP head, how often the predicted embedding retrieves the right
+        stimulus among all stimuli in the loader. No sampling, so seconds per epoch.
+
+        Loader 0 is validation (carved from the training subjects) and drives
+        checkpoint selection / early stopping; loader 1, if present, is the test
+        split and is logged for monitoring only.
+        """
+        out = {}
+        loss, loss_dict = self.shared_step(batch)
+        out['loss_dict'] = {k: v.detach().float().cpu() for k, v in loss_dict.items()}
+
+        if getattr(self, 'clip_tune', False) and hasattr(self.cond_stage_model, 'mapping'):
+            _, re_latent = self.get_learned_conditioning(batch['eeg'])
+            pred = self.cond_stage_model.mapping(re_latent)
+            img = self.image_embedder(batch['image_raw'])
+            out['pred'] = pred.detach().float().cpu()
+            out['img'] = img.detach().float().cpu()
+            out['label'] = batch['label'].detach().cpu()
+            out['stem'] = list(batch['stem'])
+
+        preview_every = getattr(self, 'val_preview_every', 0)
+        if (dataloader_idx == 0 and batch_idx == 0 and preview_every
+                and self.current_epoch % preview_every == 0 and self.current_epoch > 0):
+            grid, all_samples, state = self.generate(batch, ddim_steps=min(self.ddim_steps, 50),
+                                                     num_samples=1, limit=3)
+            self.save_images(all_samples, suffix=f"epoch_{self.current_epoch}")
+        return out
+
+    def validation_epoch_end(self, outputs):
+        # PL hands a flat list for one loader and a list of lists for several.
+        if outputs and isinstance(outputs[0], dict):
+            outputs = [outputs]
+        for loader_idx, outs in enumerate(outputs):
+            prefix = 'val' if loader_idx == 0 else 'test'
+            outs = [o for o in outs if o]
+            if not outs:
+                continue
+            keys = outs[0]['loss_dict'].keys()
+            for k in keys:
+                name = k.split('/', 1)[-1]
+                self.log('%s/%s' % (prefix, name),
+                         torch.stack([o['loss_dict'][k] for o in outs]).mean(),
+                         prog_bar=(prefix == 'val'), logger=True, add_dataloader_idx=False)
+            if 'pred' not in outs[0]:
+                continue
+            pred = torch.cat([o['pred'] for o in outs])
+            img = torch.cat([o['img'] for o in outs])
+            label = torch.cat([o['label'] for o in outs])
+            stems = sum([o['stem'] for o in outs], [])
+            m = retrieval_metrics(pred, img, label, stems)
+            for k, v in m.items():
+                self.log('%s/%s' % (prefix, k), float(v),
+                         prog_bar=(prefix == 'val' and k == 'retrieval_top1'),
+                         logger=True, add_dataloader_idx=False)
+            print('\n[%s epoch %d] retrieval top1 %.3f (%d-way, chance %.3f) | class top1 %.3f | '
+                  'trial-avg top1 %.3f' % (prefix, self.current_epoch, m['retrieval_top1'],
+                                           m['retrieval_n_way'], 1.0 / m['retrieval_n_way'],
+                                           m['retrieval_class_top1'], m['retrieval_top1_avg']))
 
     def get_eval_metric(self, samples, avg=True):
         metric_list = ['mse', 'pcc', 'ssim', 'psm']
@@ -629,7 +713,7 @@ class LatentDiffusion(DDPM):
 
     @rank_zero_only
     @torch.no_grad()
-    def on_train_batch_start(self, batch, batch_idx, dataloader_idx):
+    def on_train_batch_start(self, batch, batch_idx):
         # only for very first batch
         if self.scale_by_std and self.current_epoch == 0 and self.global_step == 0 and batch_idx == 0 and not self.restarted_from_ckpt:
             assert self.scale_factor == 1., 'rather not use custom rescaling and std-rescaling simultaneously'
@@ -843,9 +927,16 @@ class LatentDiffusion(DDPM):
         if bs is not None:
             x = x[:bs]
         x = x.to(self.device)
+        # NOTE: this used to cache the first batch's latents in self.z_cache and reuse
+        # them for every subsequent batch ("Overdrive Patch: VAE latent caching").
+        # self.z_cache was never invalidated, so every training step denoised the SAME
+        # images regardless of which EEG samples were in the batch -- a constant target,
+        # exactly the failure mode as training against blank images. It also crashed on
+        # the final short batch ("size of tensor a (8) must match tensor b (4)") because
+        # the cached latents kept the first batch's size while the conditioning did not.
+        # Encode every batch. VAE encoding is a small fraction of the step cost next to
+        # the UNet forward/backward; a correct cache would key latents per sample.
         encoder_posterior = self.encode_first_stage(x)
-        # print('encoder_posterior.shape')
-        # print(encoder_posterior.shape)
         z = self.get_first_stage_encoding(encoder_posterior).detach()
         # print('z.shape')
         # print(z.shape)
@@ -1033,15 +1124,16 @@ class LatentDiffusion(DDPM):
         # print(x.shape)
         # print('c.shape')
         # print(c.shape)
+        stems = batch.get('stem') if isinstance(batch, dict) else None
         if self.return_cond:
-            loss, cc = self(x, c, label, image_raw)
+            loss, cc = self(x, c, label, image_raw, stems=stems)
             return loss, cc
-        else:    
-            loss = self(x, c, label, image_raw)
+        else:
+            loss = self(x, c, label, image_raw, stems=stems)
             return loss
 
     def forward(self, x, c, label, image_raw, *args, **kwargs):
-        # print(self.num_timesteps)
+        stems = kwargs.pop('stems', None)   # only the CLIP loss needs it; p_losses must not see it
         t = torch.randint(0, self.num_timesteps, (x.shape[0],), device=self.device).long()
         # print('t.shape')
         # print(t.shape)
@@ -1060,10 +1152,10 @@ class LatentDiffusion(DDPM):
         # rencon = self.cond_stage_model.recon(re_latent)
         if self.clip_tune:
             image_embeds = self.image_embedder(image_raw)
-            loss_clip = self.cond_stage_model.get_clip_loss(re_latent, image_embeds)
+            loss_clip = self.cond_stage_model.get_clip_loss(re_latent, image_embeds, stems=stems)
         # loss_recon = self.recon_loss(imgs, rencon)
         # loss_cls = self.cls_loss(label, pre_cls)
-            loss += loss_clip
+            loss += getattr(self, 'clip_weight', 1.0) * loss_clip
         # loss += loss_cls # loss_recon +  #(self.original_elbo_weight * loss_vlb)
         # loss_dict.update({f'{prefix}/loss_recon': loss_recon})
         # loss_dict.update({f'{prefix}/loss_cls': loss_cls})
@@ -1517,9 +1609,19 @@ class LatentDiffusion(DDPM):
             # cond_parms = []
             
             params = list(self.cond_stage_model.parameters()) + cond_parms
-        
+
             for p in params:
                 p.requires_grad = True
+            # Encoder blocks frozen by eLDM.finetune (config.freeze_encoder_blocks)
+            # must stay frozen and must not be handed to the optimizer.
+            frozen = getattr(self, 'frozen_params', None)
+            if frozen:
+                for p in params:
+                    if id(p) in frozen:
+                        p.requires_grad = False
+                n_before = len(params)
+                params = [p for p in params if id(p) not in frozen]
+                print(f"{self.__class__.__name__}: {n_before - len(params)} frozen tensors excluded from optimizer")
 
         else:
             params = list(self.model.parameters())
@@ -1530,7 +1632,10 @@ class LatentDiffusion(DDPM):
                 print('Diffusion model optimizing logvar')
                 params.append(self.logvar)
 
-        opt = torch.optim.AdamW(params, lr=lr)
+        # config.weight_decay used to be defined and never passed; AdamW then fell back to 0.01.
+        wd = getattr(self, 'weight_decay', 0.01)
+        opt = torch.optim.AdamW(params, lr=lr, weight_decay=wd)
+        print(f"{self.__class__.__name__}: AdamW lr={lr} weight_decay={wd} ({sum(p.numel() for p in params)/1e6:.1f}M trainable params)")
 
         if self.use_scheduler:
             assert 'target' in self.scheduler_config

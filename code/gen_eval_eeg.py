@@ -63,6 +63,8 @@ def get_args_parser():
     parser.add_argument('--config_patch', type=str, default=None,
                         help='sd config path.')
     
+    parser.add_argument('--generate_limit', type=int, default=None,
+                        help='cap test trials generated, sampled evenly across stimuli')
     parser.add_argument('--imagenet_path', type=str, default=None,
                         help='imagenet path.')
 
@@ -76,13 +78,18 @@ if __name__ == '__main__':
     target = args.dataset
 
     sd = torch.load(args.model_path, map_location='cpu')
-    config = sd['config']
+    if 'config' in sd:
+        config = sd['config']
+    else:
+        print("⚠️ Warning: config not found in checkpoint. Using default Config_Generative_Model.")
+        config = Config_Generative_Model()
     # update paths
     config.root_path = root
 
 
-    output_path = os.path.join(config.root_path, 'results', 'eval',  
-                    '%s'%(datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")))
+    # Unique per job: two evaluations launched in the same second used to collide.
+    _run_tag = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + ("-j" + os.environ["SLURM_JOB_ID"] if os.environ.get("SLURM_JOB_ID") else "-p%d" % os.getpid())
+    output_path = os.path.join(config.root_path, 'results', 'eval', _run_tag)
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
@@ -100,21 +107,32 @@ if __name__ == '__main__':
     ])
 
     
-    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path = args.eeg_signals_path, 
-                splits_path = args.splits_path, imagenet_path=args.imagenet_path,
-                image_transform=[img_transform_train, img_transform_test], subject = 4)
+    dataset_train, dataset_test = create_EEG_dataset(
+                eeg_signals_path=args.eeg_signals_path,
+                splits_path=args.splits_path, imagenet_path=args.imagenet_path,
+                image_transform=[img_transform_train, img_transform_test],
+                subject=config.subject,
+                strict_images=getattr(config, 'strict_images', True))
     num_voxels = dataset_test.dataset.data_len
 
 
 
     # create generateive model
     generative_model = eLDM_eval(args.config_patch, num_voxels,
-                device=device, pretrain_root=config.pretrain_gm_path, logger=config.logger,
+                device=device, pretrain_root=config.pretrain_gm_path, logger=getattr(config, 'logger', None),
                 ddim_steps=config.ddim_steps, global_pool=config.global_pool, use_time_cond=config.use_time_cond)
     # m, u = model.load_state_dict(pl_sd, strict=False)
-    generative_model.model.load_state_dict(sd['model_state_dict'], strict=False)
+    if 'model_state_dict' in sd:
+        generative_model.model.load_state_dict(sd['model_state_dict'], strict=False)
+    elif 'state_dict' in sd:
+        # Lightning format
+        generative_model.model.load_state_dict(sd['state_dict'], strict=False)
+    else:
+        # Raw state dict
+        generative_model.model.load_state_dict(sd, strict=False)
+        
     print('load ldm successfully')
-    state = sd['state']
+    state = sd.get('state', None)
     os.makedirs(output_path, exist_ok=True)
     grid, _ = generative_model.generate(dataset_train, config.num_samples, 
                 config.ddim_steps, config.HW, 10) # generate 10 instances
@@ -122,9 +140,32 @@ if __name__ == '__main__':
     
     grid_imgs.save(os.path.join(output_path, f'./samples_train.png'))
 
-    grid, samples = generative_model.generate(dataset_test, config.num_samples, 
-                config.ddim_steps, config.HW, limit=None, state=state, output_path = output_path) # generate 10 instances
+    # Stratify over stimuli before truncating, otherwise a prefix of the recording-
+    # ordered imagination test set is N/20 stimuli x 20 near-duplicate windows.
+    gen_limit = args.generate_limit if args.generate_limit and args.generate_limit > 0 else None
+    if gen_limit is not None:
+        from dataset import stratified_order
+        dataset_test = stratified_order(dataset_test, seed=config.seed)
+        print('generating %d of %d test trials (stratified over stimuli)'
+              % (min(gen_limit, len(dataset_test)), len(dataset_test)))
+    grid, samples = generative_model.generate(dataset_test, config.num_samples,
+                config.ddim_steps, config.HW, limit=gen_limit, state=state, output_path=output_path)
     grid_imgs = Image.fromarray(grid.astype(np.uint8))
 
 
     grid_imgs.save(os.path.join(output_path, f'./samples_test.png'))
+
+    # Persist raw generations so eval_report.py can score them against the
+    # noise and shuffled-pairing baselines.
+    gt = np.stack([np.asarray(img[0]) for img in samples])
+    pred = np.stack([np.stack([np.asarray(c) for c in img[1:]]) for img in samples])
+    gt = rearrange(gt, 'n c h w -> n h w c')
+    pred = rearrange(pred, 'n k c h w -> n k h w c')
+    base = dataset_test.dataset
+    idx = list(dataset_test.split_idx)[:len(gt)]
+    np.savez_compressed(os.path.join(output_path, 'samples.npz'),
+                        gt=gt.astype(np.uint8), pred=pred.astype(np.uint8),
+                        labels=np.array([base.data[i]['label'] for i in idx]),
+                        stems=np.array([base.data[i]['image'] for i in idx]),
+                        synsets=np.array(base.labels))
+    print('saved raw samples to', os.path.join(output_path, 'samples.npz'))

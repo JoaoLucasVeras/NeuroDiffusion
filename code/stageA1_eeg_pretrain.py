@@ -5,14 +5,13 @@ from torch.utils.data import DataLoader
 from torch.nn.parallel import DistributedDataParallel
 import argparse
 import time
-import timm.optim.optim_factory as optim_factory
 import datetime
 import matplotlib.pyplot as plt
 import wandb
 import copy
 
 from config import Config_MBM_EEG
-from dataset import eeg_pretrain_dataset
+from dataset import eeg_pretrain_dataset, create_EEG_dataset
 from sc_mbm.mae_for_eeg import MAEforEEG
 from sc_mbm.trainer import train_one_epoch
 from sc_mbm.trainer import NativeScalerWithGradNormCount as NativeScaler
@@ -107,7 +106,11 @@ def main(config):
     if torch.cuda.device_count() > 1:
         torch.cuda.set_device(config.local_rank) 
         torch.distributed.init_process_group(backend='nccl')
-    output_path = os.path.join(config.root_path, 'results', 'eeg_pretrain',  '%s'%(datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S")))
+    # Two jobs launched in the same second used to collide on this path and
+    # overwrite each other's checkpoints. SLURM_JOB_ID makes it unique; the
+    # fallback keeps interactive runs working.
+    _run_tag = datetime.datetime.now().strftime("%d-%m-%Y-%H-%M-%S") + ("-j" + os.environ["SLURM_JOB_ID"] if os.environ.get("SLURM_JOB_ID") else "-p%d" % os.getpid())
+    output_path = os.path.join(config.root_path, 'results', 'eeg_pretrain', _run_tag)
     config.output_path = output_path
     # logger = wandb_logger(config) if config.local_rank == 0 else None
     logger = None
@@ -121,9 +124,17 @@ def main(config):
     np.random.seed(config.seed)
 
     # create dataset and dataloader
-    dataset_pretrain = eeg_pretrain_dataset(path='../dreamdiffusion/datasets/mne_data/', roi=config.roi, patch_size=config.patch_size,
-                transform=fmri_transform, aug_times=config.aug_times, num_sub_limit=config.num_sub_limit, 
-                include_kam=config.include_kam, include_hcp=config.include_hcp)
+    # create dataset and dataloader
+    # Stage 1 is masked EEG reconstruction: EEG in, EEG out. The stimulus image is
+    # neither an input nor a target here, so image IO is disabled. Without this the
+    # DataLoader tries to batch raw ImageNet images of differing sizes and dies on
+    # "stack expects each tensor to be equal size".
+    dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path=config.eeg_signals_path,
+                                                     splits_path=config.splits_path,
+                                                     imagenet_path=getattr(config, 'imagenet_path', None),
+                                                     load_images=False)
+    dataset_pretrain = torch.utils.data.ConcatDataset([dataset_train, dataset_test])
+    dataset_pretrain.data_len = 512
    
     print(f'Dataset size: {len(dataset_pretrain)}\n Time len: {dataset_pretrain.data_len}')
     sampler = torch.utils.data.DistributedSampler(dataset_pretrain, rank=config.local_rank) if torch.cuda.device_count() > 1 else None 
@@ -144,8 +155,8 @@ def main(config):
         model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
         model = DistributedDataParallel(model, device_ids=[config.local_rank], output_device=config.local_rank, find_unused_parameters=config.use_nature_img_loss)
 
-    param_groups = optim_factory.add_weight_decay(model, config.weight_decay)
-    optimizer = torch.optim.AdamW(param_groups, lr=config.lr, betas=(0.9, 0.95))
+    from timm.optim import create_optimizer_v2
+    optimizer = create_optimizer_v2(model, opt='adamw', lr=config.lr, weight_decay=config.weight_decay, betas=(0.9, 0.95))
     print(optimizer)
     loss_scaler = NativeScaler()
 

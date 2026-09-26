@@ -122,7 +122,14 @@ class CheckpointFunction(torch.autograd.Function):
         ctx.run_function = run_function
         ctx.input_tensors = list(args[:length])
         ctx.input_params = list(args[length:])
-
+        # Save AMP autocast state so backward can restore it during recomputation.
+        # Without this, the recomputed forward runs without autocast, causing
+        # LayerNorm/GroupNorm to see fp32 weights but fp16 inputs → dtype mismatch.
+        ctx.gpu_autocast_kwargs = {
+            "enabled": torch.is_autocast_enabled(),
+            "dtype": torch.get_autocast_gpu_dtype() if torch.is_autocast_enabled() else torch.float16,
+            "cache_enabled": torch.is_autocast_cache_enabled(),
+        }
         with torch.no_grad():
             output_tensors = ctx.run_function(*ctx.input_tensors)
         return output_tensors
@@ -131,11 +138,14 @@ class CheckpointFunction(torch.autograd.Function):
     def backward(ctx, *output_grads):
         ctx.input_tensors = [x.detach().requires_grad_(True) for x in ctx.input_tensors]
         with torch.enable_grad():
-            # Fixes a bug where the first op in run_function modifies the
-            # Tensor storage in place, which is not allowed for detach()'d
-            # Tensors.
-            shallow_copies = [x.view_as(x) for x in ctx.input_tensors]
-            output_tensors = ctx.run_function(*shallow_copies)
+            # Restore AMP autocast context for recomputation so normalization layers
+            # see the same mixed-precision environment as the original forward pass.
+            with torch.cuda.amp.autocast(**ctx.gpu_autocast_kwargs):
+                # Fixes a bug where the first op in run_function modifies the
+                # Tensor storage in place, which is not allowed for detach()'d
+                # Tensors.
+                shallow_copies = [x.view_as(x) for x in ctx.input_tensors]
+                output_tensors = ctx.run_function(*shallow_copies)
         input_grads = torch.autograd.grad(
             output_tensors,
             ctx.input_tensors + ctx.input_params,
@@ -213,7 +223,18 @@ class SiLU(nn.Module):
 
 class GroupNorm32(nn.GroupNorm):
     def forward(self, x):
-        return super().forward(x.float()).type(x.dtype)
+        # Cast input AND weight/bias to float32 for stable GroupNorm computation.
+        # This is critical when the model is fp16 (model.half()): GroupNorm requires
+        # consistent dtypes between input and parameters. Without this, gradient
+        # checkpointing backward recomputation produces a mixed-dtype CPU error.
+        import torch.nn.functional as F
+        return F.group_norm(
+            x.float(),
+            self.num_groups,
+            self.weight.float() if self.weight is not None else None,
+            self.bias.float() if self.bias is not None else None,
+            self.eps
+        ).to(x.dtype)
 
 def conv_nd(dims, *args, **kwargs):
     """

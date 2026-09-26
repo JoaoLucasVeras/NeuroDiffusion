@@ -30,10 +30,18 @@ def identity(x):
 class psm_wrapper:
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.lpips = LearnedPerceptualImagePatchSimilarity(net_type='alex').to(self.device)
+        # AlexNet weights are downloaded on first use; unavailable on an air-gapped node.
+        try:
+            self.lpips = LearnedPerceptualImagePatchSimilarity(net_type='alex').to(self.device)
+        except Exception as e:
+            print("[eval_metrics] LPIPS weights unavailable (%s). Metric will return NaN."
+                  % type(e).__name__)
+            self.lpips = None
 
     @torch.no_grad()
     def __call__(self, img1, img2):
+        if self.lpips is None:
+            return float('nan')
         if img1.shape[-1] == 3:
             img1 = rearrange(img1, 'w h c -> c w h')
             img2 = rearrange(img2, 'w h c -> c w h')
@@ -41,18 +49,25 @@ class psm_wrapper:
         img2 = img2 / 127.5 - 1.0
         img1 = np.expand_dims(img1, axis=0)
         img2 = np.expand_dims(img2, axis=0)
-        return self.lpips(torch.FloatTensor(img1).to(self.device), torch.FloatTensor(img2).to(self.device)).item()
+        # Frozen scoring model called from inside the AMP validation step -- disable
+        # autocast so fp32 weights are not fed fp16 activations. Same failure mode as
+        # the ViT-H metric below.
+        with torch.cuda.amp.autocast(enabled=False):
+            return self.lpips(torch.FloatTensor(img1).to(self.device),
+                              torch.FloatTensor(img2).to(self.device)).item()
 
 class fid_wrapper:
     def __init__(self):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
-        self.fid = FrechetInceptionDistance(feature=64)
+        # feature=64 is the pool1 block, not comparable to published FID numbers.
+        # 2048 is the standard final-pooling feature used everywhere in the literature.
+        self.fid = FrechetInceptionDistance(feature=2048).to(self.device)
 
     @torch.no_grad()
     def __call__(self, pred_imgs, gt_imgs):
         self.fid.reset()
-        self.fid.update(torch.tensor(rearrange(gt_imgs, 'n w h c -> n c w h')), real=True)
-        self.fid.update(torch.tensor(rearrange(pred_imgs, 'n w h c -> n c w h')), real=False)
+        self.fid.update(torch.tensor(rearrange(gt_imgs, 'n w h c -> n c w h')).to(self.device), real=True)
+        self.fid.update(torch.tensor(rearrange(pred_imgs, 'n w h c -> n c w h')).to(self.device), real=False)
         return self.fid.compute().item() 
 
 def pair_wise_score(pred_imgs, gt_imgs, metric, is_sucess):
@@ -111,35 +126,57 @@ def metrics_only(pred_imgs, gt_imgs, metric, *args, **kwargs):
 
 @torch.no_grad()
 def n_way_top_k_acc(pred, class_id, n_way, num_trials=40, top_k=1):
-    pick_range =[i for i in np.arange(len(pred)) if i != class_id]
+    pick_range = [i for i in np.arange(len(pred)) if i != class_id]
     acc_list = []
     for t in range(num_trials):
         idxs_picked = np.random.choice(pick_range, n_way-1, replace=False)
         pred_picked = torch.cat([pred[class_id].unsqueeze(0), pred[idxs_picked]])
-        acc = accuracy(pred_picked.unsqueeze(0), torch.tensor([0], device=pred.device), 
-                    top_k=top_k)
+        try:
+            # torchmetrics >= 0.11: requires task= argument
+            acc = accuracy(pred_picked.unsqueeze(0), torch.tensor([0], device=pred.device),
+                           task='multiclass', num_classes=n_way, top_k=top_k)
+        except TypeError:
+            # torchmetrics < 0.11: does not accept task= argument
+            acc = accuracy(pred_picked.unsqueeze(0), torch.tensor([0], device=pred.device),
+                           num_classes=n_way, top_k=top_k)
         acc_list.append(acc.item())
     return np.mean(acc_list), np.std(acc_list)
 
 @torch.no_grad()
 def get_n_way_top_k_acc(pred_imgs, ground_truth, n_way, num_trials, top_k, device, return_std=False):
-    weights = ViT_H_14_Weights.DEFAULT
-    model = vit_h_14(weights=weights)
+    # ViT-H weights (~2.4 GB) are downloaded on first use. Compute nodes are air-gapped,
+    # so this would raise only after training completes and destroy the run's output.
+    # Degrade to NaN instead; the CLIP-based class metrics in eval_report.py cover this.
+    try:
+        weights = ViT_H_14_Weights.DEFAULT
+        model = vit_h_14(weights=weights)
+    except Exception as e:
+        print("[eval_metrics] ViT-H weights unavailable (%s: %s). Skipping top-k class "
+              "accuracy -- use code/eval_report.py for CLIP-based class metrics."
+              % (type(e).__name__, e))
+        nan = [float('nan')] * len(pred_imgs)
+        return (nan, nan) if return_std else nan
     preprocess = weights.transforms()
     model = model.to(device)
     model = model.eval()
     
     acc_list = []
     std_list = []
-    for pred, gt in zip(pred_imgs, ground_truth):
-        pred = preprocess(Image.fromarray(pred.astype(np.uint8))).unsqueeze(0).to(device)
-        gt = preprocess(Image.fromarray(gt.astype(np.uint8))).unsqueeze(0).to(device)
-        gt_class_id = model(gt).squeeze(0).softmax(0).argmax().item()
-        pred_out = model(pred).squeeze(0).softmax(0).detach()
+    # This runs inside Lightning's validation step, where AMP autocast is active. The
+    # ViT-H parameters are fp32 but autocast would feed it fp16 activations, and
+    # _native_multi_head_attention refuses the mix ("expected scalar type Half but
+    # found Float"). This is a frozen scoring model, so disable autocast for it --
+    # there is nothing to gain from half precision here anyway.
+    with torch.cuda.amp.autocast(enabled=False):
+        for pred, gt in zip(pred_imgs, ground_truth):
+            pred = preprocess(Image.fromarray(pred.astype(np.uint8))).unsqueeze(0).to(device).float()
+            gt = preprocess(Image.fromarray(gt.astype(np.uint8))).unsqueeze(0).to(device).float()
+            gt_class_id = model(gt).squeeze(0).softmax(0).argmax().item()
+            pred_out = model(pred).squeeze(0).softmax(0).detach()
 
-        acc, std = n_way_top_k_acc(pred_out, gt_class_id, n_way, num_trials, top_k)
-        acc_list.append(acc)
-        std_list.append(std)
+            acc, std = n_way_top_k_acc(pred_out, gt_class_id, n_way, num_trials, top_k)
+            acc_list.append(acc)
+            std_list.append(std)
        
     if return_std:
         return acc_list, std_list
