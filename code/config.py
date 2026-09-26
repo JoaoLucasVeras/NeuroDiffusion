@@ -1,6 +1,14 @@
 import os
 import numpy as np
 
+# Repository root. Defaults to the layout on the SJSU cluster, so nothing changes
+# for existing jobs, but anyone working from a fork can point it elsewhere:
+#   export NEURODIFFUSION_ROOT=/path/to/NeuroDiffusion
+ROOT_PATH = os.environ.get(
+    "NEURODIFFUSION_ROOT",
+    os.path.expanduser("~/NeuroDiffusion"),
+).rstrip("/") + "/"
+
 class Config_MAE_fMRI: # back compatibility
     pass
 class Config_MBM_finetune: # back compatibility
