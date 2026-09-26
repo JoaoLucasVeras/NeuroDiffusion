@@ -32,3 +32,8 @@ analysis/visualizations/
 
 # Build artifacts and caches
 *.egg-info/
+
+# Local environments and generated reports
+.conda/
+analysis/research_report_render/
+*.docx
