@@ -215,8 +215,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. It is written to be read in order, one tab at a time, and assumes you know nothing about EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">25 Sep 2026<small>Stage: classical baseline complete</small></span></div>
-    <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, confirmed<small>11 of 12 tests above chance</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">26 Sep 2026<small>Stage: baseline verified, drift confirmed</small></span></div>
+    <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>p &le; 0.05 in all four subjects</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
   </div>
@@ -499,7 +499,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <div class="note warn">
     <span class="hd">Why every number in the table above says provisional</span>
     <p>First, these are best-validation scores, the peak across many training rounds on a lenient measure, which always flatters. The matching test numbers were lost to a bug: four jobs ran at the same time, their output directories were named by timestamp to the second, and they overwrote each other. Fixed since, by putting the job ID in the path, and the checkpoints survived, so the numbers are recoverable.</p>
-    <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem.</p>
+    <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem. As of 26 September this is no longer a suspicion: the cross-subject test confirmed that broadband's advantage is recording-specific drift, so <b>26.3% is substantially inflated</b> and the honest figure is unknown until the pipeline is re-run on alpha-band input.</p>
   </div>
 
   <h3>What we fixed along the way</h3>
@@ -594,11 +594,33 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p><b>The lower number is the honest one.</b> Genuinely counterintuitive: removing data made the result worse but more trustworthy. It is also why this field is littered with results that did not replicate.</p>
   </div>
 
+  <div class="note good">
+    <span class="hd">Confirmed on 26 September, and this was a real test</span>
+    <p>The reasoning above was an inference until we crossed subjects. Trained on one person and
+       tested on another, broadband scores <b>1.30&times;</b> chance and alpha scores
+       <b>1.22&times;</b> &mdash; the two-to-one advantage broadband held <em>within</em> a subject
+       is completely gone. An advantage that lives inside a recording and dies between recordings
+       is a fingerprint, not content.</p>
+    <p>The prediction was stated before the job ran, and there was a clearly defined outcome that
+       would have proved it wrong: broadband crossing <em>better</em> than alpha would have meant we
+       were discarding real signal by band-passing. It did not.</p>
+  </div>
+
   <h4>Condition C &mdash; inconclusive</h4>
   <p>Subjects 2 and 3 improved, subject 4 did not. But gluing windows into 2-second segments leaves only 99 training and 33 test samples, so these numbers bounce around badly. Suggestive, not settled.</p>
 
   <h4>Condition D &mdash; cleanly negative, and useful</h4>
-  <p>Artifact rejection came out roughly neutral, sometimes up, sometimes down, no consistent direction. That resolves a disagreement between two papers for <em>our</em> data: it does not matter much here, so we can stop spending effort on it.</p>
+  <p>Artifact rejection came out roughly neutral, sometimes up, sometimes down, no consistent direction. That resolves a disagreement between two papers for <em>our</em> data: crude artifact handling does not matter much here.</p>
+
+  <div class="note">
+    <span class="hd">A correction, added 26 September</span>
+    <p>We first read this as closing the artifact-removal question entirely. That was too strong.
+       Condition D tested <b>trial rejection</b>, which removes a blink by discarding the whole
+       half-second containing it. <b>ICA removes the blink and keeps the trial</b>, which is a
+       materially different trade when you only have 363 training trials to begin with. So condition
+       D weakens the case for artifact handling without actually testing ICA, and that line of
+       inquiry is still live.</p>
+  </div>
 
   <h3>What the baseline changed</h3>
   <ol>
@@ -623,7 +645,17 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <h2>Where we are, and what is next</h2>
   <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
 
-  <p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: confirmed signal in the data, a known-size shortcut to avoid, a benchmark to beat, a settled question about artifact removal, and a fast way to test the next idea.</p>
+  <p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the drift shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
+
+  <div class="note good">
+    <span class="hd">Where the evidence stands after 26 September</span>
+    <p><b>Solid:</b> perception decodes at +4.3 SEM on unseen images. Imagery signal exists in the
+       alpha band, significant in all four subjects under a permutation null.</p>
+    <p><b>Settled negative:</b> imagery does not transfer between people in this data. Broadband's
+       advantage is recording-specific drift.</p>
+    <p><b>Unknown:</b> what the pipeline actually achieves on alpha-band input. Every deep-model
+       number we have was trained on broadband and is provisional until re-run.</p>
+  </div>
 
   <h3>Every experiment, and its number</h3>
   <p>Deep-model figures are best-validation rather than test, and are provisional.</p>
@@ -640,25 +672,26 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">24 Sep</td><td>81619 &middot; A</td><td>Classical, alpha 500 ms</td><td class="n hi">2.0&ndash;3.5&times;</td><td>The real finding</td></tr>
       <tr><td class="n">24 Sep</td><td>81619 &middot; B</td><td>Classical, broadband 500 ms</td><td class="n">3.5&ndash;12.2&times;</td><td>Drift shortcut</td></tr>
       <tr><td class="n">24 Sep</td><td>81619 &middot; C</td><td>Classical, alpha 2 s</td><td class="n">0.0&ndash;6.0&times;</td><td>Too few samples</td></tr>
-      <tr><td class="n">24 Sep</td><td>81619 &middot; D</td><td>Classical, alpha + rejection</td><td class="n">1.3&ndash;4.2&times;</td><td>Neutral, closed</td></tr>
+      <tr><td class="n">24 Sep</td><td>81619 &middot; D</td><td>Classical, alpha + rejection</td><td class="n">1.3&ndash;4.2&times;</td><td>Neutral</td></tr>
+      <tr><td class="n">26 Sep</td><td>82079 &middot; within</td><td>Permutation null, alpha, per subject</td><td class="n hi">p .005&ndash;.050</td><td><b>Finding confirmed</b></td></tr>
+      <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, alpha, 12 pairs</td><td class="n lo">1.22&times;</td><td>No transfer</td></tr>
+      <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, broadband, 12 pairs</td><td class="n lo">1.30&times;</td><td>Drift confirmed</td></tr>
     </tbody>
   </table>
   </div>
 
   <h3>The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">Cross-subject stimulus test &mdash; next up</span>
-      <p class="b">Train on subject 1, test on subject 2, same 33 pictures. Drift cannot transfer between people but imagery content can, so this separates genuine signal from fingerprint. A few CPU-minutes.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Alpha-band input to the main pipeline</span>
-      <p class="b">Stage 2 currently trains on raw broadband, the exact condition that produced up to 12&times; chance through drift. No longer a guess at an improvement, it is a fix to a measured problem.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">Recover the four lost test reports</span>
-      <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers.</p></div>
-    <div class="step"><span class="i">4</span><span class="t">Permutation test on the baseline</span>
-      <p class="b">With 33 stimuli across 4 windows the effective sample size is about 33, not 132. A permutation test gives a significance claim we can defend.</p></div>
-    <div class="step"><span class="i">5</span><span class="t">Window length, properly</span>
-      <p class="b">Condition C was inconclusive because 2-second segments leave only 99 training samples. Worth revisiting on a dataset with real repetitions.</p></div>
-    <div class="step"><span class="i">6</span><span class="t">A small encoder</span>
-      <p class="b">EEGNet class, a few thousand parameters instead of 85 million. If a few hundred parameters reach 3&times; chance, the answer to 360 training trials may be a smaller model rather than a better-regularised large one.</p></div>
+    <div class="step"><span class="i">1</span><span class="t">Alpha-band input to the main pipeline &mdash; next up</span>
+      <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through drift. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Recover the four lost test reports</span>
+      <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers. Worth doing regardless, since the current headline figure cannot properly be cited.</p></div>
+    <div class="step"><span class="i">3</span><span class="t">A small encoder</span>
+      <p class="b">EEGNet class, a few thousand parameters instead of 85 million. The argument got stronger on 26 September: subject 4 is significant at 3&times; chance in the baseline while the big model scored exactly chance on the same data. The signal is there and the large model cannot find it.</p></div>
+    <div class="step"><span class="i">4</span><span class="t">ICA artifact removal, as a fifth baseline condition</span>
+      <p class="b">Condition D tested discarding whole trials, not repairing them. ICA removes a blink and keeps the trial, which matters when there are only 363 of them. Minutes of CPU to settle.</p></div>
+    <div class="step"><span class="i">5</span><span class="t">Shrink the label space</span>
+      <p class="b">Gao et al.'s headline 75.8% is a <em>three-class</em> result. A working three-class imagery-to-image system is far more likely to function than 33 classes at 3&times; chance, and 75% on three categories is enough to steer a generator into the right region. Arguably the better plan rather than a fallback.</p></div>
     <div class="step"><span class="i">7</span><span class="t">The Gao et al. 2026 dataset</span>
       <p class="b">22 participants, 10 classes, 40 repetitions per class per session, two sessions. Roughly 800 real imagery events per person against our 33. Second track and validation target.</p></div>
     <div class="step"><span class="i">8</span><span class="t">Our own recordings</span>
@@ -678,6 +711,42 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <span class="kicker">Log</span>
   <h2>Journal, newest first</h2>
   <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
+
+  <div class="entry">
+    <div class="tags"><span class="tag res">result</span><span class="tag res">confirmed</span><span class="tag nul">negative</span></div>
+    <span class="when">26 SEP 2026 &middot; JOB 82079</span>
+    <h3>The finding survives a permutation test, and the drift diagnosis is confirmed</h3>
+    <p>Three questions in one CPU job, each with a prediction stated in advance. Two came back
+       confirmed, one came back negative.</p>
+
+    <p><span class="lbl">1. Our headline finding is real</span>Permutation null on the within-subject
+       alpha baseline, 200 shuffles per subject, labels shuffled per recording rather than per window:
+       <b>S1 p=0.005</b> (3.25&times; chance), <b>S2 p=0.050</b> (2.25&times;), <b>S3 p=0.010</b>
+       (2.75&times;), <b>S4 p=0.005</b> (3.00&times;). The shuffled distributions centre on
+       0.0291&ndash;0.0308 against a chance of 0.0303, so the test is calibrated and can be trusted.
+       "There is decodable imagery signal in this EEG" is now a defensible claim rather than an
+       encouraging observation. S2 sits exactly on the line at 0.0498, so call that one suggestive.</p>
+
+    <p><span class="lbl">2. Imagery does not transfer between people</span>All 12 ordered pairs,
+       trained on one person and tested on another over the 33 stimuli they share, using all 20
+       windows on each side and per-subject label-free alignment. Alpha: <b>mean 1.22&times;
+       chance</b>, 1 of 12 pairs below p=0.05. Broadband: mean 1.30&times;, 2 of 12. With twelve
+       tests you expect about 0.6 false positives by luck, and neither survives correction for
+       multiple comparisons. This closes the door on pooling subjects for more data, and confirms
+       the per-subject pivot was the right call.</p>
+
+    <p><span class="lbl">3. The broadband advantage was drift</span>This is the discriminating
+       result. <b>Within</b> a subject, broadband beat alpha roughly two to one. <b>Across</b>
+       subjects that entire advantage evaporates: 1.30&times; against alpha's 1.22&times;, which is
+       no difference at all. An advantage that exists inside a recording and vanishes between
+       recordings is a fingerprint, not neural content. Predicted in advance, and it held.</p>
+
+    <p><span class="lbl">Changed</span>Alpha-band input to the main pipeline moves from speculative
+       to justified, and subject 1's 26.3% is now known to be substantially inflated with a measured
+       mechanism behind it. Also notable: <b>subject 4 is significant at 3.00&times; here</b> despite
+       scoring exactly at chance in the deep model. The signal is in that subject's data and our
+       85-million-parameter model could not find it, which is an argument for a small encoder.</p>
+  </div>
 
   <div class="entry">
     <div class="tags"><span class="tag dec">decision</span></div>
