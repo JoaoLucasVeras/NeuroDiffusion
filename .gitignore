@@ -29,3 +29,6 @@ __pycache__/
 analysis/format_tensors.py
 analysis/inspect_mat.py
 analysis/visualizations/
+
+# Build artifacts and caches
+*.egg-info/

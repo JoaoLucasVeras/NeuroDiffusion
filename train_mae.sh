@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=NeuroDiff_Stage1
-#SBATCH --output=/home/015555345/NeuroDiffusion/logs/stage1_%j.out
-#SBATCH --error=/home/015555345/NeuroDiffusion/logs/stage1_%j.err
+#SBATCH --output=logs/stage1_%j.out
+#SBATCH --error=logs/stage1_%j.err
 #SBATCH --partition=gpuqs
 #SBATCH --gres=gpu:a100:1
 #SBATCH --nodes=1
@@ -19,9 +19,9 @@ set -euo pipefail
 module load cuda/11.8 2>/dev/null || true
 module load cudnn/8.6.0 2>/dev/null || true
 
-ROOT=/home/015555345/NeuroDiffusion
+ROOT="${NEURODIFFUSION_ROOT:-$HOME/NeuroDiffusion}"
 export PYTHON=$ROOT/../.conda/envs/neurodiffusion/bin/python
-[ -x "$PYTHON" ] || export PYTHON=/home/015555345/.conda/envs/neurodiffusion/bin/python
+[ -x "$PYTHON" ] || export PYTHON="${NEURODIFFUSION_PYTHON:-$HOME/.conda/envs/neurodiffusion/bin/python}"
 export PATH=$(dirname "$PYTHON"):$PATH
 
 # Compute nodes are air-gapped.

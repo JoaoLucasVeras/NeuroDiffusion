@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=stage2_train
-#SBATCH --output=/home/015555345/NeuroDiffusion/logs/stage2_%j.out
-#SBATCH --error=/home/015555345/NeuroDiffusion/logs/stage2_%j.err
+#SBATCH --output=logs/stage2_%j.out
+#SBATCH --error=logs/stage2_%j.err
 #SBATCH --time=2-00:00:00
 #SBATCH --partition=gpuqs
 #SBATCH --gres=gpu:a100:1
@@ -18,8 +18,8 @@
 
 set -euo pipefail
 
-ROOT=/home/015555345/NeuroDiffusion
-export PYTHON=/home/015555345/.conda/envs/neurodiffusion/bin/python
+ROOT="${NEURODIFFUSION_ROOT:-$HOME/NeuroDiffusion}"
+export PYTHON="${NEURODIFFUSION_PYTHON:-$HOME/.conda/envs/neurodiffusion/bin/python}"
 export PATH=$(dirname "$PYTHON"):$PATH
 
 export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512

@@ -1,10 +1,12 @@
+import os
 """Are CLIP ViT-L/14 image embeddings of different stimuli nearly parallel?
 If mean pairwise cosine is ~1, a pointwise `1 - cos` alignment loss is degenerate."""
 import glob, random, torch, numpy as np
 from PIL import Image
 from transformers import AutoProcessor, CLIPVisionModelWithProjection
 random.seed(0)
-paths = sorted(glob.glob('/home/015555345/NeuroDiffusion/datasets/imageNet_images/*/*.JPEG'))
+ROOT = os.environ.get("NEURODIFFUSION_ROOT", os.path.expanduser("~/NeuroDiffusion"))
+paths = sorted(glob.glob(os.path.join(ROOT, 'datasets/imageNet_images/*/*.JPEG')))
 paths = random.sample(paths, 48)
 proc = AutoProcessor.from_pretrained("openai/clip-vit-large-patch14")
 m = CLIPVisionModelWithProjection.from_pretrained("openai/clip-vit-large-patch14").eval()

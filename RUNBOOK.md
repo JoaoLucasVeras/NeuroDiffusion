@@ -16,7 +16,9 @@ Anything that downloads must happen on **hpc1**. Anything that runs on a GPU is 
 from **hpc3**. That is why the SLURM scripts export `TRANSFORMERS_OFFLINE=1` and why the
 HuggingFace cache has to be warmed on hpc1 before any job is submitted.
 
-Repository root on both: `/home/015555345/NeuroDiffusion`.
+Repository root on both: `$NEURODIFFUSION_ROOT`, which defaults to
+`~/NeuroDiffusion`. Set it if your checkout lives somewhere else:
+`export NEURODIFFUSION_ROOT=/path/to/NeuroDiffusion`.
 
 ## Stage 0 — build and validate the data (no GPU)
 
