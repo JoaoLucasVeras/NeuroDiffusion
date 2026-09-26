@@ -776,7 +776,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="when">23 SEP 2026</span>
     <h3>Per-subject training, and a collision that ate the test reports</h3>
     <p><span class="lbl">Found</span>Best validation against 3.03% chance: subject 1 <b>26.3%</b> at epoch 95, subject 3 12.1%, subject 2 7.1%, subject 4 3.0%. Training on imagination and perception together made subject 1 <em>worse</em> at 6.1%, the opposite of the source paper's 13.4% to 25.2%. Likely reason is volume: 6,789 perception trials swamp 363 imagination trials.</p>
-    <p><span class="lbl">Bug</span>Run directories were named by timestamp to the second, so four simultaneous jobs collided in two pairs and overwrote each other's checkpoints, while the scoring step picked the newest directory and had jobs scoring each other's samples. Fixed by putting the Slurm job ID in the path and selecting by job ID, commit <code>5764299</code>. Validation numbers survived in the per-job logs; the test reports were lost and need re-running from the saved checkpoints.</p>
+    <p><span class="lbl">Bug</span>Run directories were named by timestamp to the second, so four simultaneous jobs collided in two pairs and overwrote each other's checkpoints, while the scoring step picked the newest directory and had jobs scoring each other's samples. Fixed by putting the Slurm job ID in the path and selecting by job ID, commit <code>47f7f6e</code>. Validation numbers survived in the per-job logs; the test reports were lost and need re-running from the saved checkpoints.</p>
   </div>
 
   <div class="entry">
