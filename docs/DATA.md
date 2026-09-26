@@ -3,6 +3,53 @@
 Everything in this document is checkable with `python code/check_data.py`. Run it before
 submitting any job.
 
+## Getting the data
+
+None of the data is in this repository, and none of it should be. Everything below is
+gitignored.
+
+**1. EEG recordings.** Shimizu & Srinivasan (2022), released on OSF:
+
+- Data: <https://osf.io/2fgks/>
+- Paper: <https://doi.org/10.1371/journal.pone.0274847>
+- The authors' own code: <https://github.com/shimihirouci/Improve_Imagination>
+
+Download the MATLAB files and place them like this:
+
+```
+datasets/
+  Imagination Experiment/Imagine_Sub00{1,2,3,4}.mat
+  Visual Experiment/Block_Sub00{1,2,3,4}_Remove_Eye.mat
+```
+
+**2. Stimulus images.** The `.mat` files reference ImageNet filenames but do not contain
+the images. Fetch them with:
+
+```sh
+python code/download_stimuli.py
+```
+
+This pulls the whole-synset archives from image-net.org, which are served without
+credentials and keep the original filenames the dataset refers to. Roughly 3,600 JPEGs,
+about 412 MB, landing in `datasets/imageNet_images/`.
+
+**3. Stable Diffusion weights**, for the generative stage only. The classical baselines
+in `code/classical_baseline.py` need nothing beyond the EEG, so you can reproduce the
+signal-detection results without this step.
+
+**4. Build the tensors and splits**, then verify:
+
+```sh
+python code/prepare_shimizu_data.py
+python code/make_splits.py
+python code/check_data.py          # exits non-zero if anything is wrong
+```
+
+Run `check_data.py` before submitting any job. It exists because a silent failure once
+wasted an entire Stage 2 run: every trial pointed at a stimulus file that did not exist,
+the loader substituted a black square, and the loss curve looked perfectly healthy while
+the model learned nothing.
+
 ## What the raw data actually contains
 
 Both Shimizu experiments ship as MATLAB v7.3 (HDF5) files with the same layout:

@@ -3,7 +3,31 @@
 ## Overview
 **NeuroDiffusion** is an open-source deep learning framework designed to reconstruct high-fidelity images directly from human brainwaves. 
 
-Developed by the AI/ML Club at San Jose State University, this project represents a specific paradigm shift in brain-computer interface (BCI) generative AI. While current state-of-the-art models focus on decoding *passive visual stimuli* (brainwaves recorded while a subject actively looks at a picture on a screen), NeuroDiffusion is engineered to decode **active cognitive recall**—translating pure, closed-eye imagination into the semantic latent space of generative AI.
+Developed by the AI/ML Club at San Jose State University, this project represents a specific paradigm shift in brain-computer interface (BCI) generative AI. While current state-of-the-art models focus on decoding *passive visual stimuli* (brainwaves recorded while a subject actively looks at a picture on a screen), NeuroDiffusion is engineered to decode **active cognitive recall**—translating voluntary visual imagery into the semantic latent space of generative AI.
+
+## Current Status
+
+Honest summary, updated 26 September 2026. Full detail, with methods and controls, is in
+the [project documentation](docs/journal.html).
+
+| | |
+|---|---|
+| **Perception decodes** | Generated images beat a shuffled-pairing control by **4.3 standard errors** on a stimulus-disjoint split, on images and a subject the model never saw. The pipeline is wired correctly end to end. |
+| **Imagination does not, yet** | The same pipeline on imagery EEG sits at chance (+0.5 SEM). A measured null with working controls, not a crash. |
+| **Imagery signal exists** | Classical methods find it in the alpha band at roughly **3x chance**, significant in all four subjects under a permutation null (p = .005 to .050). |
+| **A known trap** | Broadband EEG scores about twice as well as alpha within a subject, and that advantage vanishes entirely across subjects. It is electrode drift acting as a per-recording fingerprint, not neural content. Every result trained on broadband is provisional. |
+
+The binding constraint is data, not compute. Each subject imagined each picture exactly
+once, giving **33 imagery events per person**; a comparable modern dataset has around 800.
+
+## Documentation
+
+- **[Project documentation](docs/journal.html)** — the main reference, readable start to finish, with a glossary
+- [Getting the data](docs/DATA.md) — where to download it and how to build the tensors
+- [Cluster runbook](docs/RUNBOOK.md) — submitting and monitoring jobs
+- [Work queue](docs/IMPROVEMENT_PLAN.md) and [parked ideas](docs/PINBOARD.md)
+- [Datasets and papers](docs/RESOURCES.md), each with a verdict
+- [How to contribute](CONTRIBUTING.md) — fork, branch, pull request
 
 ## The Foundation & Proof of Concept
 This framework is built upon the convergence of two major breakthroughs in BCI and machine learning:
