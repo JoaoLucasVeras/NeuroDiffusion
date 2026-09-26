@@ -1,0 +1,3 @@
+# Every pull request into a protected branch automatically requests a review from
+# the owner listed here. Keep this file in sync with who is actually reviewing.
+* @JoaoLucasVeras
