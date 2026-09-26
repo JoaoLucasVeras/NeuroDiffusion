@@ -121,6 +121,6 @@ scp ./pretrains/models/v1-5-pruned.ckpt username@hpc-login.sjsu.edu:~/NeuroDiffu
 ```
 
 ### 18. Cluster Execution
-- **Request a GPU**: Use the provided `code/train_mae.sh` script.
+- **Request a GPU**: Use the `train_mae.sh` script in the repository root.
 - **Submit Job**: `sbatch train_mae.sh`
-- **Monitor Logs**: Check `results/logs/` for the `res_<job_id>.txt` output.
+- **Monitor Logs**: Check `logs/` for the `stage1_<job_id>.out` output.
