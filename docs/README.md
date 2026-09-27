@@ -29,5 +29,5 @@ and it is how we avoid repeating a mistake.
 
 **Surprisingly good results are treated as suspicious.** This field has a long history of
 findings that turned out to be recording artifacts. If a number looks too good, the first
-job is to try to break it. That instinct is what caught the drift shortcut described in
+job is to try to break it. That instinct is what caught the recording-fingerprint shortcut described in
 the documentation.

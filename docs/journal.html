@@ -236,7 +236,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">27 Sep 2026<small>Stage: baseline verified, drift confirmed</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">27 Sep 2026<small>Alpha-band runs in flight, jobs 82864 / 82868</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>p &le; 0.05 in all four subjects</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
@@ -335,7 +335,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p>Different sources oscillate at different speeds, so you can separate them by frequency: how many times per second the signal cycles up and down. That unit is the <strong>hertz (Hz)</strong>.</p>
 
   <div class="ladder">
-    <div class="rung"><span class="hz">below 1 Hz</span><span class="what">Drift, electrodes settling, sweat, temperature. Not brain.</span></div>
+    <div class="rung"><span class="hz">below 1 Hz</span><span class="what">Drift, electrodes settling, sweat, temperature. Not brain. <b>Already removed from our data.</b></span></div>
     <div class="rung"><span class="hz">1&ndash;4 Hz</span><span class="what">Delta, deep sleep, and where slow artifact lives</span></div>
     <div class="rung"><span class="hz">4&ndash;8 Hz</span><span class="what">Theta, drowsiness, some memory processes</span></div>
     <div class="rung hit"><span class="hz">8&ndash;13 Hz</span><span class="what">ALPHA &mdash; the visual cortex idle rhythm. Where imagery lives.</span></div>
@@ -357,7 +357,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <div class="note">
     <span class="hd">Carry this forward</span>
-    <p>Two ideas from this tab decide almost everything later: <b>alpha is where imagery lives</b>, and <b>drift below 1 Hz is not brain but can be huge</b>. Step 02 shows why that second one is dangerous in our particular dataset.</p>
+    <p>Two ideas from this chapter decide almost everything later: <b>alpha is where imagery lives</b>, and <b>a recording carries large signals that are not brain activity</b>. Chapter 3 shows why the second is dangerous in our particular dataset.</p>
   </div>
 </section>
 
@@ -388,7 +388,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <div class="def">
     <p class="dt">Electrode drift</p>
-    <p class="dd">Over seconds and minutes the electrical contact between an electrode and your scalp slowly changes: gel settles, skin warms, you shift in the chair. The measured voltage wanders slowly, below 1 Hz. It has nothing to do with thinking.</p>
+    <p class="dd">Over seconds and minutes the electrical contact between an electrode and your scalp changes: gel settles, skin warms, you shift in the chair. The measured voltage wanders. It has nothing to do with thinking.</p>
     <p class="ex"><b>The problem</b>That wander is <b>unique to that recording, at that moment, on that person</b>. It is a fingerprint on the data.</p>
   </div>
 
@@ -402,9 +402,9 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <p>Each subject imagined each picture exactly once, so there is a perfect one-to-one correspondence:</p>
 
-  <p style="font-family:'IBM Plex Mono',monospace;font-size:.88rem;background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;line-height:1.7;">picture&nbsp;#7 &nbsp;&harr;&nbsp; one 10-second recording &nbsp;&harr;&nbsp; one unique drift pattern</p>
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:.88rem;background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;line-height:1.7;">picture&nbsp;#7 &nbsp;&harr;&nbsp; one 10-second recording &nbsp;&harr;&nbsp; one unique recording fingerprint</p>
 
-  <p>Which means <strong>"identify the recording" and "identify the picture" are the same task</strong>. Anything unique to that recording, including drift, posture, or how the cap was sitting, is a perfect predictor of the label. The model never has to decode imagery at all.</p>
+  <p>Which means <strong>"identify the recording" and "identify the picture" are the same task</strong>. Anything unique to that recording, whether residual artifact, posture, or how the cap was sitting, is a perfect predictor of the label. The model never has to decode imagery at all.</p>
 
   <div class="def">
     <p class="dt">Data leakage</p>
@@ -648,7 +648,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <div class="note warn">
     <p>Our <b>26.3%</b> is exactly this: the best validation score across roughly 100 training
        epochs, on a model trained with broadband input we have since measured as
-       drift-contaminated. Three separate reasons for caution, stacked. It is a lead worth chasing,
+       fingerprint-contaminated. Three separate reasons for caution, stacked. It is a lead worth chasing,
        not a result.</p>
   </div>
 
@@ -726,7 +726,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <div class="note warn">
     <span class="hd">Why every number in the table above says provisional</span>
     <p>First, these are best-validation scores, the peak across many training rounds on a lenient measure, which always flatters. The matching test numbers were lost to a bug: four jobs ran at the same time, their output directories were named by timestamp to the second, and they overwrote each other. Fixed since, by putting the job ID in the path, and the checkpoints survived, so the numbers are recoverable.</p>
-    <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem. As of 26 September this is no longer a suspicion: the cross-subject test confirmed that broadband's advantage is recording-specific drift, so <b>26.3% is substantially inflated</b> and the honest figure is unknown until the pipeline is re-run on alpha-band input.</p>
+    <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem. As of 26 September this is no longer a suspicion: the cross-subject test confirmed that broadband's advantage is a recording fingerprint, so <b>26.3% is substantially inflated</b> and the honest figure is unknown until the pipeline is re-run on alpha-band input.</p>
   </div>
 
   <h3>What we fixed along the way</h3>
@@ -810,11 +810,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 
   <h4>Condition B &mdash; the trap, caught</h4>
-  <p>Broadband roughly doubled every number. That is not extra signal, it is the drift shortcut from Step 02. Three reasons to be confident:</p>
+  <p>Broadband roughly doubled every number. That is not extra signal, it is the recording fingerprint from Chapter 3. Three reasons to be confident:</p>
   <ul>
     <li><strong>It is too good relative to the field.</strong> The original paper got 13.4% on 40 options <em>with</em> a leaky split. Subject 1's broadband 37.1% on 33 options would beat everything published.</li>
     <li><strong>The pattern gives it away.</strong> EEGNet, the most flexible method, was the <em>worst</em> on alpha at 2.0&times; and the <em>best</em> on broadband at 12.2&times;. When your most powerful model gains most from data that should not matter, it is exploiting a shortcut.</li>
-    <li><strong>The mechanism is known.</strong> Broadband keeps everything from 1 Hz up, including slow drift. Band-passing to 8&ndash;13 Hz filters that drift away, which is exactly why the number drops.</li>
+    <li><strong>Band-limiting removes it.</strong> Our recordings arrive band-passed to 1&ndash;50 Hz, and 77% of their power sits outside 8&ndash;13 Hz. Restricting to alpha discards that majority, and the score drops with it.</li>
   </ul>
   <div class="note warn">
     <p><b>The lower number is the honest one.</b> Genuinely counterintuitive: removing data made the result worse but more trustworthy. It is also why this field is littered with results that did not replicate.</p>
@@ -858,7 +858,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <div class="note warn">
     <span class="hd">The uncomfortable implication</span>
-    <p>Our Stage 2 model trains on <b>raw broadband EEG</b>, exactly the condition that just produced up to 12&times; chance through drift fingerprinting. So subject 1's headline <b>26.3%</b> may be substantially drift-driven rather than imagery decoding.</p>
+    <p>Our Stage 2 model trains on <b>raw broadband EEG</b>, exactly the condition that just produced up to 12&times; chance through recording fingerprinting. So subject 1's headline <b>26.3%</b> may be substantially fingerprint-driven rather than imagery decoding.</p>
     <p>Read correctly, this is the baseline doing its job: it found a problem in the expensive pipeline that the expensive pipeline could not find in itself.</p>
   </div>
 </section>
@@ -870,14 +870,14 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
   </header>
 
-<p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the drift shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
+<p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
 
   <div class="note good">
     <span class="hd">Where the evidence stands after 26 September</span>
     <p><b>Solid:</b> perception decodes at +4.3 SEM on unseen images. Imagery signal exists in the
        alpha band, significant in all four subjects under a permutation null.</p>
     <p><b>Settled negative:</b> imagery does not transfer between people in this data. Broadband's
-       advantage is recording-specific drift.</p>
+       advantage is a recording fingerprint.</p>
     <p><b>Unknown:</b> what the pipeline actually achieves on alpha-band input. Every deep-model
        number we have was trained on broadband and is provisional until re-run.</p>
   </div>
@@ -908,7 +908,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <h3>The queue, in order</h3>
   <div class="steps">
     <div class="step"><span class="i">1</span><span class="t">Alpha-band input to the main pipeline &mdash; next up</span>
-      <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through drift. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
+      <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through a recording fingerprint. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
     <div class="step"><span class="i">2</span><span class="t">Recover the four lost test reports</span>
       <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers. Worth doing regardless, since the current headline figure cannot properly be cited.</p></div>
     <div class="step"><span class="i">3</span><span class="t">A small encoder</span>
@@ -937,9 +937,35 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </header>
 
 <div class="entry">
+    <div class="tags"><span class="tag nul">correction</span><span class="tag fix">running</span></div>
+    <span class="when">27 SEP 2026 &middot; JOBS 82864 / 82868</span>
+    <h3>The alpha-band runs are training, and a mechanism claim is corrected</h3>
+    <p><span class="lbl">Correction</span>We had been describing the broadband advantage as
+       <b>electrode drift below 1 Hz</b>. That specific mechanism is wrong. Our pipeline applies no
+       filtering at any stage, and the Shimizu recordings arrive <b>already band-passed to
+       1&ndash;50 Hz</b> by the original authors, so sub-1 Hz drift was gone before we received
+       the data.</p>
+    <p>The finding is unchanged: the advantage outside 8&ndash;13 Hz is roughly 2:1 within a subject
+       and vanishes across subjects, so it belongs to the recording rather than to the picture. Only
+       the named cause was wrong. The likely contributors are residual low-frequency artifact in the
+       1&ndash;8 Hz range, muscle activity toward the top of the band, and per-session impedance
+       scaling the whole spectrum. The documentation now says <b>recording fingerprint</b>
+       throughout, which is what we actually measured.</p>
+    <p><span class="lbl">Measured while wiring the filter</span>Of the power in a trial as shipped,
+       <b>37.7% sits in 1&ndash;8 Hz, 22.9% in 8&ndash;13 Hz and 38.9% in 13&ndash;50 Hz</b>. Roughly
+       three quarters of what the encoder currently sees is outside the band where imagery lives.</p>
+    <p><span class="lbl">Running</span>Two Stage 2 jobs on subject 1, identical but for the input
+       band: <b>82864</b> on alpha 8&ndash;13 Hz, <b>82868</b> unfiltered as the control. A third
+       job, 82865, was killed 40 seconds in by the preflight GPU check with "all CUDA-capable
+       devices are busy or unavailable", almost certainly on cs002, the node already known to have a
+       bad GPU. Resubmitted excluding that node. The check cost seconds instead of a two-day
+       allocation.</p>
+  </div>
+
+<div class="entry">
     <div class="tags"><span class="tag res">result</span><span class="tag res">confirmed</span><span class="tag nul">negative</span></div>
     <span class="when">26 SEP 2026 &middot; JOB 82079</span>
-    <h3>The finding survives a permutation test, and the drift diagnosis is confirmed</h3>
+    <h3>The finding survives a permutation test, and the shortcut is confirmed</h3>
     <p>Three questions in one CPU job, each with a prediction stated in advance. Two came back
        confirmed, one came back negative.</p>
 
@@ -1156,7 +1182,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="gitem"><p class="gt">Diffusion model</p><p class="gd">An image generator that starts from random static and removes noise step by step until a picture emerges.</p></div>
     <div class="gitem"><p class="gt">Early stopping</p><p class="gd">Halting training when performance on held-out data stops improving, instead of running a fixed number of rounds.</p><p class="ge">Prevents a model from continuing to memorise long after it has stopped learning anything general.</p></div>
     <div class="gitem"><p class="gt">EEGNet</p><p class="gd">A compact neural network designed for EEG, roughly 2,000 parameters.</p><p class="ge">One of our three baseline methods, and a candidate replacement for the 85-million-parameter encoder.</p></div>
-    <div class="gitem"><p class="gt">Electrode drift</p><p class="gd">Slow wandering of measured voltage, below 1 Hz, caused by the electrode's contact with the scalp changing over time.</p><p class="ge">Not brain activity, and unique to each recording, which makes it a fingerprint a model can exploit.</p></div>
+    <div class="gitem"><p class="gt">Electrode drift</p><p class="gd">Slow wandering of measured voltage caused by the electrode's contact with the scalp changing over time. Most of its power is below 1 Hz.</p><p class="ge">Not brain activity, and unique to each recording. Our data arrives band-passed to 1-50 Hz, so literal drift is already gone; what remains is the broader family of recording-specific nuisance signals. See <b>recording fingerprint</b>.</p></div>
     <div class="gitem"><p class="gt">Epoch</p><p class="gd">One complete pass through the training data. Confusingly, in EEG research "epoch" can also mean a segment of a recording; context decides.</p></div>
     <div class="gitem"><p class="gt">Hertz (Hz)</p><p class="gd">Cycles per second. 10 Hz means the signal completes ten up-and-down cycles every second.</p></div>
     <div class="gitem"><p class="gt">Data leakage</p><p class="gd">When information from the test set reaches the model during training, making its score better than its real ability.</p><p class="ge">In EEG this is the default state rather than an occasional mistake.</p></div>
@@ -1167,6 +1193,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="gitem"><p class="gt">Overfitting / memorisation</p><p class="gd">When a model learns the specific training examples rather than the general pattern. It scores well on data it has seen and poorly on anything new.</p><p class="ge">We watched this happen: our alignment objective fell to 0.0001, meaning the model had effectively memorised which answer belonged to each training clip.</p></div>
     <div class="gitem"><p class="gt">Parameters</p><p class="gd">The adjustable numbers inside a network. Ours: about 85 million trainable, against roughly 360 training examples per subject.</p></div>
     <div class="gitem"><p class="gt">Permutation test</p><p class="gd">Shuffling the labels many times to see how often a result as good as yours appears by pure chance.</p><p class="ge">On our queue, because with 33 stimuli the effective sample size is small enough that the usual assumptions do not hold.</p></div>
+    <div class="gitem"><p class="gt">Recording fingerprint</p><p class="gd">Any signal that is specific to one recording session rather than to what the person was doing: residual low-frequency artifact, muscle tension, how the cap was sitting, session impedance scaling the whole spectrum.</p><p class="ge">It predicts the label perfectly when each stimulus was recorded exactly once, which is our situation. It cannot transfer to another person, which is how we detected it.</p></div>
+
     <div class="gitem"><p class="gt">Regularisation</p><p class="gd">Techniques that discourage memorisation: penalising large parameter values, freezing parts of the network, adding noise to the inputs.</p></div>
     <div class="gitem"><p class="gt">Riemannian tangent space</p><p class="gd">A way of classifying covariance patterns by mapping them from their own curved space onto a flat one first.</p><p class="ge">The standard strong baseline when EEG data is scarce, and one of our three methods.</p></div>
     <div class="gitem"><p class="gt">Sampling rate</p><p class="gd">How many measurements per second are taken. Ours is 250 Hz, so a half-second window holds 125 numbers per electrode.</p></div>
