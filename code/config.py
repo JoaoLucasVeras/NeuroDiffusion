@@ -158,6 +158,10 @@ class Config_Generative_Model:
         self.weight_decay = 0.05
         self.freeze_encoder_blocks = 18   # of 24; 0 = train everything (v1 behaviour)
         self.augment = True               # EEG noise / channel dropout / scaling on train
+        # Input frequency band in Hz, or None for the data as shipped (1-50 Hz).
+        # Set to (8.0, 13.0) to train on alpha only: the classical baseline found the
+        # advantage outside that band does not transfer between subjects.
+        self.band = None
         self.clip_loss = 'cosine'         # 'cosine' (v1) or 'contrastive' (P2)
         self.clip_weight = 1.0
         self.val_windows = 4              # windows carved from TRAIN subjects for selection
