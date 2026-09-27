@@ -5,6 +5,7 @@
 
 <style>
 :root{
+  color-scheme: light;
   --ground:#EDF0F4; --surface:#FFFFFF; --surface-2:#F6F8FA;
   --ink:#141B26; --ink-2:#3C4757; --muted:#5A6779;
   --rule:#D3DAE3; --rule-strong:#B6C0CD;
@@ -15,6 +16,7 @@
   --shadow:0 1px 2px rgba(20,27,38,.06),0 8px 24px -12px rgba(20,27,38,.18);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme: dark;
   --ground:#10141A; --surface:#191F28; --surface-2:#141A22;
   --ink:#E7ECF3; --ink-2:#BCC6D3; --muted:#96A2B2;
   --rule:#2A323D; --rule-strong:#3B4552;
@@ -25,6 +27,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
 }}
 :root[data-theme="dark"]{
+  color-scheme: dark;
   --ground:#10141A; --surface:#191F28; --surface-2:#141A22;
   --ink:#E7ECF3; --ink-2:#BCC6D3; --muted:#96A2B2;
   --rule:#2A323D; --rule-strong:#3B4552;
@@ -36,32 +39,39 @@
 }
 
 *{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
 body{background:var(--ground);color:var(--ink);margin:0;
   font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.62;
   -webkit-font-smoothing:antialiased;}
-.wrap{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:0 72px;}
-
-h1,h2,h3,h4,.eyebrow,.tag,th,.dt,.tabs button,.sn b,.kicker{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
-h1{font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.06;letter-spacing:-.026em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
-h2{font-size:clamp(1.35rem,3.3vw,1.85rem);line-height:1.14;letter-spacing:-.02em;font-weight:700;margin:0 0 .2em;text-wrap:balance;}
-h3{font-size:1.14rem;line-height:1.25;letter-spacing:-.012em;font-weight:600;margin:1.9em 0 .4em;}
+h1,h2,h3,h4,.eyebrow,.tag,th,.dt,.cnum,.nn,.nt,.kicker{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
+h1{font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.05;letter-spacing:-.028em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
+h2{font-size:clamp(1.45rem,3.4vw,2rem);line-height:1.12;letter-spacing:-.022em;font-weight:700;margin:0;text-wrap:balance;}
+h3{font-size:1.14rem;line-height:1.25;letter-spacing:-.012em;font-weight:600;margin:2.1em 0 .45em;}
+h4{font-size:.98rem;line-height:1.3;font-weight:600;margin:1.6em 0 .3em;}
 p{margin:0 0 1.05em;}
 ul,ol{margin:0 0 1.05em;padding-left:1.2em;}
 li{margin-bottom:.4em;}
 a{color:var(--signal);text-underline-offset:2px;}
 strong{font-weight:600;}
-em{font-style:italic;}
 code{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--surface-2);
   border:1px solid var(--rule);border-radius:2px;padding:1px 5px;word-break:break-word;}
 .num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;}
 .eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:0 0 .5em;}
 
-/* masthead */
-header.mast{padding-block:40px 24px;}
-.lede{font-size:1.1rem;line-height:1.55;color:var(--ink-2);margin-top:12px;}
+/* reading progress */
+#bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--signal);z-index:60;}
 
-/* status strip */
-.statusgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px;margin:24px 0 0;}
+/* shell */
+.wrap{max-width:1140px;margin:0 auto;padding-inline:20px;padding-block:0 96px;}
+.shell{display:block;}
+@media (min-width:1000px){
+  .shell{display:grid;grid-template-columns:216px minmax(0,1fr);gap:56px;align-items:start;}
+}
+
+/* masthead */
+header.mast{padding-block:44px 26px;border-bottom:1.5px solid var(--rule-strong);margin-bottom:8px;}
+.lede{font-size:1.1rem;line-height:1.55;color:var(--ink-2);margin-top:12px;max-width:62ch;}
+.statusgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px;margin:26px 0 0;}
 .sc{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--signal);
   border-radius:0 3px 3px 0;padding:10px 13px 11px;box-shadow:var(--shadow);}
 .sc.good{border-left-color:var(--good);} .sc.warn{border-left-color:var(--warn);}
@@ -71,29 +81,47 @@ header.mast{padding-block:40px 24px;}
 .sc .v small{display:block;font-family:"Source Serif 4",serif;font-weight:400;font-size:.82rem;
   color:var(--ink-2);margin-top:.25em;line-height:1.4;}
 
-/* tabs */
-.tabsbar{position:sticky;top:0;z-index:20;background:var(--ground);
-  border-bottom:1.5px solid var(--rule-strong);margin-top:26px;}
-.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
-.tabs::-webkit-scrollbar{display:none;}
-.tabs button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
-  padding:13px 13px 11px;font-size:.87rem;font-weight:600;color:var(--muted);
-  cursor:pointer;white-space:nowrap;letter-spacing:-.005em;}
-.tabs button .ix{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--rule-strong);margin-right:6px;}
-.tabs button:hover{color:var(--ink-2);}
-.tabs button[aria-selected="true"]{color:var(--signal);border-bottom-color:var(--signal);}
-.tabs button[aria-selected="true"] .ix{color:var(--signal);}
+/* contents rail */
+.rail{margin:26px 0 0;}
+@media (min-width:1000px){
+  .rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 26px);margin:44px 0 0;max-height:calc(100vh - 80px);overflow-y:auto;}
+}
+.rail .eyebrow{margin-bottom:.8em;}
+.rail ol{list-style:none;margin:0;padding:0;}
+.rail li{margin:0;}
+.rail a{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:baseline;
+  padding:5px 0;text-decoration:none;color:var(--ink-2);border-left:2px solid transparent;
+  padding-left:10px;margin-left:-12px;}
+.rail a:hover{color:var(--ink);}
+.rail .nn{font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--rule-strong);font-weight:600;}
+.rail .nt{font-size:.86rem;font-weight:500;line-height:1.3;}
+.rail a[aria-current="true"]{color:var(--signal);border-left-color:var(--signal);}
+.rail a[aria-current="true"] .nn{color:var(--signal);}
+.rail a[aria-current="true"] .nt{font-weight:600;}
+details.railbox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:12px 16px;box-shadow:var(--shadow);}
+details.railbox summary{font-family:Archivo,sans-serif;font-size:.8rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;}
+details.railbox[open] summary{margin-bottom:10px;}
+@media (min-width:1000px){
+  details.railbox{background:none;border:0;padding:0;box-shadow:none;}
+  details.railbox summary{display:none;}
+}
 
-section.panel{padding-block:34px 0;}
-.kicker{font-family:"IBM Plex Mono",monospace;font-size:.73rem;font-weight:600;
-  letter-spacing:.1em;color:var(--signal);display:block;margin-bottom:.55em;text-transform:uppercase;}
-.oneline{font-size:1.05rem;line-height:1.5;color:var(--ink-2);border-left:3px solid var(--rule-strong);
-  padding-left:14px;margin:14px 0 26px;}
+/* chapters */
+main{min-width:0;}
+.chapter{padding-block:56px 4px;border-top:1px solid var(--rule);scroll-margin-top:24px;}
+.chapter:first-of-type{border-top:0;padding-top:40px;}
+.chead{margin-bottom:22px;}
+.cnum{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--signal);display:block;margin-bottom:.6em;}
+.oneline{font-size:1.04rem;line-height:1.5;color:var(--ink-2);margin:.7em 0 0;
+  border-left:3px solid var(--rule-strong);padding-left:14px;max-width:60ch;}
 .oneline b{color:var(--ink);}
+.chapter p,.chapter li{max-width:66ch;}
 
 /* definition blocks */
 .def{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--alpha);
-  border-radius:0 3px 3px 0;padding:14px 18px 15px;margin:20px 0;box-shadow:var(--shadow);}
+  border-radius:0 3px 3px 0;padding:14px 18px 15px;margin:20px 0;box-shadow:var(--shadow);max-width:70ch;}
 .def .dt{font-size:.99rem;font-weight:700;letter-spacing:-.01em;margin-bottom:.35em;color:var(--ink);}
 .def .dd{font-size:.95rem;line-height:1.55;color:var(--ink-2);margin:0;}
 .def .ex{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:.65em 0 0;
@@ -103,10 +131,10 @@ section.panel{padding-block:34px 0;}
 
 /* callouts */
 .note{border-radius:0 3px 3px 0;padding:14px 18px;margin:22px 0;border-left:3px solid var(--signal);
-  background:var(--signal-soft);}
+  background:var(--signal-soft);max-width:70ch;}
 .note.good{border-left-color:var(--good);background:var(--good-soft);}
 .note.warn{border-left-color:var(--warn);background:var(--warn-soft);}
-.note p{margin:0;font-size:.96rem;line-height:1.55;color:var(--ink-2);}
+.note p{margin:0;font-size:.96rem;line-height:1.55;color:var(--ink-2);max-width:none;}
 .note p+p{margin-top:.7em;}
 .note b{color:var(--ink);}
 .note .hd{font-family:Archivo,sans-serif;font-weight:600;color:var(--ink);display:block;margin-bottom:.35em;font-size:.94rem;}
@@ -123,7 +151,7 @@ tbody tr:last-child td{border-bottom:0;}
 .lo{color:var(--warn);font-weight:600;}
 
 /* frequency ladder */
-.ladder{margin:22px 0;display:grid;gap:3px;}
+.ladder{margin:22px 0;display:grid;gap:3px;max-width:70ch;}
 .rung{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:center;
   padding:9px 12px;border-radius:2px;background:var(--surface-2);border:1px solid var(--rule);}
 .rung.hit{background:var(--alpha-soft);border-color:var(--alpha);}
@@ -132,22 +160,22 @@ tbody tr:last-child td{border-bottom:0;}
 .rung.hit .what{color:var(--ink);font-weight:600;}
 
 /* step cards */
-.steps{display:grid;gap:11px;margin:22px 0;}
+.steps{display:grid;gap:11px;margin:22px 0;max-width:70ch;}
 .step{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
   padding:13px 16px;display:grid;grid-template-columns:auto 1fr;gap:3px 14px;
   align-items:baseline;box-shadow:var(--shadow);}
 .step .i{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
   color:var(--signal);grid-row:span 2;padding-top:3px;}
 .step .t{font-family:Archivo,sans-serif;font-weight:600;font-size:.96rem;}
-.step .b{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:0;}
+.step .b{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:0;max-width:none;}
 
 /* journal entries */
 .entry{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:17px 20px 18px;margin:14px 0;box-shadow:var(--shadow);}
+  padding:17px 20px 18px;margin:14px 0;box-shadow:var(--shadow);max-width:72ch;}
 .entry .when{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
   letter-spacing:.08em;color:var(--signal);}
 .entry h3{margin:.35em 0 .5em;font-size:1.08rem;}
-.entry p{font-size:.94rem;line-height:1.55;margin:0 0 .7em;color:var(--ink-2);}
+.entry p{font-size:.94rem;line-height:1.55;margin:0 0 .7em;color:var(--ink-2);max-width:none;}
 .entry p:last-child{margin-bottom:0;}
 .entry p b,.entry p strong{color:var(--ink);}
 .entry .lbl{font-family:Archivo,sans-serif;font-size:.66rem;font-weight:600;letter-spacing:.1em;
@@ -161,89 +189,92 @@ tbody tr:last-child td{border-bottom:0;}
 .tag.dec{background:var(--alpha-soft);border-color:var(--alpha);color:var(--alpha);}
 
 /* resource rows */
-.rsrc{border-top:1px solid var(--rule-strong);margin:16px 0 26px;}
+.rsrc{border-top:1px solid var(--rule-strong);margin:16px 0 26px;max-width:72ch;}
 .ritem{padding:14px 0;border-bottom:1px solid var(--rule);}
 .rhead{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-bottom:.3em;}
 .rhead .rt{font-family:Archivo,sans-serif;font-weight:600;font-size:.99rem;}
 .who{font-size:.63rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
   padding:2px 7px;border-radius:2px;border:1px solid var(--rule);color:var(--muted);background:var(--surface-2);}
-.ritem .rd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;}
-.ritem .rv{font-size:.91rem;line-height:1.5;margin:.45em 0 0;color:var(--ink);}
+.ritem .rd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
+.ritem .rv{font-size:.91rem;line-height:1.5;margin:.45em 0 0;color:var(--ink);max-width:none;}
 .ritem .rv b{font-family:Archivo,sans-serif;font-size:.67rem;letter-spacing:.09em;
   text-transform:uppercase;display:block;margin-bottom:.2em;font-weight:600;color:var(--muted);}
 
 /* glossary */
-.gloss{display:grid;gap:0;margin-top:14px;border-top:1px solid var(--rule-strong);}
+.gloss{display:grid;gap:0;margin-top:14px;border-top:1px solid var(--rule-strong);max-width:72ch;}
 .gitem{padding:14px 0;border-bottom:1px solid var(--rule);}
 .gitem .gt{font-family:Archivo,sans-serif;font-weight:600;font-size:.99rem;margin-bottom:.25em;}
-.gitem .gd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;}
-.gitem .ge{font-size:.89rem;line-height:1.5;color:var(--muted);margin:.4em 0 0;font-style:italic;}
+.gitem .gd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
+.gitem .ge{font-size:.89rem;line-height:1.5;color:var(--muted);margin:.4em 0 0;font-style:italic;max-width:none;}
 
-/* step navigation */
-.stepnav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:40px 0 0;
-  padding-top:22px;border-top:1.5px solid var(--rule-strong);}
-.sn{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:11px 14px;text-align:left;cursor:pointer;color:var(--ink);box-shadow:var(--shadow);
-  display:block;font-family:inherit;}
-.sn:hover{border-color:var(--signal);}
-.sn span{font-family:Archivo,sans-serif;font-size:.64rem;font-weight:600;letter-spacing:.11em;
-  text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.25em;}
-.sn b{font-size:.94rem;font-weight:600;}
-.sn.next{text-align:right;}
-.sn.empty{visibility:hidden;}
+footer{padding-block:28px 0;border-top:1.5px solid var(--rule-strong);margin-top:52px;}
+footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;line-height:1.6;max-width:72ch;}
 
-footer{padding-block:28px 0;border-top:1.5px solid var(--rule-strong);margin-top:44px;}
-footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;line-height:1.6;}
+#top{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+  background:var(--surface);border:1px solid var(--rule-strong);color:var(--ink-2);
+  border-radius:3px;padding:8px 12px;font-family:Archivo,sans-serif;font-size:.74rem;
+  font-weight:600;cursor:pointer;box-shadow:var(--shadow);z-index:50;}
+#top[hidden]{display:none!important;}
 
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{transition:none!important;animation:none!important;}}
 :focus-visible{outline:2px solid var(--signal);outline-offset:2px;}
 @media (max-width:560px){
   body{font-size:16px;}
+  .wrap{padding-inline:16px;}
   .step{grid-template-columns:1fr;} .step .i{grid-row:auto;}
   .rung{grid-template-columns:74px 1fr;gap:10px;}
-  .stepnav{grid-template-columns:1fr;}
-  .sn.next{text-align:left;}
-  .sn.empty{display:none;}
 }
 </style>
+
+<div id="bar"></div>
 
 <div class="wrap">
 
 <header class="mast">
   <p class="eyebrow">NeuroDiffusion &middot; Project documentation</p>
   <h1>Turning imagined pictures back into pictures</h1>
-  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. It is written to be read in order, one tab at a time, and assumes you know nothing about EEG or machine learning. Every technical term is defined where it first appears.</p>
+  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">26 Sep 2026<small>Stage: baseline verified, drift confirmed</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">27 Sep 2026<small>Stage: baseline verified, drift confirmed</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>p &le; 0.05 in all four subjects</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
   </div>
 </header>
 
-<div class="tabsbar">
-  <div class="tabs" role="tablist" aria-label="Documentation sections">
-    <button role="tab" id="tab-start"    aria-controls="p-start"    data-k="start"><span class="ix">00</span>Start here</button>
-    <button role="tab" id="tab-signal"   aria-controls="p-signal"   data-k="signal"><span class="ix">01</span>The signal</button>
-    <button role="tab" id="tab-data"     aria-controls="p-data"     data-k="data"><span class="ix">02</span>The data</button>
-    <button role="tab" id="tab-pipeline" aria-controls="p-pipeline" data-k="pipeline"><span class="ix">03</span>The pipeline</button>
-    <button role="tab" id="tab-results"  aria-controls="p-results"  data-k="results"><span class="ix">04</span>Training results</button>
-    <button role="tab" id="tab-baseline" aria-controls="p-baseline" data-k="baseline"><span class="ix">05</span>The baseline</button>
-    <button role="tab" id="tab-status"   aria-controls="p-status"   data-k="status"><span class="ix">06</span>Where we are</button>
-    <button role="tab" id="tab-journal"  aria-controls="p-journal"  data-k="journal"><span class="ix">07</span>Journal</button>
-    <button role="tab" id="tab-reading"  aria-controls="p-reading"  data-k="reading"><span class="ix">08</span>Resources</button>
-    <button role="tab" id="tab-glossary" aria-controls="p-glossary" data-k="glossary"><span class="ix">09</span>Glossary</button>
-  </div>
-</div>
+<div class="shell">
 
-<!-- ============ 00 START ============ -->
-<section class="panel" id="p-start" role="tabpanel" aria-labelledby="tab-start" tabindex="0">
-  <span class="kicker">Step 00</span>
-  <h2>Start here</h2>
-  <p class="oneline"><b>The goal:</b> record someone's brain activity while they imagine a picture, and produce that picture.</p>
+<nav class="rail" aria-label="Contents">
+  <details class="railbox" open>
+    <summary>Contents</summary>
+    <p class="eyebrow">Chapters</p>
+    <ol>
+      <li><a href="#p-start"><span class="nn">01</span><span class="nt">The project</span></a></li>
+      <li><a href="#p-signal"><span class="nn">02</span><span class="nt">The signal</span></a></li>
+      <li><a href="#p-data"><span class="nn">03</span><span class="nt">The data</span></a></li>
+      <li><a href="#p-pipeline"><span class="nn">04</span><span class="nt">The pipeline</span></a></li>
+      <li><a href="#p-metrics"><span class="nn">05</span><span class="nt">Reading numbers</span></a></li>
+      <li><a href="#p-results"><span class="nn">06</span><span class="nt">Training results</span></a></li>
+      <li><a href="#p-baseline"><span class="nn">07</span><span class="nt">The classical baseline</span></a></li>
+      <li><a href="#p-status"><span class="nn">08</span><span class="nt">Where we are</span></a></li>
+      <li><a href="#p-journal"><span class="nn">09</span><span class="nt">Journal</span></a></li>
+      <li><a href="#p-reading"><span class="nn">10</span><span class="nt">Resources</span></a></li>
+      <li><a href="#p-glossary"><span class="nn">11</span><span class="nt">Glossary</span></a></li>
+    </ol>
+  </details>
+</nav>
 
-  <p>That sentence promises more than is physically possible, so here is the honest version straight away. We are not reading a picture out of the brain. We extract a weak hint about the <strong>category</strong> of what someone is thinking about, dog or car or flower, and hand that hint to an image generator that already knows what dogs look like. Nearly all the visual detail in the output comes from the generator's knowledge, not from the brain.</p>
+<main>
+
+<section class="chapter" id="p-start">
+  <header class="chead">
+    <span class="cnum">Chapter 1</span>
+    <h2>The project</h2>
+    <p class="oneline"><b>The goal:</b> record someone's brain activity while they imagine a picture, and produce that picture.</p>
+  </header>
+
+<p>That sentence promises more than is physically possible, so here is the honest version straight away. We are not reading a picture out of the brain. We extract a weak hint about the <strong>category</strong> of what someone is thinking about, dog or car or flower, and hand that hint to an image generator that already knows what dogs look like. Nearly all the visual detail in the output comes from the generator's knowledge, not from the brain.</p>
 
   <div class="note warn">
     <span class="hd">The one thing to keep in mind while reading everything else</span>
@@ -264,17 +295,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="hd">Who is doing this</span>
     <p>A small team project, run on the San Jos&eacute; State University College of Engineering HPC cluster. The code is a fork of DreamDiffusion. Findings are tagged by who found them in the Resources tab. Nothing here is a published result; it is a working record, and numbers that got worse are kept in place rather than quietly dropped.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 01 SIGNAL ============ -->
-<section class="panel" id="p-signal" role="tabpanel" aria-labelledby="tab-signal" tabindex="0" hidden>
-  <span class="kicker">Step 01</span>
-  <h2>The signal: what EEG actually is</h2>
-  <p class="oneline"><b>In one sentence:</b> an electrode on the scalp measures a voltage that is mostly not brain activity, and the trick is knowing which part is.</p>
+<section class="chapter" id="p-signal">
+  <header class="chead">
+    <span class="cnum">Chapter 2</span>
+    <h2>The signal: what EEG actually is</h2>
+    <p class="oneline"><b>In one sentence:</b> an electrode on the scalp measures a voltage that is mostly not brain activity, and the trick is knowing which part is.</p>
+  </header>
 
-  <p>An electrode on your scalp measures voltage, the tiny electrical field produced by millions of neurons firing together beneath it. In our data there are 128 of these, each sampled 250 times per second.</p>
+<p>An electrode on your scalp measures voltage, the tiny electrical field produced by millions of neurons firing together beneath it. In our data there are 128 of these, each sampled 250 times per second.</p>
 
   <p>That voltage is not "brain activity". It is a <strong>sum of several things stacked on top of each other</strong>, and several of the non-brain contributions are <em>larger</em> than the brain signal:</p>
 
@@ -329,17 +359,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="hd">Carry this forward</span>
     <p>Two ideas from this tab decide almost everything later: <b>alpha is where imagery lives</b>, and <b>drift below 1 Hz is not brain but can be huge</b>. Step 02 shows why that second one is dangerous in our particular dataset.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 02 DATA ============ -->
-<section class="panel" id="p-data" role="tabpanel" aria-labelledby="tab-data" tabindex="0" hidden>
-  <span class="kicker">Step 02</span>
-  <h2>The data, and the trap inside it</h2>
-  <p class="oneline"><b>In one sentence:</b> we have four people who each imagined 33 pictures exactly once, which is far less data than it looks like and creates a shortcut a model will happily take.</p>
+<section class="chapter" id="p-data">
+  <header class="chead">
+    <span class="cnum">Chapter 3</span>
+    <h2>The data, and the trap inside it</h2>
+    <p class="oneline"><b>In one sentence:</b> we have four people who each imagined 33 pictures exactly once, which is far less data than it looks like and creates a shortcut a model will happily take.</p>
+  </header>
 
-  <h3>What was recorded</h3>
+<h3>What was recorded</h3>
   <p>Four people. Each was shown a picture for half a second, then a noise mask, then spent ten seconds imagining that picture <strong>with their eyes open</strong>. 128 electrodes recorded throughout, at 250 measurements per second. The dataset is from Shimizu and Srinivasan, 2022, and the same four people also did a separate perception task where they simply looked at images.</p>
 
   <div class="note">
@@ -388,17 +417,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="dd">The rule deciding which trials are used for training and which are held back for testing. In EEG this choice matters more than almost anything else.</p>
     <p class="ex"><b>Ours</b>We train on windows 0 to 10 of each recording and test on windows 16 to 19, discarding the ones in between as buffers so no training window sits next to a test window. The original paper split those 20 windows <em>randomly</em>, which put a test window's immediate neighbours, nearly identical signal, into training. That is why their number is higher than ours on the same data.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 03 PIPELINE ============ -->
-<section class="panel" id="p-pipeline" role="tabpanel" aria-labelledby="tab-pipeline" tabindex="0" hidden>
-  <span class="kicker">Step 03</span>
-  <h2>The pipeline: how the machine is built</h2>
-  <p class="oneline"><b>In one sentence:</b> teach a network what EEG looks like, then use it to replace the text box on an image generator.</p>
+<section class="chapter" id="p-pipeline">
+  <header class="chead">
+    <span class="cnum">Chapter 4</span>
+    <h2>The pipeline: how the machine is built</h2>
+    <p class="oneline"><b>In one sentence:</b> teach a network what EEG looks like, then use it to replace the text box on an image generator.</p>
+  </header>
 
-  <div class="steps">
+<div class="steps">
     <div class="step">
       <span class="i">01</span>
       <span class="t">Stage 1 &mdash; teach a network the shape of EEG</span>
@@ -439,17 +467,193 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="hd">The structural tension of the whole project</span>
     <p>Step 02 said we have 33 real events per person. This tab says the model has 85 million adjustable parameters. Those two facts are the reason this is hard, and most of what follows is either a consequence of that mismatch or an attempt to work around it.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 04 RESULTS ============ -->
-<section class="panel" id="p-results" role="tabpanel" aria-labelledby="tab-results" tabindex="0" hidden>
-  <span class="kicker">Step 04</span>
-  <h2>Training results: what the pipeline did</h2>
-  <p class="oneline"><b>In one sentence:</b> perception decodes clearly and significantly, imagination comes back at chance, and we can prove both statements are measurements rather than accidents.</p>
+<section class="chapter" id="p-metrics">
+  <header class="chead">
+    <span class="cnum">Chapter 5</span>
+    <h2>Reading numbers</h2>
+    <p class="oneline">Every metric we report, stated precisely and then in plain language.</p>
+  </header>
 
-  <h3>How we judge a result at all</h3>
+
+  <p>Every number in the next two chapters is a claim about whether something real happened.
+     This chapter is how to tell a real one from a flattering one. Each section states the
+     metric precisely first, then says the same thing in plain language.</p>
+
+  <h3>5.1 &nbsp;Chance level</h3>
+  <p><strong>Technically:</strong> the expected accuracy of a uniformly random classifier over
+     <em>k</em> classes, equal to 1/<em>k</em>. With 33 stimuli that is 0.0303.</p>
+  <p><strong>In plain terms:</strong> a multiple-choice test with 33 possible answers. Someone
+     who knows nothing gets about 3 out of every 100 right. So <span class="num">3%</span> is the
+     score for knowing nothing at all.</p>
+  <p>This is why we report results as <strong>multiples of chance</strong>. "9.85% accuracy"
+     tells you nothing on its own. "3.25&times; chance" tells you the model is doing something,
+     and it lets a 33-class result be compared against a 40-class one.</p>
+
+  <h3>5.2 &nbsp;How hard was the test?</h3>
+  <p><strong>Technically:</strong> top-<em>k</em> accuracy counts a trial correct when the true
+     label appears in the model's <em>k</em> highest-ranked predictions. <em>n</em>-way accuracy
+     restricts the candidate set to the true class plus <em>n</em>&minus;1 sampled distractors,
+     averaged over 100 draws.</p>
+  <p><strong>In plain terms:</strong> two separate things make a test easier. How many guesses you
+     get, and how many options you are choosing between.</p>
+  <p>Top-1 means the first answer has to be right. Top-5 means you get five tries, so chance rises
+     to 5/33, about 15%. Our top-5 of 21&ndash;31% is a weaker claim than it appears.</p>
+  <p>The number of options matters even more. These three rows are the same model, same data, same
+     day:</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Options</th><th class="n">We scored</th><th class="n">Chance</th><th class="n">Multiple</th></tr></thead>
+    <tbody>
+      <tr><td>40</td><td class="n">9.5%</td><td class="n">2.5%</td><td class="n hi">3.8&times;</td></tr>
+      <tr><td>10</td><td class="n">25.2%</td><td class="n">10%</td><td class="n">2.5&times;</td></tr>
+      <tr><td>2</td><td class="n">62.3%</td><td class="n">50%</td><td class="n lo">1.25&times;</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note warn">
+    <p><b>The 62.3% is the weakest of the three</b>, not the strongest. It is barely better than a
+     coin flip. If a paper reports only its 2-way accuracy, that is the number that flattered it
+     most.</p>
+  </div>
+
+  <h3>5.3 &nbsp;The similarity score</h3>
+  <p><strong>Technically:</strong> the cosine similarity between CLIP embeddings of the generated
+     image and the ground-truth image, in [&minus;1, 1].</p>
+  <p><strong>In plain terms:</strong> a closeness rating between two pictures, not a percentage.</p>
+  <div class="note">
+    <p><b>0.58 is not 58%.</b> Two entirely unrelated photographs already score around 0.5 in this
+       space, simply because both are photographs. The absolute value carries almost no
+       information. Only the comparison does.</p>
+  </div>
+
+  <h3>5.4 &nbsp;The two controls we rig to fail</h3>
+  <p><strong>Technically:</strong> a shuffled-pairing control scores predictions against permuted
+     ground truth; a noise control replaces the EEG input with random noise. Both hold generation
+     quality fixed while removing the stimulus-specific information.</p>
+  <p><strong>In plain terms:</strong> two versions of the same test, deliberately broken.</p>
+  <p>The first grades the drawings against the <em>wrong answer key</em>. The pictures are just as
+     well drawn, so anything our real score has over this must come from the brain signal. The
+     second feeds the machine pure static instead of brain data. If that scores as well as the real
+     thing, nothing is working.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Condition</th><th class="n">Model</th><th class="n">Wrong key</th><th class="n">Static</th></tr></thead>
+    <tbody>
+      <tr><td><b>Looking at a picture</b></td><td class="n">0.5848</td><td class="n">0.5484</td><td class="n">0.4761</td></tr>
+      <tr><td><b>Imagining a picture</b></td><td class="n">0.5581</td><td class="n">0.5541</td><td class="n">0.4746</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Read the first two columns. Looking at a picture clears the wrong key. Imagining barely moves.</p>
+
+  <h3>5.5 &nbsp;Standard error of the mean</h3>
+  <p><strong>Technically:</strong> the standard deviation of the sampling distribution of the mean.
+     It estimates how much a measured average would move if the experiment were repeated with a
+     fresh sample of the same size, and it shrinks with the square root of that size.</p>
+  <p><strong>In plain terms:</strong> every measurement jiggles. SEM is the size of the jiggle. Once
+     you know it, you can ask the only question that matters: is the difference I found bigger than
+     the jiggle, or smaller?</p>
+  <p><strong>The analogy:</strong> weighing two bags of coffee on a wobbly scale. If the scale
+     wobbles by 5 grams and the bags differ by 2, you have learned nothing, because the difference
+     is hiding inside the wobble. If the scale wobbles by half a gram, that same 2-gram difference
+     is real. The bags did not change. The scale did.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Condition</th><th class="n">Gap over control</th><th class="n">Wobble (SEM)</th><th class="n">Gap in wobbles</th></tr></thead>
+    <tbody>
+      <tr><td>Looking at a picture</td><td class="n">0.0364</td><td class="n">~0.008</td><td class="n hi">4.3</td></tr>
+      <tr><td>Imagining a picture</td><td class="n">0.0040</td><td class="n">~0.008</td><td class="n lo">0.5</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Our instrument was <em>equally precise both times</em>. What differed was the size of the gap.
+     Imagining beat its control by half a wobble, which is less than the jiggle in our own
+     measurement. That is not a small effect. It is no effect we can distinguish from zero.</p>
+  <div class="note">
+    <span class="hd">Same word, opposite directions</span>
+    <p>A <b>small SEM</b> is good: a precise instrument. A <b>large number of SEMs</b> is also good:
+       a convincing gap. When someone says their SEM was large, they are telling you the measurement
+       was noisy. Rule of thumb: under 2 SEM, do not believe it. Over 4, it is hard to explain away.</p>
+  </div>
+
+  <h3>5.6 &nbsp;Permutation tests</h3>
+  <p><strong>Technically:</strong> the labels are randomly permuted and the entire fitting procedure
+     re-run, many times, to build an empirical null distribution. The p-value is the fraction of
+     permutations scoring at least as well as the observed result. We permute at the level of whole
+     recordings rather than individual windows, because windows from one recording are not
+     independent.</p>
+  <p><strong>In plain terms:</strong> scramble the labels so the recording for a dog now says
+     bicycle. Any real relationship is destroyed, but everything else stays the same. Run the whole
+     method on the scrambled version and see what it scores. Do that 200 times and you know exactly
+     what luck can achieve on this data.</p>
+  <p><strong>The analogy:</strong> a race against 200 random guessers. Where do you place?</p>
+  <p>Subject 1, alpha band:</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Quantity</th><th class="n">Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Observed</td><td class="n hi">0.0985</td><td>our real score</td></tr>
+      <tr><td>Null mean</td><td class="n">0.0303</td><td>what the 200 scrambled runs averaged</td></tr>
+      <tr><td>Null 95th pct</td><td class="n">0.0534</td><td>95% of scrambled runs stayed below this</td></tr>
+      <tr><td>Null max</td><td class="n">0.0833</td><td>the luckiest scramble of all 200</td></tr>
+      <tr><td><b>p-value</b></td><td class="n hi">0.005</td><td>no scramble reached our score</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note good">
+    <span class="hd">The null mean is the line that matters most</span>
+    <p>It came out at 0.0303, which is chance exactly. That is the safety check: if scrambled labels
+       had scored 6%, the procedure would be leaking information somewhere and every number it
+       produced would be worthless. This is also why we trust the permutation test over SEM here.
+       SEM assumes independent samples, and our 132 test windows come from only 33 recordings.
+       The permutation test assumes nothing.</p>
+  </div>
+
+  <h3>5.7 &nbsp;Practice test versus real test</h3>
+  <p><strong>Technically:</strong> validation data guides model selection and hyperparameters during
+     development; test data is held out and evaluated once. A metric selected as the maximum over
+     many training epochs is an order statistic, and is biased upward even when nothing is
+     learned.</p>
+  <p><strong>In plain terms:</strong> the practice test is the one you use while studying, and you
+     can retake it. The real test you sit once. If you use the real test to decide what to study,
+     your score stops being honest.</p>
+  <p>There is a subtler version. Take 100 practice tests and report your best, and that best score
+     is partly luck. Flip coins all day and you will eventually get a remarkable streak. The streak
+     is not skill.</p>
+  <div class="note warn">
+    <p>Our <b>26.3%</b> is exactly this: the best validation score across roughly 100 training
+       epochs, on a model trained with broadband input we have since measured as
+       drift-contaminated. Three separate reasons for caution, stacked. It is a lead worth chasing,
+       not a result.</p>
+  </div>
+
+  <h3>The five questions</h3>
+  <p>A result we believe has an answer to all five.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Question</th><th>What answers it</th></tr></thead>
+    <tbody>
+      <tr><td>Is the raw number even good?</td><td>Compare it to <b>chance</b></td></tr>
+      <tr><td>Was the test easy or hard?</td><td>Check <b>how many options</b> and how many guesses</td></tr>
+      <tr><td>Is it bigger than the jiggle?</td><td>Count the <b>SEMs</b></td></tr>
+      <tr><td>Could luck have done this?</td><td><b>Permute the labels</b> a few hundred times</td></tr>
+      <tr><td>Did we fool ourselves?</td><td><b>Validation versus test</b>, and beware peak-picking</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+</section>
+
+<section class="chapter" id="p-results">
+  <header class="chead">
+    <span class="cnum">Chapter 6</span>
+    <h2>Training results: what the pipeline did</h2>
+    <p class="oneline"><b>In one sentence:</b> perception decodes clearly and significantly, imagination comes back at chance, and we can prove both statements are measurements rather than accidents.</p>
+  </header>
+
+<h3>How we judge a result at all</h3>
   <p>Since the generator always makes a plausible picture, we score every result against deliberately broken versions of itself.</p>
 
   <div class="def">
@@ -504,17 +708,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3>What we fixed along the way</h3>
   <p>Getting to a trustworthy null took rebuilding the measurement apparatus: a retrieval metric that needs no image sampling, a validation set carved from the training subjects' late windows instead of quietly reusing test data, best-checkpoint selection, early stopping, the weight decay the configuration asked for and the code silently ignored, input augmentation, and an optional contrastive objective. A crash where a saved CPU random-number state was loaded into the GPU generator was fixed too.</p>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 05 BASELINE ============ -->
-<section class="panel" id="p-baseline" role="tabpanel" aria-labelledby="tab-baseline" tabindex="0" hidden>
-  <span class="kicker">Step 05</span>
-  <h2>The classical baseline</h2>
-  <p class="oneline"><b>In one sentence:</b> we stopped and ran the simplest possible method, which proved the data does contain imagery signal and simultaneously caught the pipeline taking a shortcut.</p>
+<section class="chapter" id="p-baseline">
+  <header class="chead">
+    <span class="cnum">Chapter 7</span>
+    <h2>The classical baseline</h2>
+    <p class="oneline"><b>In one sentence:</b> we stopped and ran the simplest possible method, which proved the data does contain imagery signal and simultaneously caught the pipeline taking a shortcut.</p>
+  </header>
 
-  <h3>The problem it exists to solve</h3>
+<h3>The problem it exists to solve</h3>
   <p>Every time the pipeline came back at chance, that single result could have meant four entirely different things:</p>
   <ol>
     <li><strong>There is no imagery signal in this EEG.</strong> The data is a dead end.</li>
@@ -635,17 +838,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p>Our Stage 2 model trains on <b>raw broadband EEG</b>, exactly the condition that just produced up to 12&times; chance through drift fingerprinting. So subject 1's headline <b>26.3%</b> may be substantially drift-driven rather than imagery decoding.</p>
     <p>Read correctly, this is the baseline doing its job: it found a problem in the expensive pipeline that the expensive pipeline could not find in itself.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 06 STATUS ============ -->
-<section class="panel" id="p-status" role="tabpanel" aria-labelledby="tab-status" tabindex="0" hidden>
-  <span class="kicker">Step 06</span>
-  <h2>Where we are, and what is next</h2>
-  <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
+<section class="chapter" id="p-status">
+  <header class="chead">
+    <span class="cnum">Chapter 8</span>
+    <h2>Where we are, and what is next</h2>
+    <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
+  </header>
 
-  <p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the drift shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
+<p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the drift shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
 
   <div class="note good">
     <span class="hd">Where the evidence stands after 26 September</span>
@@ -702,17 +904,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="hd">If you want to help</span>
     <p>The binding constraint is <b>data, not compute or cleverness</b>. The most valuable contributions are access to EEG hardware, participants willing to sit for repeated imagery sessions, or a dataset that has real repetitions of imagined content with posterior electrode coverage. The Resources tab lists what we have already checked and why most candidates do not fit.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 07 JOURNAL ============ -->
-<section class="panel" id="p-journal" role="tabpanel" aria-labelledby="tab-journal" tabindex="0" hidden>
-  <span class="kicker">Log</span>
-  <h2>Journal, newest first</h2>
-  <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
+<section class="chapter" id="p-journal">
+  <header class="chead">
+    <span class="cnum">Chapter 9</span>
+    <h2>Journal, newest first</h2>
+    <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
+  </header>
 
-  <div class="entry">
+<div class="entry">
     <div class="tags"><span class="tag res">result</span><span class="tag res">confirmed</span><span class="tag nul">negative</span></div>
     <span class="when">26 SEP 2026 &middot; JOB 82079</span>
     <h3>The finding survives a permutation test, and the drift diagnosis is confirmed</h3>
@@ -811,17 +1012,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h3>The pipeline itself</h3>
     <p>A fork of DreamDiffusion running on the SJSU COE HPC cluster: a masked EEG autoencoder in Stage 1, then Stable Diffusion 1.5 in Stage 2 with the EEG encoder substituted for the text encoder. Data from Shimizu and Srinivasan, 2022.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 08 READING ============ -->
-<section class="panel" id="p-reading" role="tabpanel" aria-labelledby="tab-reading" tabindex="0" hidden>
-  <span class="kicker">Reference</span>
-  <h2>Resources: datasets and papers</h2>
-  <p class="oneline"><b>What this is:</b> everything the team has proposed, with a verdict on each. Tagged by who found it. The full write-ups are in <code>RESOURCES.md</code> in the repository.</p>
+<section class="chapter" id="p-reading">
+  <header class="chead">
+    <span class="cnum">Chapter 10</span>
+    <h2>Resources: datasets and papers</h2>
+    <p class="oneline"><b>What this is:</b> everything the team has proposed, with a verdict on each. Tagged by who found it. The full write-ups are in <code>RESOURCES.md</code> in the repository.</p>
+  </header>
 
-  <div class="note">
+<div class="note">
     <span class="hd">The four criteria we judge a dataset by</span>
     <p><b>1.</b> Visual imagery, not perception and not motor imagery. <b>2.</b> Real repetitions of each imagined item, not one event sliced into windows. <b>3.</b> Posterior electrode coverage, since that is where visual imagery shows up. <b>4.</b> More than one session, so a result can be shown to survive a new cap placement.</p>
   </div>
@@ -911,17 +1111,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3>Papers on artifact removal</h3>
   <p>Aditya's batch on ICA-based artifact removal: the foundational Jung et al. paper, the Jiang, Bian &amp; Tian review, an ICA template method for blinks, and an ICA denoising study on word imagination. <strong>Useful as background rather than as a next step.</strong> Our condition D found rejection neutral on this data, so this line is parked rather than dismissed; it becomes relevant again when we record our own sessions and control the noise ourselves.</p>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 09 GLOSSARY ============ -->
-<section class="panel" id="p-glossary" role="tabpanel" aria-labelledby="tab-glossary" tabindex="0" hidden>
-  <span class="kicker">Reference</span>
-  <h2>Glossary</h2>
-  <p class="oneline"><b>What this is:</b> every technical term used in this documentation, in plain language, alphabetically.</p>
+<section class="chapter" id="p-glossary">
+  <header class="chead">
+    <span class="cnum">Chapter 11</span>
+    <h2>Glossary</h2>
+    <p class="oneline"><b>What this is:</b> every technical term used in this documentation, in plain language, alphabetically.</p>
+  </header>
 
-  <div class="gloss">
+<div class="gloss">
     <div class="gitem"><p class="gt">Alpha rhythm</p><p class="gd">The visual cortex's resting oscillation near 10 cycles per second, in the 8 to 13 Hz band. Modulated by what you see or imagine.</p><p class="ge">Where the imagery signal lives, according to three independent studies and our own baseline.</p></div>
     <div class="gitem"><p class="gt">Artifact</p><p class="gd">Anything in an EEG recording that is not brain activity: blinks, muscle tension, heartbeat, electrode drift, mains hum.</p><p class="ge">Often larger than the brain signal itself.</p></div>
     <div class="gitem"><p class="gt">Band-pass filter</p><p class="gd">A step that keeps a chosen range of frequencies and discards the rest.</p><p class="ge">Like turning down every part of a stereo except one narrow slice.</p></div>
@@ -959,9 +1158,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="gitem"><p class="gt">Weight decay</p><p class="gd">A regularisation method that penalises large parameter values, nudging a model toward simpler solutions.</p><p class="ge">Ours was defined in the config but silently never applied, one of the faults we found and fixed.</p></div>
     <div class="gitem"><p class="gt">Window</p><p class="gd">One half-second slice of a recording. Ours are non-overlapping and tile the full ten seconds end to end.</p><p class="ge">Twenty windows of one imagery event are not twenty measurements of it.</p></div>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
+
+</main>
+</div>
 
 <footer>
   <p>NeuroDiffusion &middot; living documentation, updated as work happens. Source at <code>docs/journal.html</code> in the project repository, alongside the improvement plan, signal-quality notes, resource evaluations and code. Deep-model per-subject figures are best-validation and provisional. Results from the SJSU COE HPC cluster.</p>
@@ -969,84 +1169,51 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 </div>
 
+<button id="top" hidden>Back to top</button>
+
 <script>
 (function(){
-  var order = [
-    {k:'start',    label:'Start here'},
-    {k:'signal',   label:'01 · The signal'},
-    {k:'data',     label:'02 · The data'},
-    {k:'pipeline', label:'03 · The pipeline'},
-    {k:'results',  label:'04 · Training results'},
-    {k:'baseline', label:'05 · The baseline'},
-    {k:'status',   label:'06 · Where we are'},
-    {k:'journal',  label:'07 · Journal'},
-    {k:'reading',  label:'08 · Resources'},
-    {k:'glossary', label:'09 · Glossary'}
-  ];
-  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
-  var panels = {};
-  order.forEach(function(o){ panels[o.k] = document.getElementById('p-' + o.k); });
+  var bar = document.getElementById('bar');
+  var top = document.getElementById('top');
+  var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
+  var chapters = Array.prototype.slice.call(document.querySelectorAll('.chapter'));
 
-  function idx(k){ for (var i=0;i<order.length;i++){ if (order[i].k===k) return i; } return 0; }
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    var pct = h > 0 ? (window.scrollY / h) * 100 : 0;
+    bar.style.width = pct + '%';
+    top.hidden = window.scrollY < 600;
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if (!ticking) { ticking = true; requestAnimationFrame(function(){ onScroll(); ticking = false; }); }
+  }, {passive:true});
+  onScroll();
 
-  function show(k, push){
-    if (!panels[k]) k = 'start';
-    tabs.forEach(function(b){
-      var on = b.dataset.k === k;
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-      b.setAttribute('tabindex', on ? '0' : '-1');
-      panels[b.dataset.k].hidden = !on;
-      if (on) { try { b.scrollIntoView({block:'nearest', inline:'nearest'}); } catch(e){} }
+  top.addEventListener('click', function(){ window.scrollTo({top:0, behavior:'smooth'}); });
+
+  if ('IntersectionObserver' in window) {
+    var current = null;
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (!e.isIntersecting) return;
+        var id = e.target.id;
+        if (id === current) return;
+        current = id;
+        links.forEach(function(a){
+          a.setAttribute('aria-current', a.getAttribute('href') === '#' + id ? 'true' : 'false');
+        });
+      });
+    }, {rootMargin: '-15% 0px -70% 0px', threshold: 0});
+    chapters.forEach(function(c){ io.observe(c); });
+  }
+
+  // close the mobile contents drawer after picking a chapter
+  var box = document.querySelector('details.railbox');
+  links.forEach(function(a){
+    a.addEventListener('click', function(){
+      if (box && window.matchMedia('(max-width: 999px)').matches) { box.open = false; }
     });
-    try { localStorage.setItem('nd-tab', k); } catch(e){}
-    if (push) {
-      try { history.replaceState(null, '', '#' + k); } catch(e){ location.hash = k; }
-      window.scrollTo({top:0, behavior:'auto'});
-    }
-  }
-
-  // build prev/next navigation inside each panel
-  order.forEach(function(o, i){
-    var nav = panels[o.k] && panels[o.k].querySelector('[data-nav]');
-    if (!nav) return;
-    var prev = order[i-1], next = order[i+1];
-    var html = '';
-    html += prev
-      ? '<button class="sn prev" data-go="' + prev.k + '"><span>Previous</span><b>' + prev.label + '</b></button>'
-      : '<span class="sn empty"></span>';
-    html += next
-      ? '<button class="sn next" data-go="' + next.k + '"><span>Next step</span><b>' + next.label + '</b></button>'
-      : '<span class="sn empty"></span>';
-    nav.innerHTML = html;
   });
-
-  tabs.forEach(function(b){
-    b.addEventListener('click', function(){ show(b.dataset.k, true); });
-  });
-  document.addEventListener('click', function(e){
-    var t = e.target.closest ? e.target.closest('[data-go]') : null;
-    if (t) { show(t.dataset.go, true); }
-  });
-
-  // keyboard: left/right across the tab bar
-  document.querySelector('.tabs').addEventListener('keydown', function(e){
-    var cur = tabs.findIndex(function(b){ return b.getAttribute('aria-selected') === 'true'; });
-    var to = null;
-    if (e.key === 'ArrowRight') to = Math.min(cur+1, tabs.length-1);
-    if (e.key === 'ArrowLeft')  to = Math.max(cur-1, 0);
-    if (e.key === 'Home') to = 0;
-    if (e.key === 'End')  to = tabs.length-1;
-    if (to !== null) { e.preventDefault(); show(tabs[to].dataset.k, true); tabs[to].focus(); }
-  });
-
-  window.addEventListener('hashchange', function(){
-    show((location.hash || '').replace('#',''), false);
-  });
-
-  var startK = (location.hash || '').replace('#','');
-  if (!panels[startK]) {
-    try { var saved = localStorage.getItem('nd-tab'); if (saved && panels[saved]) startK = saved; } catch(e){}
-  }
-  show(panels[startK] ? startK : 'start', false);
 })();
 </script>
