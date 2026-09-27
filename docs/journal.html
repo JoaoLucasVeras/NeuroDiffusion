@@ -478,8 +478,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 
   <p>Every number in the next two chapters is a claim about whether something real happened.
-     This chapter is how to tell a real one from a flattering one. Each section states the
-     metric precisely first, then says the same thing in plain language.</p>
+     This chapter is how to tell a real one from a flattering one. Each section gives the metric
+     its standard name, states it precisely, then says the same thing in plain language.</p>
+  <p>The names here are the ones used in the literature, so they are what to search for and what
+     to put in a write-up. The analogies are ours, and are only teaching aids.</p>
 
   <h3>5.1 &nbsp;Chance level</h3>
   <p><strong>Technically:</strong> the expected accuracy of a uniformly random classifier over
@@ -490,12 +492,22 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p>This is why we report results as <strong>multiples of chance</strong>. "9.85% accuracy"
      tells you nothing on its own. "3.25&times; chance" tells you the model is doing something,
      and it lets a 33-class result be compared against a 40-class one.</p>
+  <div class="note">
+    <p>With a sample this small, the theoretical chance level is not the whole story: the accuracy
+       of a random classifier has its own spread, so a score slightly above 1/<em>k</em> can still be
+       nothing. This is the argument in M&uuml;ller-Putz et al., <i>Better than random? A closer look
+       on BCI results</i> (2008), and it is why we run permutation tests rather than reading
+       3.03% as a hard floor.</p>
+  </div>
 
-  <h3>5.2 &nbsp;How hard was the test?</h3>
-  <p><strong>Technically:</strong> top-<em>k</em> accuracy counts a trial correct when the true
-     label appears in the model's <em>k</em> highest-ranked predictions. <em>n</em>-way accuracy
-     restricts the candidate set to the true class plus <em>n</em>&minus;1 sampled distractors,
-     averaged over 100 draws.</p>
+  <h3>5.2 &nbsp;Top-k accuracy and n-way identification accuracy</h3>
+  <p><strong>Technically:</strong> <b>top-<em>k</em> accuracy</b> counts a trial correct when the
+     true label appears in the model's <em>k</em> highest-ranked predictions; in retrieval settings
+     the same quantity is called <b>Recall@<em>k</em></b>. <b><em>n</em>-way identification
+     accuracy</b> restricts the candidate set to the true class plus <em>n</em>&minus;1 sampled
+     distractors, averaged over 100 draws. The two-candidate case is <b>two-alternative forced
+     choice (2AFC)</b>, a term borrowed from psychophysics, and it is what papers mean by "pairwise
+     identification accuracy".</p>
   <p><strong>In plain terms:</strong> two separate things make a test easier. How many guesses you
      get, and how many options you are choosing between.</p>
   <p>Top-1 means the first answer has to be right. Top-5 means you get five tries, so chance rises
@@ -518,9 +530,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
      most.</p>
   </div>
 
-  <h3>5.3 &nbsp;The similarity score</h3>
-  <p><strong>Technically:</strong> the cosine similarity between CLIP embeddings of the generated
-     image and the ground-truth image, in [&minus;1, 1].</p>
+  <h3>5.3 &nbsp;CLIP image similarity</h3>
+  <p><strong>Technically:</strong> the <b>cosine similarity</b> between CLIP embeddings of the
+     generated image and the ground-truth image, in [&minus;1, 1]. Image-to-image CLIP similarity is
+     commonly written <b>CLIP-I</b>, to distinguish it from CLIP-T, which compares an image against
+     text.</p>
   <p><strong>In plain terms:</strong> a closeness rating between two pictures, not a percentage.</p>
   <div class="note">
     <p><b>0.58 is not 58%.</b> Two entirely unrelated photographs already score around 0.5 in this
@@ -528,10 +542,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        information. Only the comparison does.</p>
   </div>
 
-  <h3>5.4 &nbsp;The two controls we rig to fail</h3>
-  <p><strong>Technically:</strong> a shuffled-pairing control scores predictions against permuted
-     ground truth; a noise control replaces the EEG input with random noise. Both hold generation
-     quality fixed while removing the stimulus-specific information.</p>
+  <h3>5.4 &nbsp;Negative controls</h3>
+  <p><strong>Technically:</strong> two <b>negative controls</b>. The <b>shuffled-label control</b>
+     scores predictions against permuted ground truth; the <b>random-input control</b> replaces the
+     EEG with noise. Both hold generation quality fixed while removing the stimulus-specific
+     information, which is what isolates the contribution of the brain signal.</p>
   <p><strong>In plain terms:</strong> two versions of the same test, deliberately broken.</p>
   <p>The first grades the drawings against the <em>wrong answer key</em>. The pictures are just as
      well drawn, so anything our real score has over this must come from the brain signal. The
@@ -549,9 +564,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p>Read the first two columns. Looking at a picture clears the wrong key. Imagining barely moves.</p>
 
   <h3>5.5 &nbsp;Standard error of the mean</h3>
-  <p><strong>Technically:</strong> the standard deviation of the sampling distribution of the mean.
-     It estimates how much a measured average would move if the experiment were repeated with a
-     fresh sample of the same size, and it shrinks with the square root of that size.</p>
+  <p><strong>Technically:</strong> the <b>standard error of the mean (SEM)</b> is the standard
+     deviation of the sampling distribution of the mean. It estimates how much a measured average
+     would move if the experiment were repeated with a fresh sample of the same size, and it shrinks
+     with the square root of that size. A difference divided by its standard error is a
+     <b>t-statistic</b>, so our "+4.3 SEM" is t &asymp; 4.3. Dividing by a pooled standard deviation
+     instead gives <b>Cohen's d</b>, the standardised effect size.</p>
   <p><strong>In plain terms:</strong> every measurement jiggles. SEM is the size of the jiggle. Once
      you know it, you can ask the only question that matters: is the difference I found bigger than
      the jiggle, or smaller?</p>
@@ -579,9 +597,13 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 
   <h3>5.6 &nbsp;Permutation tests</h3>
-  <p><strong>Technically:</strong> the labels are randomly permuted and the entire fitting procedure
-     re-run, many times, to build an empirical null distribution. The p-value is the fraction of
-     permutations scoring at least as well as the observed result. We permute at the level of whole
+  <p><strong>Technically:</strong> a <b>permutation test</b>, also called a randomisation test. The
+     labels are randomly permuted and the entire fitting procedure re-run many times, building an
+     <b>empirical null distribution</b>. The <b>empirical p-value</b> is the fraction of permutations
+     scoring at least as well as the observed result, computed as (hits&nbsp;+&nbsp;1) /
+     (permutations&nbsp;+&nbsp;1). That add-one correction is deliberate: with 200 draws from an
+     astronomically large space of possible shuffles, a naive count of zero would assert an
+     impossible p&nbsp;=&nbsp;0 (Phipson &amp; Smyth, 2010). We permute at the level of whole
      recordings rather than individual windows, because windows from one recording are not
      independent.</p>
   <p><strong>In plain terms:</strong> scramble the labels so the recording for a dog now says
@@ -611,11 +633,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        The permutation test assumes nothing.</p>
   </div>
 
-  <h3>5.7 &nbsp;Practice test versus real test</h3>
-  <p><strong>Technically:</strong> validation data guides model selection and hyperparameters during
-     development; test data is held out and evaluated once. A metric selected as the maximum over
-     many training epochs is an order statistic, and is biased upward even when nothing is
-     learned.</p>
+  <h3>5.7 &nbsp;Validation, test, and optimistic bias</h3>
+  <p><strong>Technically:</strong> the <b>validation set</b> guides model selection and
+     hyperparameters during development; the <b>test set</b> is held out and evaluated once. A metric
+     selected as the maximum over many training epochs is an order statistic and carries
+     <b>optimistic bias</b>, sometimes called the winner's curse: it is biased upward even when
+     nothing has been learned.</p>
   <p><strong>In plain terms:</strong> the practice test is the one you use while studying, and you
      can retake it. The real test you sit once. If you use the real test to decide what to study,
      your score stops being honest.</p>
@@ -635,11 +658,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <table>
     <thead><tr><th>Question</th><th>What answers it</th></tr></thead>
     <tbody>
-      <tr><td>Is the raw number even good?</td><td>Compare it to <b>chance</b></td></tr>
-      <tr><td>Was the test easy or hard?</td><td>Check <b>how many options</b> and how many guesses</td></tr>
-      <tr><td>Is it bigger than the jiggle?</td><td>Count the <b>SEMs</b></td></tr>
-      <tr><td>Could luck have done this?</td><td><b>Permute the labels</b> a few hundred times</td></tr>
-      <tr><td>Did we fool ourselves?</td><td><b>Validation versus test</b>, and beware peak-picking</td></tr>
+      <tr><td>Is the raw number even good?</td><td>Compare it to <b>chance level</b></td></tr>
+      <tr><td>Was the test easy or hard?</td><td>Check <em>n</em> in <b><em>n</em>-way accuracy</b>, and <em>k</em> in <b>top-<em>k</em></b></td></tr>
+      <tr><td>Is it bigger than the jiggle?</td><td>Count the <b>standard errors</b> (the <b>t-statistic</b>)</td></tr>
+      <tr><td>Could luck have done this?</td><td>A <b>permutation test</b>, and its <b>empirical p-value</b></td></tr>
+      <tr><td>Did we fool ourselves?</td><td><b>Validation versus test</b>, and <b>optimistic bias</b> from peak-picking</td></tr>
     </tbody>
   </table>
   </div>
@@ -657,28 +680,28 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p>Since the generator always makes a plausible picture, we score every result against deliberately broken versions of itself.</p>
 
   <div class="def">
-    <p class="dt">Shuffled-pairing control</p>
+    <p class="dt">Shuffled-label control</p>
     <p class="dd">Score the generated images against <em>deliberately mismatched</em> ground truth. Image quality is identical either way, so any gap between real pairings and shuffled ones must come from the brain signal.</p>
     <p class="ex"><b>And a second control</b>Feed the pipeline pure noise instead of EEG. If that scores as well as real data, nothing is working.</p>
   </div>
 
   <div class="def">
-    <p class="dt">SEM (standard error of the mean)</p>
+    <p class="dt">Standard error of the mean (SEM)</p>
     <p class="dd">A measure of how much a measured average would bounce around if you repeated the experiment. It converts "this number is bigger" into "this number is bigger than the noise in the measurement".</p>
     <p class="ex"><b>Rule of thumb</b>Below about 2 SEM, a gap is not worth believing. Above 4, it is hard to explain away as luck.</p>
   </div>
 
   <h3>Result 1 &mdash; seeing a picture works</h3>
   <div class="note good">
-    <p>Model <b>0.5848</b>, shuffled control 0.5484, noise control 0.4761. The gap over the shuffled control is <b>+4.3 SEM</b>.</p>
+    <p>Model <b>0.5848</b>, shuffled control 0.5484, random-input control 0.4761. The gap over the shuffled control is <b>+4.3 SEM</b>.</p>
     <p>It names the right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint: the 173 test images never appeared in training, on a person the model had not seen.</p>
     <p><b>This is the load-bearing result of the project.</b> It says the machine is wired correctly end to end, so every later failure is about the difficulty of imagination rather than a broken pipeline.</p>
   </div>
 
   <h3>Result 2 &mdash; imagining a picture does not, yet</h3>
   <div class="note warn">
-    <p>Model <b>0.5581</b>, shuffled control 0.5541, noise control 0.4746. The gap over the control is <b>+0.5 SEM</b>, which is nothing.</p>
-    <p>Note that the noise control still separates cleanly. The measurement works; imagination simply is not there. This is an honest null, not a bug.</p>
+    <p>Model <b>0.5581</b>, shuffled control 0.5541, random-input control 0.4746. The gap over the control is <b>+0.5 SEM</b>, which is nothing.</p>
+    <p>Note that the random-input control still separates cleanly. The measurement works; imagination simply is not there. This is an honest null, not a bug.</p>
   </div>
 
   <h3>Result 3 &mdash; one subject at a time</h3>
@@ -993,7 +1016,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="tags"><span class="tag nul">null result</span><span class="tag fix">harness rebuilt</span></div>
     <span class="when">21 SEP 2026 &middot; JOB 80178</span>
     <h3>The honest null on imagination</h3>
-    <p><span class="lbl">Found</span>Model 0.5581, shuffled control 0.5541, noise control 0.4746. The gap over the control is <b>0.5 standard errors, which is nothing</b>. The noise control separating cleanly proves the measurement works.</p>
+    <p><span class="lbl">Found</span>Model 0.5581, shuffled control 0.5541, random-input control 0.4746. The gap over the control is <b>0.5 standard errors, which is nothing</b>. The random-input control separating cleanly proves the measurement works.</p>
     <p><span class="lbl">Changed</span>Before this, the evaluation could not have told us either way. Rebuilt in the same pass: a retrieval metric needing no image sampling, a validation set carved from the training subjects' late windows instead of peeking at test, best-checkpoint selection, early stopping, the weight decay the config specified and the code silently ignored, input augmentation, and an optional contrastive objective. Also fixed a crash where a saved CPU random-number state was loaded into the GPU generator.</p>
     <p><span class="lbl">Correction</span>Parameter counts quoted earlier were wrong. Stage 2 trains <b>84.6M</b> parameters, measured; the earlier version was about 199M, not the 300M previously stated.</p>
   </div>
@@ -1002,7 +1025,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="tags"><span class="tag res">result</span></div>
     <span class="when">2 SEP 2026</span>
     <h3>Perception works, on images and a person the model never saw</h3>
-    <p>Model 0.5848 against a shuffled control of 0.5484 and a noise control of 0.4761: <b>+4.3 standard errors</b>. Right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint, on 173 images that never appeared in training.</p>
+    <p>Model 0.5848 against a shuffled control of 0.5484 and a random-input control of 0.4761: <b>+4.3 standard errors</b>. Right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint, on 173 images that never appeared in training.</p>
     <p><span class="lbl">Why it matters</span>The load-bearing result of the project. It says the machine is wired correctly end to end.</p>
   </div>
 
@@ -1147,11 +1170,29 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="gitem"><p class="gt">Regularisation</p><p class="gd">Techniques that discourage memorisation: penalising large parameter values, freezing parts of the network, adding noise to the inputs.</p></div>
     <div class="gitem"><p class="gt">Riemannian tangent space</p><p class="gd">A way of classifying covariance patterns by mapping them from their own curved space onto a flat one first.</p><p class="ge">The standard strong baseline when EEG data is scarce, and one of our three methods.</p></div>
     <div class="gitem"><p class="gt">Sampling rate</p><p class="gd">How many measurements per second are taken. Ours is 250 Hz, so a half-second window holds 125 numbers per electrode.</p></div>
-    <div class="gitem"><p class="gt">SEM (standard error of the mean)</p><p class="gd">How much a measured average would bounce around if the experiment were repeated. Used to judge whether a difference is real.</p><p class="ge">Our perception result beat its control by 4.3 SEM, too large to be luck. The imagination result was 0.5 SEM, indistinguishable from nothing.</p></div>
-    <div class="gitem"><p class="gt">Shuffled-pairing control</p><p class="gd">Scoring generated images against deliberately mismatched ground truth. Since image quality is identical either way, any gap must come from the brain signal.</p><p class="ge">The control that makes our perception result meaningful rather than just "the generator makes nice pictures".</p></div>
+    <div class="gitem"><p class="gt">Standard error of the mean (SEM)</p><p class="gd">How much a measured average would bounce around if the experiment were repeated. Used to judge whether a difference is real.</p><p class="ge">Our perception result beat its control by 4.3 SEM, too large to be luck. The imagination result was 0.5 SEM, indistinguishable from nothing.</p></div>
+    <div class="gitem"><p class="gt">Shuffled-label control</p><p class="gd">Scoring generated images against deliberately mismatched ground truth. Since image quality is identical either way, any gap must come from the brain signal.</p><p class="ge">The control that makes our perception result meaningful rather than just "the generator makes nice pictures".</p></div>
     <div class="gitem"><p class="gt">Signal-to-noise ratio (SNR)</p><p class="gd">How large the thing you want is compared to everything else. EEG imagery has famously poor SNR.</p></div>
     <div class="gitem"><p class="gt">Split protocol</p><p class="gd">The rule deciding which trials train the model and which test it.</p><p class="ge">In EEG this choice affects the final number more than almost any modelling decision.</p></div>
     <div class="gitem"><p class="gt">Stimulus-disjoint split</p><p class="gd">A test where the images used for testing never appeared in training at all. The strictest protocol available.</p><p class="ge">Our perception result used this, which is why it is the strongest claim the project has.</p></div>
+    <div class="gitem"><p class="gt">2AFC (two-alternative forced choice)</p><p class="gd">A test with exactly two candidates, one correct. Chance is 50%. Borrowed from psychophysics.</p><p class="ge">What papers mean by "pairwise identification accuracy". Our 62.3% is a 2AFC result, and it is the weakest of the three n-way numbers we report.</p></div>
+
+    <div class="gitem"><p class="gt">CLIP-I</p><p class="gd">Image-to-image cosine similarity in CLIP embedding space, as opposed to CLIP-T which compares an image with text.</p><p class="ge">The 0.5848 and 0.5484 figures are CLIP-I. Not percentages.</p></div>
+
+    <div class="gitem"><p class="gt">Cohen's d</p><p class="gd">A standardised effect size: the difference between two means divided by their pooled standard deviation.</p><p class="ge">Related to our "gap in SEMs" but not the same. Dividing by the standard error gives a t-statistic; dividing by the standard deviation gives d.</p></div>
+
+    <div class="gitem"><p class="gt">Empirical p-value</p><p class="gd">The proportion of permutations that scored at least as well as the real result, computed as (hits + 1) / (permutations + 1).</p><p class="ge">The add-one correction prevents an impossible p = 0 when no permutation happens to beat the observed value.</p></div>
+
+    <div class="gitem"><p class="gt">Negative control</p><p class="gd">A version of an experiment deliberately arranged so that it cannot succeed. If it does succeed, the method is measuring something other than what you think.</p><p class="ge">We run two: the shuffled-label control and the random-input control.</p></div>
+
+    <div class="gitem"><p class="gt">Optimistic bias</p><p class="gd">The upward bias introduced by selecting a result from many candidates, such as taking the best validation score across many training epochs. Also called the winner's curse.</p><p class="ge">The reason our 26.3% is provisional rather than a result.</p></div>
+
+    <div class="gitem"><p class="gt">Permutation test</p><p class="gd">A significance test that shuffles the labels and re-runs the whole analysis many times, building an empirical picture of what luck alone produces.</p><p class="ge">Preferred here over a t-test because it assumes nothing about independence, and our test windows are not independent.</p></div>
+
+    <div class="gitem"><p class="gt">Recall@k</p><p class="gd">In retrieval, the proportion of queries whose correct match appears in the top k returned candidates. The retrieval name for top-k accuracy.</p><p class="ge">Our training-time metric is Recall@1 over the distinct stimuli present.</p></div>
+
+    <div class="gitem"><p class="gt">t-statistic</p><p class="gd">A difference divided by its standard error. It expresses a gap in units of measurement noise.</p><p class="ge">Our perception result of "+4.3 SEM" is t = 4.3. Saying it that way is how a paper would state it.</p></div>
+
     <div class="gitem"><p class="gt">Top-1 / Top-5 accuracy</p><p class="gd">Top-1 asks whether the model's single best guess was right. Top-5 asks whether the right answer appeared anywhere in its top five.</p><p class="ge">Top-5 is more forgiving and often reveals partial knowledge that top-1 hides.</p></div>
     <div class="gitem"><p class="gt">Trial averaging</p><p class="gd">Combining several recordings of the same thing before deciding, so random noise cancels while consistent signal accumulates.</p><p class="ge">Averaging 40 repeats improves signal-to-noise roughly sixfold. This is why repetitions matter, and why one recording per picture hurts us badly.</p></div>
     <div class="gitem"><p class="gt">Validation vs test set</p><p class="gd">Validation data is held out to make decisions during development. Test data is held out to produce the final number and touched once.</p><p class="ge">Using test data to make decisions quietly inflates your result.</p></div>
