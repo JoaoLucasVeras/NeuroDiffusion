@@ -4,6 +4,7 @@
 #SBATCH --error=logs/stage1_%j.err
 #SBATCH --partition=gpuqs
 #SBATCH --gres=gpu:a100:1
+#SBATCH --exclude=cs002   # bad GPU: has killed two jobs at the preflight check
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
@@ -72,6 +73,14 @@ echo "### PREFLIGHT ###"
 $PYTHON check_data.py --dataset "$DATASET" --splits "$SPLITS" --skip_image_check
 
 echo "### STAGE 1: masked EEG pre-training ###"
+# BAND="8 13" restricts pretraining to one frequency band. Stage 2 must then be run
+# with the same --band: an encoder pretrained on one input distribution does not
+# transfer to another, which is what made job 82864 collapse.
+BAND=${BAND:-}
+BAND_ARG=""
+[ -n "$BAND" ] && BAND_ARG="--band $BAND"
+echo "  band       : ${BAND:-none (1-50 Hz as shipped)}"
+
 $PYTHON -u stageA1_eeg_pretrain.py \
     --root_path "$ROOT/" \
     --batch_size 64 \
@@ -79,7 +88,8 @@ $PYTHON -u stageA1_eeg_pretrain.py \
     --lr 1.5e-4 \
     --patch_size 4 \
     --embed_dim 1024 \
-    --decoder_embed_dim 512
+    --decoder_embed_dim 512 \
+    $BAND_ARG
 
 echo "### DONE. Latest checkpoint: ###"
 ls -td "$ROOT"/results/eeg_pretrain/*/ | head -1

@@ -58,6 +58,9 @@ class Config_MBM_EEG(Config_MAE_fMRI):
         # The old imagination_splits.pth was a random shuffle over sliding windows of the
         # same recordings -- 100% of its test recordings also appeared in train.
         self.eeg_signals_path = os.path.join(self.root_path, 'datasets/imagination_5_95_std.pth')
+        # Input band in Hz, or None for the data as shipped (1-50 Hz). If Stage 1 is
+        # pretrained on a band, Stage 2 must use the same one.
+        self.band = None
         self.splits_path = os.path.join(self.root_path, 'datasets/imagination_5_95_std_splits_subject_avail.pth')
         self.imagenet_path = os.path.join(self.root_path, 'datasets/imageNet_images')
 

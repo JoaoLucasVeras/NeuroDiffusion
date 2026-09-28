@@ -5,6 +5,7 @@
 #SBATCH --time=08:00:00
 #SBATCH --partition=gpuqs
 #SBATCH --gres=gpu:a100:1
+#SBATCH --exclude=cs002   # bad GPU: has killed two jobs at the preflight check
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8

@@ -84,6 +84,10 @@ def get_args_parser():
     parser.add_argument('--img_recon_weight', type=float)
     
     # distributed training parameters
+    # Stage 2 must use the same band: an encoder pretrained on one input
+    # distribution does not transfer to another.
+    parser.add_argument('--band', type=float, nargs=2, metavar=('LO', 'HI'),
+                        help='restrict the EEG input to this band in Hz, e.g. --band 8 13')
     parser.add_argument('--local_rank', type=int)
                         
     return parser
@@ -132,7 +136,8 @@ def main(config):
     dataset_train, dataset_test = create_EEG_dataset(eeg_signals_path=config.eeg_signals_path,
                                                      splits_path=config.splits_path,
                                                      imagenet_path=getattr(config, 'imagenet_path', None),
-                                                     load_images=False)
+                                                     load_images=False,
+                                                     band=getattr(config, 'band', None))
     dataset_pretrain = torch.utils.data.ConcatDataset([dataset_train, dataset_test])
     dataset_pretrain.data_len = 512
    
