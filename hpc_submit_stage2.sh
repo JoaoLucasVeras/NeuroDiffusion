@@ -5,6 +5,7 @@
 #SBATCH --time=2-00:00:00
 #SBATCH --partition=gpuqs
 #SBATCH --gres=gpu:a100:1
+#SBATCH --exclude=cs002   # bad GPU: has killed two jobs at the preflight check
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
 #SBATCH --cpus-per-task=8
@@ -63,8 +64,28 @@ DATASET=$ROOT/datasets/${EXPERIMENT}_5_95_std.pth
 SPLITS=$ROOT/datasets/${EXPERIMENT}_5_95_std_splits_${PROTOCOL}${SPLIT_SUFFIX}.pth
 IMAGENET=$ROOT/datasets/imageNet_images
 
-LATEST_PRETRAIN=$(ls -td "$ROOT"/results/eeg_pretrain/*/ | head -1)
-CHECKPOINT="${LATEST_PRETRAIN}checkpoints/checkpoint.pth"
+# Stage 1 encoder. Set CHECKPOINT explicitly whenever the band matters: an encoder
+# pretrained on one input distribution does not transfer to another, and picking
+# "whatever ran last" silently served a broadband encoder alpha input in job 82864.
+if [ -n "${CHECKPOINT:-}" ]; then
+    echo "  encoder    : pinned by CHECKPOINT"
+else
+    LATEST_PRETRAIN=$(ls -td "$ROOT"/results/eeg_pretrain/*/ | head -1)
+    CHECKPOINT="${LATEST_PRETRAIN}checkpoints/checkpoint.pth"
+    echo "  encoder    : newest pretrain dir (set CHECKPOINT to pin one)"
+fi
+[ -f "$CHECKPOINT" ] || { echo "FATAL: Stage 1 checkpoint not found: $CHECKPOINT" >&2; exit 1; }
+# If that encoder was pretrained on a band, warn unless this run asks for the same one.
+PRE_README="$(dirname "$(dirname "$CHECKPOINT")")/README.md"
+if [ -f "$PRE_README" ] && grep -q "'band': \[" "$PRE_README"; then
+    PRE_BAND=$(grep -oE "'band': \[[^]]*\]" "$PRE_README" | head -1)
+    echo "  encoder band: $PRE_BAND"
+    case "${EXTRA_ARGS:-}" in
+        *--band*) : ;;
+        *) echo "  WARNING: encoder was pretrained with $PRE_BAND but this run passes no --band." >&2
+           echo "           That mismatch is what made job 82864 collapse." >&2 ;;
+    esac
+fi
 
 echo "### CONFIG ###"
 echo "  experiment : $EXPERIMENT"

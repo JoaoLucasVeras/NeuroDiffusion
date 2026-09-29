@@ -41,6 +41,33 @@ datasets are not interchangeable the way image datasets are.
 
 ---
 
+## Methods and statistics
+
+*Found by: Joao*
+
+**Phipson B, Smyth GK (2017).** *Permutation P-values should never be zero: calculating exact
+P-values when permutations are randomly drawn.* Statistical Applications in Genetics and
+Molecular Biology.
+
+Argues that an empirical p-value must be computed as (hits + 1) / (permutations + 1), because a
+naive count of zero asserts an impossible p = 0 when you have only sampled a few hundred of an
+astronomically large number of possible label permutations.
+
+**Useful: yes, and applied.** This is the formula used in `code/classical_baseline.py`. It is why
+our best p-value is 0.005 rather than 0 with 200 permutations.
+
+**Müller-Putz GR, Scherer R, Brunner C, Leeb R, Pfurtscheller G (2008).** *Better than random?
+A closer look on BCI results.* International Journal of Bioelectromagnetism.
+
+Points out that with few trials the accuracy of a random classifier has a substantial spread, so a
+score slightly above the theoretical chance level can still be nothing. Recommends confidence
+intervals around chance rather than treating 1/k as a hard floor.
+
+**Useful: yes, and it shaped the plan.** This is exactly our situation, with an effective sample
+size near 33. It is the reason we ran permutation tests instead of reading 3.03% as a floor.
+
+---
+
 # Datasets
 
 ## In use

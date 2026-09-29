@@ -5,6 +5,7 @@
 
 <style>
 :root{
+  color-scheme: light;
   --ground:#EDF0F4; --surface:#FFFFFF; --surface-2:#F6F8FA;
   --ink:#141B26; --ink-2:#3C4757; --muted:#5A6779;
   --rule:#D3DAE3; --rule-strong:#B6C0CD;
@@ -15,6 +16,7 @@
   --shadow:0 1px 2px rgba(20,27,38,.06),0 8px 24px -12px rgba(20,27,38,.18);
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme: dark;
   --ground:#10141A; --surface:#191F28; --surface-2:#141A22;
   --ink:#E7ECF3; --ink-2:#BCC6D3; --muted:#96A2B2;
   --rule:#2A323D; --rule-strong:#3B4552;
@@ -25,6 +27,7 @@
   --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
 }}
 :root[data-theme="dark"]{
+  color-scheme: dark;
   --ground:#10141A; --surface:#191F28; --surface-2:#141A22;
   --ink:#E7ECF3; --ink-2:#BCC6D3; --muted:#96A2B2;
   --rule:#2A323D; --rule-strong:#3B4552;
@@ -36,32 +39,39 @@
 }
 
 *{box-sizing:border-box;}
+html{scroll-behavior:smooth;}
 body{background:var(--ground);color:var(--ink);margin:0;
   font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.62;
   -webkit-font-smoothing:antialiased;}
-.wrap{max-width:820px;margin:0 auto;padding-inline:16px;padding-block:0 72px;}
-
-h1,h2,h3,h4,.eyebrow,.tag,th,.dt,.tabs button,.sn b,.kicker{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
-h1{font-size:clamp(1.8rem,5vw,2.7rem);line-height:1.06;letter-spacing:-.026em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
-h2{font-size:clamp(1.35rem,3.3vw,1.85rem);line-height:1.14;letter-spacing:-.02em;font-weight:700;margin:0 0 .2em;text-wrap:balance;}
-h3{font-size:1.14rem;line-height:1.25;letter-spacing:-.012em;font-weight:600;margin:1.9em 0 .4em;}
+h1,h2,h3,h4,.eyebrow,.tag,th,.dt,.cnum,.nn,.nt,.kicker{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
+h1{font-size:clamp(1.9rem,5vw,2.9rem);line-height:1.05;letter-spacing:-.028em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
+h2{font-size:clamp(1.45rem,3.4vw,2rem);line-height:1.12;letter-spacing:-.022em;font-weight:700;margin:0;text-wrap:balance;}
+h3{font-size:1.14rem;line-height:1.25;letter-spacing:-.012em;font-weight:600;margin:2.1em 0 .45em;}
+h4{font-size:.98rem;line-height:1.3;font-weight:600;margin:1.6em 0 .3em;}
 p{margin:0 0 1.05em;}
 ul,ol{margin:0 0 1.05em;padding-left:1.2em;}
 li{margin-bottom:.4em;}
 a{color:var(--signal);text-underline-offset:2px;}
 strong{font-weight:600;}
-em{font-style:italic;}
 code{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--surface-2);
   border:1px solid var(--rule);border-radius:2px;padding:1px 5px;word-break:break-word;}
 .num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;}
 .eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:0 0 .5em;}
 
-/* masthead */
-header.mast{padding-block:40px 24px;}
-.lede{font-size:1.1rem;line-height:1.55;color:var(--ink-2);margin-top:12px;}
+/* reading progress */
+#bar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--signal);z-index:60;}
 
-/* status strip */
-.statusgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px;margin:24px 0 0;}
+/* shell */
+.wrap{max-width:1140px;margin:0 auto;padding-inline:20px;padding-block:0 96px;}
+.shell{display:block;}
+@media (min-width:1000px){
+  .shell{display:grid;grid-template-columns:216px minmax(0,1fr);gap:56px;align-items:start;}
+}
+
+/* masthead */
+header.mast{padding-block:44px 26px;border-bottom:1.5px solid var(--rule-strong);margin-bottom:8px;}
+.lede{font-size:1.1rem;line-height:1.55;color:var(--ink-2);margin-top:12px;max-width:62ch;}
+.statusgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:9px;margin:26px 0 0;}
 .sc{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--signal);
   border-radius:0 3px 3px 0;padding:10px 13px 11px;box-shadow:var(--shadow);}
 .sc.good{border-left-color:var(--good);} .sc.warn{border-left-color:var(--warn);}
@@ -71,29 +81,47 @@ header.mast{padding-block:40px 24px;}
 .sc .v small{display:block;font-family:"Source Serif 4",serif;font-weight:400;font-size:.82rem;
   color:var(--ink-2);margin-top:.25em;line-height:1.4;}
 
-/* tabs */
-.tabsbar{position:sticky;top:0;z-index:20;background:var(--ground);
-  border-bottom:1.5px solid var(--rule-strong);margin-top:26px;}
-.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;}
-.tabs::-webkit-scrollbar{display:none;}
-.tabs button{flex:0 0 auto;background:none;border:0;border-bottom:2px solid transparent;
-  padding:13px 13px 11px;font-size:.87rem;font-weight:600;color:var(--muted);
-  cursor:pointer;white-space:nowrap;letter-spacing:-.005em;}
-.tabs button .ix{font-family:"IBM Plex Mono",monospace;font-size:.72rem;color:var(--rule-strong);margin-right:6px;}
-.tabs button:hover{color:var(--ink-2);}
-.tabs button[aria-selected="true"]{color:var(--signal);border-bottom-color:var(--signal);}
-.tabs button[aria-selected="true"] .ix{color:var(--signal);}
+/* contents rail */
+.rail{margin:26px 0 0;}
+@media (min-width:1000px){
+  .rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 26px);margin:44px 0 0;max-height:calc(100vh - 80px);overflow-y:auto;}
+}
+.rail .eyebrow{margin-bottom:.8em;}
+.rail ol{list-style:none;margin:0;padding:0;}
+.rail li{margin:0;}
+.rail a{display:grid;grid-template-columns:24px 1fr;gap:8px;align-items:baseline;
+  padding:5px 0;text-decoration:none;color:var(--ink-2);border-left:2px solid transparent;
+  padding-left:10px;margin-left:-12px;}
+.rail a:hover{color:var(--ink);}
+.rail .nn{font-family:"IBM Plex Mono",monospace;font-size:.68rem;color:var(--rule-strong);font-weight:600;}
+.rail .nt{font-size:.86rem;font-weight:500;line-height:1.3;}
+.rail a[aria-current="true"]{color:var(--signal);border-left-color:var(--signal);}
+.rail a[aria-current="true"] .nn{color:var(--signal);}
+.rail a[aria-current="true"] .nt{font-weight:600;}
+details.railbox{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:12px 16px;box-shadow:var(--shadow);}
+details.railbox summary{font-family:Archivo,sans-serif;font-size:.8rem;font-weight:600;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--muted);cursor:pointer;}
+details.railbox[open] summary{margin-bottom:10px;}
+@media (min-width:1000px){
+  details.railbox{background:none;border:0;padding:0;box-shadow:none;}
+  details.railbox summary{display:none;}
+}
 
-section.panel{padding-block:34px 0;}
-.kicker{font-family:"IBM Plex Mono",monospace;font-size:.73rem;font-weight:600;
-  letter-spacing:.1em;color:var(--signal);display:block;margin-bottom:.55em;text-transform:uppercase;}
-.oneline{font-size:1.05rem;line-height:1.5;color:var(--ink-2);border-left:3px solid var(--rule-strong);
-  padding-left:14px;margin:14px 0 26px;}
+/* chapters */
+main{min-width:0;}
+.chapter{padding-block:56px 4px;border-top:1px solid var(--rule);scroll-margin-top:24px;}
+.chapter:first-of-type{border-top:0;padding-top:40px;}
+.chead{margin-bottom:22px;}
+.cnum{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--signal);display:block;margin-bottom:.6em;}
+.oneline{font-size:1.04rem;line-height:1.5;color:var(--ink-2);margin:.7em 0 0;
+  border-left:3px solid var(--rule-strong);padding-left:14px;max-width:60ch;}
 .oneline b{color:var(--ink);}
+.chapter p,.chapter li{max-width:66ch;}
 
 /* definition blocks */
 .def{background:var(--surface);border:1px solid var(--rule);border-left:3px solid var(--alpha);
-  border-radius:0 3px 3px 0;padding:14px 18px 15px;margin:20px 0;box-shadow:var(--shadow);}
+  border-radius:0 3px 3px 0;padding:14px 18px 15px;margin:20px 0;box-shadow:var(--shadow);max-width:70ch;}
 .def .dt{font-size:.99rem;font-weight:700;letter-spacing:-.01em;margin-bottom:.35em;color:var(--ink);}
 .def .dd{font-size:.95rem;line-height:1.55;color:var(--ink-2);margin:0;}
 .def .ex{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:.65em 0 0;
@@ -103,10 +131,10 @@ section.panel{padding-block:34px 0;}
 
 /* callouts */
 .note{border-radius:0 3px 3px 0;padding:14px 18px;margin:22px 0;border-left:3px solid var(--signal);
-  background:var(--signal-soft);}
+  background:var(--signal-soft);max-width:70ch;}
 .note.good{border-left-color:var(--good);background:var(--good-soft);}
 .note.warn{border-left-color:var(--warn);background:var(--warn-soft);}
-.note p{margin:0;font-size:.96rem;line-height:1.55;color:var(--ink-2);}
+.note p{margin:0;font-size:.96rem;line-height:1.55;color:var(--ink-2);max-width:none;}
 .note p+p{margin-top:.7em;}
 .note b{color:var(--ink);}
 .note .hd{font-family:Archivo,sans-serif;font-weight:600;color:var(--ink);display:block;margin-bottom:.35em;font-size:.94rem;}
@@ -123,7 +151,7 @@ tbody tr:last-child td{border-bottom:0;}
 .lo{color:var(--warn);font-weight:600;}
 
 /* frequency ladder */
-.ladder{margin:22px 0;display:grid;gap:3px;}
+.ladder{margin:22px 0;display:grid;gap:3px;max-width:70ch;}
 .rung{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:center;
   padding:9px 12px;border-radius:2px;background:var(--surface-2);border:1px solid var(--rule);}
 .rung.hit{background:var(--alpha-soft);border-color:var(--alpha);}
@@ -132,22 +160,22 @@ tbody tr:last-child td{border-bottom:0;}
 .rung.hit .what{color:var(--ink);font-weight:600;}
 
 /* step cards */
-.steps{display:grid;gap:11px;margin:22px 0;}
+.steps{display:grid;gap:11px;margin:22px 0;max-width:70ch;}
 .step{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
   padding:13px 16px;display:grid;grid-template-columns:auto 1fr;gap:3px 14px;
   align-items:baseline;box-shadow:var(--shadow);}
 .step .i{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
   color:var(--signal);grid-row:span 2;padding-top:3px;}
 .step .t{font-family:Archivo,sans-serif;font-weight:600;font-size:.96rem;}
-.step .b{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:0;}
+.step .b{font-size:.91rem;line-height:1.5;color:var(--ink-2);margin:0;max-width:none;}
 
 /* journal entries */
 .entry{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
-  padding:17px 20px 18px;margin:14px 0;box-shadow:var(--shadow);}
+  padding:17px 20px 18px;margin:14px 0;box-shadow:var(--shadow);max-width:72ch;}
 .entry .when{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
   letter-spacing:.08em;color:var(--signal);}
 .entry h3{margin:.35em 0 .5em;font-size:1.08rem;}
-.entry p{font-size:.94rem;line-height:1.55;margin:0 0 .7em;color:var(--ink-2);}
+.entry p{font-size:.94rem;line-height:1.55;margin:0 0 .7em;color:var(--ink-2);max-width:none;}
 .entry p:last-child{margin-bottom:0;}
 .entry p b,.entry p strong{color:var(--ink);}
 .entry .lbl{font-family:Archivo,sans-serif;font-size:.66rem;font-weight:600;letter-spacing:.1em;
@@ -161,120 +189,216 @@ tbody tr:last-child td{border-bottom:0;}
 .tag.dec{background:var(--alpha-soft);border-color:var(--alpha);color:var(--alpha);}
 
 /* resource rows */
-.rsrc{border-top:1px solid var(--rule-strong);margin:16px 0 26px;}
+.rsrc{border-top:1px solid var(--rule-strong);margin:16px 0 26px;max-width:72ch;}
 .ritem{padding:14px 0;border-bottom:1px solid var(--rule);}
 .rhead{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;margin-bottom:.3em;}
 .rhead .rt{font-family:Archivo,sans-serif;font-weight:600;font-size:.99rem;}
 .who{font-size:.63rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
   padding:2px 7px;border-radius:2px;border:1px solid var(--rule);color:var(--muted);background:var(--surface-2);}
-.ritem .rd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;}
-.ritem .rv{font-size:.91rem;line-height:1.5;margin:.45em 0 0;color:var(--ink);}
+.ritem .rd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
+.ritem .rv{font-size:.91rem;line-height:1.5;margin:.45em 0 0;color:var(--ink);max-width:none;}
 .ritem .rv b{font-family:Archivo,sans-serif;font-size:.67rem;letter-spacing:.09em;
   text-transform:uppercase;display:block;margin-bottom:.2em;font-weight:600;color:var(--muted);}
 
 /* glossary */
-.gloss{display:grid;gap:0;margin-top:14px;border-top:1px solid var(--rule-strong);}
+.gloss{display:grid;gap:0;margin-top:14px;border-top:1px solid var(--rule-strong);max-width:72ch;}
 .gitem{padding:14px 0;border-bottom:1px solid var(--rule);}
 .gitem .gt{font-family:Archivo,sans-serif;font-weight:600;font-size:.99rem;margin-bottom:.25em;}
-.gitem .gd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;}
-.gitem .ge{font-size:.89rem;line-height:1.5;color:var(--muted);margin:.4em 0 0;font-style:italic;}
+.gitem .gd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
+.gitem .ge{font-size:.89rem;line-height:1.5;color:var(--muted);margin:.4em 0 0;font-style:italic;max-width:none;}
 
-/* step navigation */
-.stepnav{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:40px 0 0;
+
+/* nested chapter navigation */
+.rail ol.subs{list-style:none;margin:2px 0 8px;padding:0 0 0 32px;display:none;}
+.rail li[data-ch].active ol.subs{display:block;}
+.rail a.sub{display:block;padding:3px 0 3px 10px;margin-left:-12px;font-size:.81rem;
+  color:var(--muted);border-left:1px solid var(--rule);text-decoration:none;line-height:1.35;}
+.rail a.sub:hover{color:var(--ink-2);border-left-color:var(--rule-strong);}
+.rail a.sub[aria-current="true"]{color:var(--signal);border-left-color:var(--signal);font-weight:600;}
+.rail li[data-ch].active > a.ch{color:var(--signal);border-left-color:var(--signal);}
+.rail li[data-ch].active > a.ch .nn{color:var(--signal);}
+.rail li[data-ch].active > a.ch .nt{font-weight:600;}
+
+/* chapter pager */
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:48px 0 0;
   padding-top:22px;border-top:1.5px solid var(--rule-strong);}
-.sn{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+.pg{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
   padding:11px 14px;text-align:left;cursor:pointer;color:var(--ink);box-shadow:var(--shadow);
-  display:block;font-family:inherit;}
-.sn:hover{border-color:var(--signal);}
-.sn span{font-family:Archivo,sans-serif;font-size:.64rem;font-weight:600;letter-spacing:.11em;
+  font-family:inherit;display:block;}
+.pg:hover{border-color:var(--signal);}
+.pg span{font-family:Archivo,sans-serif;font-size:.64rem;font-weight:600;letter-spacing:.11em;
   text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.25em;}
-.sn b{font-size:.94rem;font-weight:600;}
-.sn.next{text-align:right;}
-.sn.empty{visibility:hidden;}
+.pg b{font-size:.94rem;font-weight:600;}
+.pg.next{text-align:right;}
+.pg.empty{visibility:hidden;}
+@media (max-width:560px){.pager{grid-template-columns:1fr;}.pg.next{text-align:left;}.pg.empty{display:none;}}
+.chapter{padding-block:40px 4px;border-top:0;}
 
-footer{padding-block:28px 0;border-top:1.5px solid var(--rule-strong);margin-top:44px;}
-footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;line-height:1.6;}
+footer{padding-block:28px 0;border-top:1.5px solid var(--rule-strong);margin-top:52px;}
+footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;line-height:1.6;max-width:72ch;}
 
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+#top{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);
+  background:var(--surface);border:1px solid var(--rule-strong);color:var(--ink-2);
+  border-radius:3px;padding:8px 12px;font-family:Archivo,sans-serif;font-size:.74rem;
+  font-weight:600;cursor:pointer;box-shadow:var(--shadow);z-index:50;}
+#top[hidden]{display:none!important;}
+
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto;}*{transition:none!important;animation:none!important;}}
 :focus-visible{outline:2px solid var(--signal);outline-offset:2px;}
 @media (max-width:560px){
   body{font-size:16px;}
+  .wrap{padding-inline:16px;}
   .step{grid-template-columns:1fr;} .step .i{grid-row:auto;}
   .rung{grid-template-columns:74px 1fr;gap:10px;}
-  .stepnav{grid-template-columns:1fr;}
-  .sn.next{text-align:left;}
-  .sn.empty{display:none;}
 }
 </style>
+
+<div id="bar"></div>
 
 <div class="wrap">
 
 <header class="mast">
   <p class="eyebrow">NeuroDiffusion &middot; Project documentation</p>
   <h1>Turning imagined pictures back into pictures</h1>
-  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. It is written to be read in order, one tab at a time, and assumes you know nothing about EEG or machine learning. Every technical term is defined where it first appears.</p>
+  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">26 Sep 2026<small>Stage: baseline verified, drift confirmed</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">27 Sep 2026<small>Alpha-band runs in flight, jobs 82864 / 82868</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>p &le; 0.05 in all four subjects</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
   </div>
 </header>
 
-<div class="tabsbar">
-  <div class="tabs" role="tablist" aria-label="Documentation sections">
-    <button role="tab" id="tab-start"    aria-controls="p-start"    data-k="start"><span class="ix">00</span>Start here</button>
-    <button role="tab" id="tab-signal"   aria-controls="p-signal"   data-k="signal"><span class="ix">01</span>The signal</button>
-    <button role="tab" id="tab-data"     aria-controls="p-data"     data-k="data"><span class="ix">02</span>The data</button>
-    <button role="tab" id="tab-pipeline" aria-controls="p-pipeline" data-k="pipeline"><span class="ix">03</span>The pipeline</button>
-    <button role="tab" id="tab-results"  aria-controls="p-results"  data-k="results"><span class="ix">04</span>Training results</button>
-    <button role="tab" id="tab-baseline" aria-controls="p-baseline" data-k="baseline"><span class="ix">05</span>The baseline</button>
-    <button role="tab" id="tab-status"   aria-controls="p-status"   data-k="status"><span class="ix">06</span>Where we are</button>
-    <button role="tab" id="tab-journal"  aria-controls="p-journal"  data-k="journal"><span class="ix">07</span>Journal</button>
-    <button role="tab" id="tab-reading"  aria-controls="p-reading"  data-k="reading"><span class="ix">08</span>Resources</button>
-    <button role="tab" id="tab-glossary" aria-controls="p-glossary" data-k="glossary"><span class="ix">09</span>Glossary</button>
-  </div>
-</div>
+<div class="shell">
 
-<!-- ============ 00 START ============ -->
-<section class="panel" id="p-start" role="tabpanel" aria-labelledby="tab-start" tabindex="0">
-  <span class="kicker">Step 00</span>
-  <h2>Start here</h2>
-  <p class="oneline"><b>The goal:</b> record someone's brain activity while they imagine a picture, and produce that picture.</p>
+<nav class="rail" aria-label="Contents">
+  <details class="railbox" open>
+    <summary>Contents</summary>
+    <p class="eyebrow">Chapters</p>
+    <ol>
+      <li data-ch="p-start">
+        <a class="ch" href="#p-start"><span class="nn">01</span><span class="nt">The project</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-start__where-the-project-stands-in-three-lines">Where the project stands, in three lines</a></li>
+          <li><a class="sub" href="#p-start__how-to-read-this">How to read this</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-signal">
+        <a class="ch" href="#p-signal"><span class="nn">02</span><span class="nt">The signal</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-signal__frequency-is-how-you-pull-them-apart">Frequency is how you pull them apart</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-data">
+        <a class="ch" href="#p-data"><span class="nn">03</span><span class="nt">The data</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-data__what-was-recorded">What was recorded</a></li>
+          <li><a class="sub" href="#p-data__the-leakage-problem">The leakage problem</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-pipeline">
+        <a class="ch" href="#p-pipeline"><span class="nn">04</span><span class="nt">The pipeline</span></a>
+      </li>
+      <li data-ch="p-metrics">
+        <a class="ch" href="#p-metrics"><span class="nn">05</span><span class="nt">Reading numbers</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-metrics__chance-level">5.1  Chance level</a></li>
+          <li><a class="sub" href="#p-metrics__top-k-accuracy-and-n-way-identification-">5.2  Top-k accuracy and n-way identification accuracy</a></li>
+          <li><a class="sub" href="#p-metrics__clip-image-similarity">5.3  CLIP image similarity</a></li>
+          <li><a class="sub" href="#p-metrics__negative-controls">5.4  Negative controls</a></li>
+          <li><a class="sub" href="#p-metrics__standard-error-of-the-mean">5.5  Standard error of the mean</a></li>
+          <li><a class="sub" href="#p-metrics__permutation-tests">5.6  Permutation tests</a></li>
+          <li><a class="sub" href="#p-metrics__validation-test-and-optimistic-bias">5.7  Validation, test, and optimistic bias</a></li>
+          <li><a class="sub" href="#p-metrics__the-five-questions">The five questions</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-results">
+        <a class="ch" href="#p-results"><span class="nn">06</span><span class="nt">Training results</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-results__how-we-judge-a-result-at-all">How we judge a result at all</a></li>
+          <li><a class="sub" href="#p-results__result-1-seeing-a-picture-works">Result 1 &mdash; seeing a picture works</a></li>
+          <li><a class="sub" href="#p-results__result-2-imagining-a-picture-does-not-ye">Result 2 &mdash; imagining a picture does not, yet</a></li>
+          <li><a class="sub" href="#p-results__result-3-one-subject-at-a-time">Result 3 &mdash; one subject at a time</a></li>
+          <li><a class="sub" href="#p-results__what-we-fixed-along-the-way">What we fixed along the way</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-baseline">
+        <a class="ch" href="#p-baseline"><span class="nn">07</span><span class="nt">The classical baseline</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-baseline__the-problem-it-exists-to-solve">The problem it exists to solve</a></li>
+          <li><a class="sub" href="#p-baseline__what-a-classical-baseline-is">What a classical baseline is</a></li>
+          <li><a class="sub" href="#p-baseline__the-three-methods">The three methods</a></li>
+          <li><a class="sub" href="#p-baseline__the-four-conditions">The four conditions</a></li>
+          <li><a class="sub" href="#p-baseline__the-results">The results</a></li>
+          <li><a class="sub" href="#p-baseline__what-the-baseline-changed">What the baseline changed</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-status">
+        <a class="ch" href="#p-status"><span class="nn">08</span><span class="nt">Where we are</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-status__every-experiment-and-its-number">Every experiment, and its number</a></li>
+          <li><a class="sub" href="#p-status__the-queue-in-order">The queue, in order</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-journal">
+        <a class="ch" href="#p-journal"><span class="nn">09</span><span class="nt">Journal</span></a>
+      </li>
+      <li data-ch="p-reading">
+        <a class="ch" href="#p-reading"><span class="nn">10</span><span class="nt">Resources</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-reading__datasets">Datasets</a></li>
+          <li><a class="sub" href="#p-reading__papers-that-changed-what-we-do">Papers that changed what we do</a></li>
+          <li><a class="sub" href="#p-reading__papers-on-artifact-removal">Papers on artifact removal</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-glossary">
+        <a class="ch" href="#p-glossary"><span class="nn">11</span><span class="nt">Glossary</span></a>
+      </li>
+    </ol>
+  </details>
+</nav>
 
-  <p>That sentence promises more than is physically possible, so here is the honest version straight away. We are not reading a picture out of the brain. We extract a weak hint about the <strong>category</strong> of what someone is thinking about, dog or car or flower, and hand that hint to an image generator that already knows what dogs look like. Nearly all the visual detail in the output comes from the generator's knowledge, not from the brain.</p>
+<main>
+
+<section class="chapter" id="p-start" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 1</span>
+    <h2>The project</h2>
+    <p class="oneline"><b>The goal:</b> record someone's brain activity while they imagine a picture, and produce that picture.</p>
+  </header>
+
+<p>That sentence promises more than is physically possible, so here is the honest version straight away. We are not reading a picture out of the brain. We extract a weak hint about the <strong>category</strong> of what someone is thinking about, dog or car or flower, and hand that hint to an image generator that already knows what dogs look like. Nearly all the visual detail in the output comes from the generator's knowledge, not from the brain.</p>
 
   <div class="note warn">
     <span class="hd">The one thing to keep in mind while reading everything else</span>
     <p>The image generator always produces a good-looking picture, whether or not the brain data means anything at all. So "the output looks like a dog" proves nothing. The only meaningful question is: <b>does the output match the picture the person actually had in mind, more often than it matches some random other picture?</b> Every number in this documentation is built around that question.</p>
   </div>
 
-  <h3>Where the project stands, in three lines</h3>
+  <h3 id="p-start__where-the-project-stands-in-three-lines">Where the project stands, in three lines</h3>
   <ul>
     <li><strong>Seeing works.</strong> Feed it EEG recorded while someone <em>looks at</em> an image and the generated pictures match the real stimulus significantly better than chance pairings, on images and a person the model had never seen. The machine is wired correctly.</li>
     <li><strong>Imagining does not, yet.</strong> The same pipeline on imagination EEG comes back at chance. That is a measured result with working controls, not a crash.</li>
     <li><strong>The data does contain imagery signal.</strong> A deliberately simple method finds it at about three times chance. So the remaining problem is ours to fix, not a dead end in the data.</li>
   </ul>
 
-  <h3>How to read this</h3>
+  <h3 id="p-start__how-to-read-this">How to read this</h3>
   <p>The tabs run in order and build on each other. Steps 01 to 03 are the setup: what the signal is, what data we have, how the machine is put together. Steps 04 and 05 are what happened when we ran it. Step 06 is the current state and what is next. The last three tabs are for looking things up rather than reading straight through.</p>
 
   <div class="note">
     <span class="hd">Who is doing this</span>
     <p>A small team project, run on the San Jos&eacute; State University College of Engineering HPC cluster. The code is a fork of DreamDiffusion. Findings are tagged by who found them in the Resources tab. Nothing here is a published result; it is a working record, and numbers that got worse are kept in place rather than quietly dropped.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 01 SIGNAL ============ -->
-<section class="panel" id="p-signal" role="tabpanel" aria-labelledby="tab-signal" tabindex="0" hidden>
-  <span class="kicker">Step 01</span>
-  <h2>The signal: what EEG actually is</h2>
-  <p class="oneline"><b>In one sentence:</b> an electrode on the scalp measures a voltage that is mostly not brain activity, and the trick is knowing which part is.</p>
+<section class="chapter" id="p-signal" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 2</span>
+    <h2>The signal: what EEG actually is</h2>
+    <p class="oneline"><b>In one sentence:</b> an electrode on the scalp measures a voltage that is mostly not brain activity, and the trick is knowing which part is.</p>
+  </header>
 
-  <p>An electrode on your scalp measures voltage, the tiny electrical field produced by millions of neurons firing together beneath it. In our data there are 128 of these, each sampled 250 times per second.</p>
+<p>An electrode on your scalp measures voltage, the tiny electrical field produced by millions of neurons firing together beneath it. In our data there are 128 of these, each sampled 250 times per second.</p>
 
   <p>That voltage is not "brain activity". It is a <strong>sum of several things stacked on top of each other</strong>, and several of the non-brain contributions are <em>larger</em> than the brain signal:</p>
 
@@ -300,12 +424,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="ex"><b>For scale</b>An AA battery is 1.5 volts, roughly fifty thousand times larger.</p>
   </div>
 
-  <h3>Frequency is how you pull them apart</h3>
+  <h3 id="p-signal__frequency-is-how-you-pull-them-apart">Frequency is how you pull them apart</h3>
 
   <p>Different sources oscillate at different speeds, so you can separate them by frequency: how many times per second the signal cycles up and down. That unit is the <strong>hertz (Hz)</strong>.</p>
 
   <div class="ladder">
-    <div class="rung"><span class="hz">below 1 Hz</span><span class="what">Drift, electrodes settling, sweat, temperature. Not brain.</span></div>
+    <div class="rung"><span class="hz">below 1 Hz</span><span class="what">Drift, electrodes settling, sweat, temperature. Not brain. <b>Already removed from our data.</b></span></div>
     <div class="rung"><span class="hz">1&ndash;4 Hz</span><span class="what">Delta, deep sleep, and where slow artifact lives</span></div>
     <div class="rung"><span class="hz">4&ndash;8 Hz</span><span class="what">Theta, drowsiness, some memory processes</span></div>
     <div class="rung hit"><span class="hz">8&ndash;13 Hz</span><span class="what">ALPHA &mdash; the visual cortex idle rhythm. Where imagery lives.</span></div>
@@ -327,19 +451,18 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <div class="note">
     <span class="hd">Carry this forward</span>
-    <p>Two ideas from this tab decide almost everything later: <b>alpha is where imagery lives</b>, and <b>drift below 1 Hz is not brain but can be huge</b>. Step 02 shows why that second one is dangerous in our particular dataset.</p>
+    <p>Two ideas from this chapter decide almost everything later: <b>alpha is where imagery lives</b>, and <b>a recording carries large signals that are not brain activity</b>. Chapter 3 shows why the second is dangerous in our particular dataset.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 02 DATA ============ -->
-<section class="panel" id="p-data" role="tabpanel" aria-labelledby="tab-data" tabindex="0" hidden>
-  <span class="kicker">Step 02</span>
-  <h2>The data, and the trap inside it</h2>
-  <p class="oneline"><b>In one sentence:</b> we have four people who each imagined 33 pictures exactly once, which is far less data than it looks like and creates a shortcut a model will happily take.</p>
+<section class="chapter" id="p-data" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 3</span>
+    <h2>The data, and the trap inside it</h2>
+    <p class="oneline"><b>In one sentence:</b> we have four people who each imagined 33 pictures exactly once, which is far less data than it looks like and creates a shortcut a model will happily take.</p>
+  </header>
 
-  <h3>What was recorded</h3>
+<h3 id="p-data__what-was-recorded">What was recorded</h3>
   <p>Four people. Each was shown a picture for half a second, then a noise mask, then spent ten seconds imagining that picture <strong>with their eyes open</strong>. 128 electrodes recorded throughout, at 250 measurements per second. The dataset is from Shimizu and Srinivasan, 2022, and the same four people also did a separate perception task where they simply looked at images.</p>
 
   <div class="note">
@@ -354,12 +477,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="ex"><b>Why that detail matters</b>Because they do not overlap, gluing windows 0 to 3 back together reconstructs the genuine continuous signal from 0 to 2 seconds. Had they overlapped, concatenating them would have produced a waveform that never actually happened. This is what made one of our experiments possible at all.</p>
   </div>
 
-  <h3>The leakage problem</h3>
+  <h3 id="p-data__the-leakage-problem">The leakage problem</h3>
   <p>This is the part that makes EEG decoding unusual, and it is the key to understanding every result later.</p>
 
   <div class="def">
     <p class="dt">Electrode drift</p>
-    <p class="dd">Over seconds and minutes the electrical contact between an electrode and your scalp slowly changes: gel settles, skin warms, you shift in the chair. The measured voltage wanders slowly, below 1 Hz. It has nothing to do with thinking.</p>
+    <p class="dd">Over seconds and minutes the electrical contact between an electrode and your scalp changes: gel settles, skin warms, you shift in the chair. The measured voltage wanders. It has nothing to do with thinking.</p>
     <p class="ex"><b>The problem</b>That wander is <b>unique to that recording, at that moment, on that person</b>. It is a fingerprint on the data.</p>
   </div>
 
@@ -373,9 +496,9 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <p>Each subject imagined each picture exactly once, so there is a perfect one-to-one correspondence:</p>
 
-  <p style="font-family:'IBM Plex Mono',monospace;font-size:.88rem;background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;line-height:1.7;">picture&nbsp;#7 &nbsp;&harr;&nbsp; one 10-second recording &nbsp;&harr;&nbsp; one unique drift pattern</p>
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:.88rem;background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;line-height:1.7;">picture&nbsp;#7 &nbsp;&harr;&nbsp; one 10-second recording &nbsp;&harr;&nbsp; one unique recording fingerprint</p>
 
-  <p>Which means <strong>"identify the recording" and "identify the picture" are the same task</strong>. Anything unique to that recording, including drift, posture, or how the cap was sitting, is a perfect predictor of the label. The model never has to decode imagery at all.</p>
+  <p>Which means <strong>"identify the recording" and "identify the picture" are the same task</strong>. Anything unique to that recording, whether residual artifact, posture, or how the cap was sitting, is a perfect predictor of the label. The model never has to decode imagery at all.</p>
 
   <div class="def">
     <p class="dt">Data leakage</p>
@@ -388,17 +511,16 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="dd">The rule deciding which trials are used for training and which are held back for testing. In EEG this choice matters more than almost anything else.</p>
     <p class="ex"><b>Ours</b>We train on windows 0 to 10 of each recording and test on windows 16 to 19, discarding the ones in between as buffers so no training window sits next to a test window. The original paper split those 20 windows <em>randomly</em>, which put a test window's immediate neighbours, nearly identical signal, into training. That is why their number is higher than ours on the same data.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 03 PIPELINE ============ -->
-<section class="panel" id="p-pipeline" role="tabpanel" aria-labelledby="tab-pipeline" tabindex="0" hidden>
-  <span class="kicker">Step 03</span>
-  <h2>The pipeline: how the machine is built</h2>
-  <p class="oneline"><b>In one sentence:</b> teach a network what EEG looks like, then use it to replace the text box on an image generator.</p>
+<section class="chapter" id="p-pipeline" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 4</span>
+    <h2>The pipeline: how the machine is built</h2>
+    <p class="oneline"><b>In one sentence:</b> teach a network what EEG looks like, then use it to replace the text box on an image generator.</p>
+  </header>
 
-  <div class="steps">
+<div class="steps">
     <div class="step">
       <span class="i">01</span>
       <span class="t">Stage 1 &mdash; teach a network the shape of EEG</span>
@@ -439,45 +561,244 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="hd">The structural tension of the whole project</span>
     <p>Step 02 said we have 33 real events per person. This tab says the model has 85 million adjustable parameters. Those two facts are the reason this is hard, and most of what follows is either a consequence of that mismatch or an attempt to work around it.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 04 RESULTS ============ -->
-<section class="panel" id="p-results" role="tabpanel" aria-labelledby="tab-results" tabindex="0" hidden>
-  <span class="kicker">Step 04</span>
-  <h2>Training results: what the pipeline did</h2>
-  <p class="oneline"><b>In one sentence:</b> perception decodes clearly and significantly, imagination comes back at chance, and we can prove both statements are measurements rather than accidents.</p>
+<section class="chapter" id="p-metrics" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 5</span>
+    <h2>Reading numbers</h2>
+    <p class="oneline">Every metric we report, stated precisely and then in plain language.</p>
+  </header>
 
-  <h3>How we judge a result at all</h3>
+
+  <p>Every number in the next two chapters is a claim about whether something real happened.
+     This chapter is how to tell a real one from a flattering one. Each section gives the metric
+     its standard name, states it precisely, then says the same thing in plain language.</p>
+  <p>The names here are the ones used in the literature, so they are what to search for and what
+     to put in a write-up. The analogies are ours, and are only teaching aids.</p>
+
+  <h3 id="p-metrics__chance-level">5.1 &nbsp;Chance level</h3>
+  <p><strong>Technically:</strong> the expected accuracy of a uniformly random classifier over
+     <em>k</em> classes, equal to 1/<em>k</em>. With 33 stimuli that is 0.0303.</p>
+  <p><strong>In plain terms:</strong> a multiple-choice test with 33 possible answers. Someone
+     who knows nothing gets about 3 out of every 100 right. So <span class="num">3%</span> is the
+     score for knowing nothing at all.</p>
+  <p>This is why we report results as <strong>multiples of chance</strong>. "9.85% accuracy"
+     tells you nothing on its own. "3.25&times; chance" tells you the model is doing something,
+     and it lets a 33-class result be compared against a 40-class one.</p>
+  <div class="note">
+    <p>With a sample this small, the theoretical chance level is not the whole story: the accuracy
+       of a random classifier has its own spread, so a score slightly above 1/<em>k</em> can still be
+       nothing. This is the argument in M&uuml;ller-Putz et al., <i>Better than random? A closer look
+       on BCI results</i> (2008), and it is why we run permutation tests rather than reading
+       3.03% as a hard floor.</p>
+  </div>
+
+  <h3 id="p-metrics__top-k-accuracy-and-n-way-identification-">5.2 &nbsp;Top-k accuracy and n-way identification accuracy</h3>
+  <p><strong>Technically:</strong> <b>top-<em>k</em> accuracy</b> counts a trial correct when the
+     true label appears in the model's <em>k</em> highest-ranked predictions; in retrieval settings
+     the same quantity is called <b>Recall@<em>k</em></b>. <b><em>n</em>-way identification
+     accuracy</b> restricts the candidate set to the true class plus <em>n</em>&minus;1 sampled
+     distractors, averaged over 100 draws. The two-candidate case is <b>two-alternative forced
+     choice (2AFC)</b>, a term borrowed from psychophysics, and it is what papers mean by "pairwise
+     identification accuracy".</p>
+  <p><strong>In plain terms:</strong> two separate things make a test easier. How many guesses you
+     get, and how many options you are choosing between.</p>
+  <p>Top-1 means the first answer has to be right. Top-5 means you get five tries, so chance rises
+     to 5/33, about 15%. Our top-5 of 21&ndash;31% is a weaker claim than it appears.</p>
+  <p>The number of options matters even more. These three rows are the same model, same data, same
+     day:</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Options</th><th class="n">We scored</th><th class="n">Chance</th><th class="n">Multiple</th></tr></thead>
+    <tbody>
+      <tr><td>40</td><td class="n">9.5%</td><td class="n">2.5%</td><td class="n hi">3.8&times;</td></tr>
+      <tr><td>10</td><td class="n">25.2%</td><td class="n">10%</td><td class="n">2.5&times;</td></tr>
+      <tr><td>2</td><td class="n">62.3%</td><td class="n">50%</td><td class="n lo">1.25&times;</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note warn">
+    <p><b>The 62.3% is the weakest of the three</b>, not the strongest. It is barely better than a
+     coin flip. If a paper reports only its 2-way accuracy, that is the number that flattered it
+     most.</p>
+  </div>
+
+  <h3 id="p-metrics__clip-image-similarity">5.3 &nbsp;CLIP image similarity</h3>
+  <p><strong>Technically:</strong> the <b>cosine similarity</b> between CLIP embeddings of the
+     generated image and the ground-truth image, in [&minus;1, 1]. Image-to-image CLIP similarity is
+     commonly written <b>CLIP-I</b>, to distinguish it from CLIP-T, which compares an image against
+     text.</p>
+  <p><strong>In plain terms:</strong> a closeness rating between two pictures, not a percentage.</p>
+  <div class="note">
+    <p><b>0.58 is not 58%.</b> Two entirely unrelated photographs already score around 0.5 in this
+       space, simply because both are photographs. The absolute value carries almost no
+       information. Only the comparison does.</p>
+  </div>
+
+  <h3 id="p-metrics__negative-controls">5.4 &nbsp;Negative controls</h3>
+  <p><strong>Technically:</strong> two <b>negative controls</b>. The <b>shuffled-label control</b>
+     scores predictions against permuted ground truth; the <b>random-input control</b> replaces the
+     EEG with noise. Both hold generation quality fixed while removing the stimulus-specific
+     information, which is what isolates the contribution of the brain signal.</p>
+  <p><strong>In plain terms:</strong> two versions of the same test, deliberately broken.</p>
+  <p>The first grades the drawings against the <em>wrong answer key</em>. The pictures are just as
+     well drawn, so anything our real score has over this must come from the brain signal. The
+     second feeds the machine pure static instead of brain data. If that scores as well as the real
+     thing, nothing is working.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Condition</th><th class="n">Model</th><th class="n">Wrong key</th><th class="n">Static</th></tr></thead>
+    <tbody>
+      <tr><td><b>Looking at a picture</b></td><td class="n">0.5848</td><td class="n">0.5484</td><td class="n">0.4761</td></tr>
+      <tr><td><b>Imagining a picture</b></td><td class="n">0.5581</td><td class="n">0.5541</td><td class="n">0.4746</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Read the first two columns. Looking at a picture clears the wrong key. Imagining barely moves.</p>
+
+  <h3 id="p-metrics__standard-error-of-the-mean">5.5 &nbsp;Standard error of the mean</h3>
+  <p><strong>Technically:</strong> the <b>standard error of the mean (SEM)</b> is the standard
+     deviation of the sampling distribution of the mean. It estimates how much a measured average
+     would move if the experiment were repeated with a fresh sample of the same size, and it shrinks
+     with the square root of that size. A difference divided by its standard error is a
+     <b>t-statistic</b>, so our "+4.3 SEM" is t &asymp; 4.3. Dividing by a pooled standard deviation
+     instead gives <b>Cohen's d</b>, the standardised effect size.</p>
+  <p><strong>In plain terms:</strong> every measurement jiggles. SEM is the size of the jiggle. Once
+     you know it, you can ask the only question that matters: is the difference I found bigger than
+     the jiggle, or smaller?</p>
+  <p><strong>The analogy:</strong> weighing two bags of coffee on a wobbly scale. If the scale
+     wobbles by 5 grams and the bags differ by 2, you have learned nothing, because the difference
+     is hiding inside the wobble. If the scale wobbles by half a gram, that same 2-gram difference
+     is real. The bags did not change. The scale did.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Condition</th><th class="n">Gap over control</th><th class="n">Wobble (SEM)</th><th class="n">Gap in wobbles</th></tr></thead>
+    <tbody>
+      <tr><td>Looking at a picture</td><td class="n">0.0364</td><td class="n">~0.008</td><td class="n hi">4.3</td></tr>
+      <tr><td>Imagining a picture</td><td class="n">0.0040</td><td class="n">~0.008</td><td class="n lo">0.5</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Our instrument was <em>equally precise both times</em>. What differed was the size of the gap.
+     Imagining beat its control by half a wobble, which is less than the jiggle in our own
+     measurement. That is not a small effect. It is no effect we can distinguish from zero.</p>
+  <div class="note">
+    <span class="hd">Same word, opposite directions</span>
+    <p>A <b>small SEM</b> is good: a precise instrument. A <b>large number of SEMs</b> is also good:
+       a convincing gap. When someone says their SEM was large, they are telling you the measurement
+       was noisy. Rule of thumb: under 2 SEM, do not believe it. Over 4, it is hard to explain away.</p>
+  </div>
+
+  <h3 id="p-metrics__permutation-tests">5.6 &nbsp;Permutation tests</h3>
+  <p><strong>Technically:</strong> a <b>permutation test</b>, also called a randomisation test. The
+     labels are randomly permuted and the entire fitting procedure re-run many times, building an
+     <b>empirical null distribution</b>. The <b>empirical p-value</b> is the fraction of permutations
+     scoring at least as well as the observed result, computed as (hits&nbsp;+&nbsp;1) /
+     (permutations&nbsp;+&nbsp;1). That add-one correction is deliberate: with 200 draws from an
+     astronomically large space of possible shuffles, a naive count of zero would assert an
+     impossible p&nbsp;=&nbsp;0 (Phipson &amp; Smyth, 2010). We permute at the level of whole
+     recordings rather than individual windows, because windows from one recording are not
+     independent.</p>
+  <p><strong>In plain terms:</strong> scramble the labels so the recording for a dog now says
+     bicycle. Any real relationship is destroyed, but everything else stays the same. Run the whole
+     method on the scrambled version and see what it scores. Do that 200 times and you know exactly
+     what luck can achieve on this data.</p>
+  <p><strong>The analogy:</strong> a race against 200 random guessers. Where do you place?</p>
+  <p>Subject 1, alpha band:</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Quantity</th><th class="n">Value</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td>Observed</td><td class="n hi">0.0985</td><td>our real score</td></tr>
+      <tr><td>Null mean</td><td class="n">0.0303</td><td>what the 200 scrambled runs averaged</td></tr>
+      <tr><td>Null 95th pct</td><td class="n">0.0534</td><td>95% of scrambled runs stayed below this</td></tr>
+      <tr><td>Null max</td><td class="n">0.0833</td><td>the luckiest scramble of all 200</td></tr>
+      <tr><td><b>p-value</b></td><td class="n hi">0.005</td><td>no scramble reached our score</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="note good">
+    <span class="hd">The null mean is the line that matters most</span>
+    <p>It came out at 0.0303, which is chance exactly. That is the safety check: if scrambled labels
+       had scored 6%, the procedure would be leaking information somewhere and every number it
+       produced would be worthless. This is also why we trust the permutation test over SEM here.
+       SEM assumes independent samples, and our 132 test windows come from only 33 recordings.
+       The permutation test assumes nothing.</p>
+  </div>
+
+  <h3 id="p-metrics__validation-test-and-optimistic-bias">5.7 &nbsp;Validation, test, and optimistic bias</h3>
+  <p><strong>Technically:</strong> the <b>validation set</b> guides model selection and
+     hyperparameters during development; the <b>test set</b> is held out and evaluated once. A metric
+     selected as the maximum over many training epochs is an order statistic and carries
+     <b>optimistic bias</b>, sometimes called the winner's curse: it is biased upward even when
+     nothing has been learned.</p>
+  <p><strong>In plain terms:</strong> the practice test is the one you use while studying, and you
+     can retake it. The real test you sit once. If you use the real test to decide what to study,
+     your score stops being honest.</p>
+  <p>There is a subtler version. Take 100 practice tests and report your best, and that best score
+     is partly luck. Flip coins all day and you will eventually get a remarkable streak. The streak
+     is not skill.</p>
+  <div class="note warn">
+    <p>Our <b>26.3%</b> is exactly this: the best validation score across roughly 100 training
+       epochs, on a model trained with broadband input we have since measured as
+       fingerprint-contaminated. Three separate reasons for caution, stacked. It is a lead worth chasing,
+       not a result.</p>
+  </div>
+
+  <h3 id="p-metrics__the-five-questions">The five questions</h3>
+  <p>A result we believe has an answer to all five.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Question</th><th>What answers it</th></tr></thead>
+    <tbody>
+      <tr><td>Is the raw number even good?</td><td>Compare it to <b>chance level</b></td></tr>
+      <tr><td>Was the test easy or hard?</td><td>Check <em>n</em> in <b><em>n</em>-way accuracy</b>, and <em>k</em> in <b>top-<em>k</em></b></td></tr>
+      <tr><td>Is it bigger than the jiggle?</td><td>Count the <b>standard errors</b> (the <b>t-statistic</b>)</td></tr>
+      <tr><td>Could luck have done this?</td><td>A <b>permutation test</b>, and its <b>empirical p-value</b></td></tr>
+      <tr><td>Did we fool ourselves?</td><td><b>Validation versus test</b>, and <b>optimistic bias</b> from peak-picking</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+</section>
+
+<section class="chapter" id="p-results" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 6</span>
+    <h2>Training results: what the pipeline did</h2>
+    <p class="oneline"><b>In one sentence:</b> perception decodes clearly and significantly, imagination comes back at chance, and we can prove both statements are measurements rather than accidents.</p>
+  </header>
+
+<h3 id="p-results__how-we-judge-a-result-at-all">How we judge a result at all</h3>
   <p>Since the generator always makes a plausible picture, we score every result against deliberately broken versions of itself.</p>
 
   <div class="def">
-    <p class="dt">Shuffled-pairing control</p>
+    <p class="dt">Shuffled-label control</p>
     <p class="dd">Score the generated images against <em>deliberately mismatched</em> ground truth. Image quality is identical either way, so any gap between real pairings and shuffled ones must come from the brain signal.</p>
     <p class="ex"><b>And a second control</b>Feed the pipeline pure noise instead of EEG. If that scores as well as real data, nothing is working.</p>
   </div>
 
   <div class="def">
-    <p class="dt">SEM (standard error of the mean)</p>
+    <p class="dt">Standard error of the mean (SEM)</p>
     <p class="dd">A measure of how much a measured average would bounce around if you repeated the experiment. It converts "this number is bigger" into "this number is bigger than the noise in the measurement".</p>
     <p class="ex"><b>Rule of thumb</b>Below about 2 SEM, a gap is not worth believing. Above 4, it is hard to explain away as luck.</p>
   </div>
 
-  <h3>Result 1 &mdash; seeing a picture works</h3>
+  <h3 id="p-results__result-1-seeing-a-picture-works">Result 1 &mdash; seeing a picture works</h3>
   <div class="note good">
-    <p>Model <b>0.5848</b>, shuffled control 0.5484, noise control 0.4761. The gap over the shuffled control is <b>+4.3 SEM</b>.</p>
+    <p>Model <b>0.5848</b>, shuffled control 0.5484, random-input control 0.4761. The gap over the shuffled control is <b>+4.3 SEM</b>.</p>
     <p>It names the right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint: the 173 test images never appeared in training, on a person the model had not seen.</p>
     <p><b>This is the load-bearing result of the project.</b> It says the machine is wired correctly end to end, so every later failure is about the difficulty of imagination rather than a broken pipeline.</p>
   </div>
 
-  <h3>Result 2 &mdash; imagining a picture does not, yet</h3>
+  <h3 id="p-results__result-2-imagining-a-picture-does-not-ye">Result 2 &mdash; imagining a picture does not, yet</h3>
   <div class="note warn">
-    <p>Model <b>0.5581</b>, shuffled control 0.5541, noise control 0.4746. The gap over the control is <b>+0.5 SEM</b>, which is nothing.</p>
-    <p>Note that the noise control still separates cleanly. The measurement works; imagination simply is not there. This is an honest null, not a bug.</p>
+    <p>Model <b>0.5581</b>, shuffled control 0.5541, random-input control 0.4746. The gap over the control is <b>+0.5 SEM</b>, which is nothing.</p>
+    <p>Note that the random-input control still separates cleanly. The measurement works; imagination simply is not there. This is an honest null, not a bug.</p>
   </div>
 
-  <h3>Result 3 &mdash; one subject at a time</h3>
+  <h3 id="p-results__result-3-one-subject-at-a-time">Result 3 &mdash; one subject at a time</h3>
   <p>Pooling all four people made things worse, so we followed the source paper and trained each person separately. Best scores against 3.03% chance, one correct guess in 33:</p>
 
   <div class="tbl">
@@ -499,22 +820,21 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <div class="note warn">
     <span class="hd">Why every number in the table above says provisional</span>
     <p>First, these are best-validation scores, the peak across many training rounds on a lenient measure, which always flatters. The matching test numbers were lost to a bug: four jobs ran at the same time, their output directories were named by timestamp to the second, and they overwrote each other. Fixed since, by putting the job ID in the path, and the checkpoints survived, so the numbers are recoverable.</p>
-    <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem. As of 26 September this is no longer a suspicion: the cross-subject test confirmed that broadband's advantage is recording-specific drift, so <b>26.3% is substantially inflated</b> and the honest figure is unknown until the pipeline is re-run on alpha-band input.</p>
+    <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem. As of 26 September this is no longer a suspicion: the cross-subject test confirmed that broadband's advantage is a recording fingerprint, so <b>26.3% is substantially inflated</b> and the honest figure is unknown until the pipeline is re-run on alpha-band input.</p>
   </div>
 
-  <h3>What we fixed along the way</h3>
+  <h3 id="p-results__what-we-fixed-along-the-way">What we fixed along the way</h3>
   <p>Getting to a trustworthy null took rebuilding the measurement apparatus: a retrieval metric that needs no image sampling, a validation set carved from the training subjects' late windows instead of quietly reusing test data, best-checkpoint selection, early stopping, the weight decay the configuration asked for and the code silently ignored, input augmentation, and an optional contrastive objective. A crash where a saved CPU random-number state was loaded into the GPU generator was fixed too.</p>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 05 BASELINE ============ -->
-<section class="panel" id="p-baseline" role="tabpanel" aria-labelledby="tab-baseline" tabindex="0" hidden>
-  <span class="kicker">Step 05</span>
-  <h2>The classical baseline</h2>
-  <p class="oneline"><b>In one sentence:</b> we stopped and ran the simplest possible method, which proved the data does contain imagery signal and simultaneously caught the pipeline taking a shortcut.</p>
+<section class="chapter" id="p-baseline" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 7</span>
+    <h2>The classical baseline</h2>
+    <p class="oneline"><b>In one sentence:</b> we stopped and ran the simplest possible method, which proved the data does contain imagery signal and simultaneously caught the pipeline taking a shortcut.</p>
+  </header>
 
-  <h3>The problem it exists to solve</h3>
+<h3 id="p-baseline__the-problem-it-exists-to-solve">The problem it exists to solve</h3>
   <p>Every time the pipeline came back at chance, that single result could have meant four entirely different things:</p>
   <ol>
     <li><strong>There is no imagery signal in this EEG.</strong> The data is a dead end.</li>
@@ -524,7 +844,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </ol>
   <p>All four produce the identical output, "not distinguishable from chance", and each pipeline run costs one to two GPU-days while resolving none of them individually. That is an expensive place to be stuck.</p>
 
-  <h3>What a classical baseline is</h3>
+  <h3 id="p-baseline__what-a-classical-baseline-is">What a classical baseline is</h3>
   <p>A deliberately simple, well-understood method. No diffusion, no image generation, no learned representation. Its power comes from what it <em>cannot</em> do:</p>
   <ul>
     <li><strong>It cannot memorise.</strong> A logistic regression on 128 features has nowhere to hide an answer key for 33 classes.</li>
@@ -533,7 +853,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </ul>
   <p>So it isolates exactly one question: <strong>is there decodable imagery information in this EEG at all?</strong> If yes, explanation (1) is eliminated and every remaining failure is ours, which means fixable. If no, we stop optimising a pipeline pointed at noise.</p>
 
-  <h3>The three methods</h3>
+  <h3 id="p-baseline__the-three-methods">The three methods</h3>
   <div class="def">
     <p class="dt">Band power + logistic regression</p>
     <p class="dd">For each electrode, measure how much energy sits in the alpha band, then fit the simplest possible classifier, a weighted sum of those 128 numbers.</p>
@@ -550,7 +870,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="ex"><b>Note</b>This is the architecture that reached 75.8% on a modern imagery dataset. It is the most flexible of the three, which turns out to matter a great deal.</p>
   </div>
 
-  <h3>The four conditions</h3>
+  <h3 id="p-baseline__the-four-conditions">The four conditions</h3>
   <p>We ran all three methods four ways. Each condition answers one question.</p>
   <div class="steps">
     <div class="step"><span class="i">A</span><span class="t">Alpha band, 500 ms windows</span>
@@ -563,7 +883,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <p class="b"><strong>Throw away the 10% most extreme trials</strong>, mostly blinks. One paper says cleaning hurts decoding, another says it helps in low-signal cases like ours. Cheap enough to settle on our own data.</p></div>
   </div>
 
-  <h3>The results</h3>
+  <h3 id="p-baseline__the-results">The results</h3>
   <p>All four subjects, all four conditions. Chance is <span class="num">3.03%</span>. Numbers are "times better than chance", ranged across the three methods.</p>
   <div class="tbl">
   <table>
@@ -584,11 +904,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 
   <h4>Condition B &mdash; the trap, caught</h4>
-  <p>Broadband roughly doubled every number. That is not extra signal, it is the drift shortcut from Step 02. Three reasons to be confident:</p>
+  <p>Broadband roughly doubled every number. That is not extra signal, it is the recording fingerprint from Chapter 3. Three reasons to be confident:</p>
   <ul>
     <li><strong>It is too good relative to the field.</strong> The original paper got 13.4% on 40 options <em>with</em> a leaky split. Subject 1's broadband 37.1% on 33 options would beat everything published.</li>
     <li><strong>The pattern gives it away.</strong> EEGNet, the most flexible method, was the <em>worst</em> on alpha at 2.0&times; and the <em>best</em> on broadband at 12.2&times;. When your most powerful model gains most from data that should not matter, it is exploiting a shortcut.</li>
-    <li><strong>The mechanism is known.</strong> Broadband keeps everything from 1 Hz up, including slow drift. Band-passing to 8&ndash;13 Hz filters that drift away, which is exactly why the number drops.</li>
+    <li><strong>Band-limiting removes it.</strong> Our recordings arrive band-passed to 1&ndash;50 Hz, and 77% of their power sits outside 8&ndash;13 Hz. Restricting to alpha discards that majority, and the score drops with it.</li>
   </ul>
   <div class="note warn">
     <p><b>The lower number is the honest one.</b> Genuinely counterintuitive: removing data made the result worse but more trustworthy. It is also why this field is littered with results that did not replicate.</p>
@@ -622,7 +942,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        inquiry is still live.</p>
   </div>
 
-  <h3>What the baseline changed</h3>
+  <h3 id="p-baseline__what-the-baseline-changed">What the baseline changed</h3>
   <ol>
     <li><strong>The worst possibility is eliminated.</strong> "There is no imagery signal here" is off the table. Every remaining failure points at something we control.</li>
     <li><strong>We have a number to beat.</strong> About 3&times; chance from a model with a few hundred parameters. Any complex model that cannot clear that is not earning its complexity.</li>
@@ -632,32 +952,31 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <div class="note warn">
     <span class="hd">The uncomfortable implication</span>
-    <p>Our Stage 2 model trains on <b>raw broadband EEG</b>, exactly the condition that just produced up to 12&times; chance through drift fingerprinting. So subject 1's headline <b>26.3%</b> may be substantially drift-driven rather than imagery decoding.</p>
+    <p>Our Stage 2 model trains on <b>raw broadband EEG</b>, exactly the condition that just produced up to 12&times; chance through recording fingerprinting. So subject 1's headline <b>26.3%</b> may be substantially fingerprint-driven rather than imagery decoding.</p>
     <p>Read correctly, this is the baseline doing its job: it found a problem in the expensive pipeline that the expensive pipeline could not find in itself.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 06 STATUS ============ -->
-<section class="panel" id="p-status" role="tabpanel" aria-labelledby="tab-status" tabindex="0" hidden>
-  <span class="kicker">Step 06</span>
-  <h2>Where we are, and what is next</h2>
-  <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
+<section class="chapter" id="p-status" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 8</span>
+    <h2>Where we are, and what is next</h2>
+    <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
+  </header>
 
-  <p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the drift shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
+<p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
 
   <div class="note good">
     <span class="hd">Where the evidence stands after 26 September</span>
     <p><b>Solid:</b> perception decodes at +4.3 SEM on unseen images. Imagery signal exists in the
        alpha band, significant in all four subjects under a permutation null.</p>
     <p><b>Settled negative:</b> imagery does not transfer between people in this data. Broadband's
-       advantage is recording-specific drift.</p>
+       advantage is a recording fingerprint.</p>
     <p><b>Unknown:</b> what the pipeline actually achieves on alpha-band input. Every deep-model
        number we have was trained on broadband and is provisional until re-run.</p>
   </div>
 
-  <h3>Every experiment, and its number</h3>
+  <h3 id="p-status__every-experiment-and-its-number">Every experiment, and its number</h3>
   <p>Deep-model figures are best-validation rather than test, and are provisional.</p>
   <div class="tbl">
   <table>
@@ -680,10 +999,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </table>
   </div>
 
-  <h3>The queue, in order</h3>
+  <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
     <div class="step"><span class="i">1</span><span class="t">Alpha-band input to the main pipeline &mdash; next up</span>
-      <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through drift. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
+      <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through a recording fingerprint. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
     <div class="step"><span class="i">2</span><span class="t">Recover the four lost test reports</span>
       <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers. Worth doing regardless, since the current headline figure cannot properly be cited.</p></div>
     <div class="step"><span class="i">3</span><span class="t">A small encoder</span>
@@ -702,20 +1021,45 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="hd">If you want to help</span>
     <p>The binding constraint is <b>data, not compute or cleverness</b>. The most valuable contributions are access to EEG hardware, participants willing to sit for repeated imagery sessions, or a dataset that has real repetitions of imagined content with posterior electrode coverage. The Resources tab lists what we have already checked and why most candidates do not fit.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 07 JOURNAL ============ -->
-<section class="panel" id="p-journal" role="tabpanel" aria-labelledby="tab-journal" tabindex="0" hidden>
-  <span class="kicker">Log</span>
-  <h2>Journal, newest first</h2>
-  <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
+<section class="chapter" id="p-journal" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 9</span>
+    <h2>Journal, newest first</h2>
+    <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
+  </header>
 
-  <div class="entry">
+<div class="entry">
+    <div class="tags"><span class="tag nul">correction</span><span class="tag fix">running</span></div>
+    <span class="when">27 SEP 2026 &middot; JOBS 82864 / 82868</span>
+    <h3>The alpha-band runs are training, and a mechanism claim is corrected</h3>
+    <p><span class="lbl">Correction</span>We had been describing the broadband advantage as
+       <b>electrode drift below 1 Hz</b>. That specific mechanism is wrong. Our pipeline applies no
+       filtering at any stage, and the Shimizu recordings arrive <b>already band-passed to
+       1&ndash;50 Hz</b> by the original authors, so sub-1 Hz drift was gone before we received
+       the data.</p>
+    <p>The finding is unchanged: the advantage outside 8&ndash;13 Hz is roughly 2:1 within a subject
+       and vanishes across subjects, so it belongs to the recording rather than to the picture. Only
+       the named cause was wrong. The likely contributors are residual low-frequency artifact in the
+       1&ndash;8 Hz range, muscle activity toward the top of the band, and per-session impedance
+       scaling the whole spectrum. The documentation now says <b>recording fingerprint</b>
+       throughout, which is what we actually measured.</p>
+    <p><span class="lbl">Measured while wiring the filter</span>Of the power in a trial as shipped,
+       <b>37.7% sits in 1&ndash;8 Hz, 22.9% in 8&ndash;13 Hz and 38.9% in 13&ndash;50 Hz</b>. Roughly
+       three quarters of what the encoder currently sees is outside the band where imagery lives.</p>
+    <p><span class="lbl">Running</span>Two Stage 2 jobs on subject 1, identical but for the input
+       band: <b>82864</b> on alpha 8&ndash;13 Hz, <b>82868</b> unfiltered as the control. A third
+       job, 82865, was killed 40 seconds in by the preflight GPU check with "all CUDA-capable
+       devices are busy or unavailable", almost certainly on cs002, the node already known to have a
+       bad GPU. Resubmitted excluding that node. The check cost seconds instead of a two-day
+       allocation.</p>
+  </div>
+
+<div class="entry">
     <div class="tags"><span class="tag res">result</span><span class="tag res">confirmed</span><span class="tag nul">negative</span></div>
     <span class="when">26 SEP 2026 &middot; JOB 82079</span>
-    <h3>The finding survives a permutation test, and the drift diagnosis is confirmed</h3>
+    <h3>The finding survives a permutation test, and the shortcut is confirmed</h3>
     <p>Three questions in one CPU job, each with a prediction stated in advance. Two came back
        confirmed, one came back negative.</p>
 
@@ -792,7 +1136,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="tags"><span class="tag nul">null result</span><span class="tag fix">harness rebuilt</span></div>
     <span class="when">21 SEP 2026 &middot; JOB 80178</span>
     <h3>The honest null on imagination</h3>
-    <p><span class="lbl">Found</span>Model 0.5581, shuffled control 0.5541, noise control 0.4746. The gap over the control is <b>0.5 standard errors, which is nothing</b>. The noise control separating cleanly proves the measurement works.</p>
+    <p><span class="lbl">Found</span>Model 0.5581, shuffled control 0.5541, random-input control 0.4746. The gap over the control is <b>0.5 standard errors, which is nothing</b>. The random-input control separating cleanly proves the measurement works.</p>
     <p><span class="lbl">Changed</span>Before this, the evaluation could not have told us either way. Rebuilt in the same pass: a retrieval metric needing no image sampling, a validation set carved from the training subjects' late windows instead of peeking at test, best-checkpoint selection, early stopping, the weight decay the config specified and the code silently ignored, input augmentation, and an optional contrastive objective. Also fixed a crash where a saved CPU random-number state was loaded into the GPU generator.</p>
     <p><span class="lbl">Correction</span>Parameter counts quoted earlier were wrong. Stage 2 trains <b>84.6M</b> parameters, measured; the earlier version was about 199M, not the 300M previously stated.</p>
   </div>
@@ -801,7 +1145,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="tags"><span class="tag res">result</span></div>
     <span class="when">2 SEP 2026</span>
     <h3>Perception works, on images and a person the model never saw</h3>
-    <p>Model 0.5848 against a shuffled control of 0.5484 and a noise control of 0.4761: <b>+4.3 standard errors</b>. Right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint, on 173 images that never appeared in training.</p>
+    <p>Model 0.5848 against a shuffled control of 0.5484 and a random-input control of 0.4761: <b>+4.3 standard errors</b>. Right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint, on 173 images that never appeared in training.</p>
     <p><span class="lbl">Why it matters</span>The load-bearing result of the project. It says the machine is wired correctly end to end.</p>
   </div>
 
@@ -811,22 +1155,21 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h3>The pipeline itself</h3>
     <p>A fork of DreamDiffusion running on the SJSU COE HPC cluster: a masked EEG autoencoder in Stage 1, then Stable Diffusion 1.5 in Stage 2 with the EEG encoder substituted for the text encoder. Data from Shimizu and Srinivasan, 2022.</p>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 08 READING ============ -->
-<section class="panel" id="p-reading" role="tabpanel" aria-labelledby="tab-reading" tabindex="0" hidden>
-  <span class="kicker">Reference</span>
-  <h2>Resources: datasets and papers</h2>
-  <p class="oneline"><b>What this is:</b> everything the team has proposed, with a verdict on each. Tagged by who found it. The full write-ups are in <code>RESOURCES.md</code> in the repository.</p>
+<section class="chapter" id="p-reading" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 10</span>
+    <h2>Resources: datasets and papers</h2>
+    <p class="oneline"><b>What this is:</b> everything the team has proposed, with a verdict on each. Tagged by who found it. The full write-ups are in <code>RESOURCES.md</code> in the repository.</p>
+  </header>
 
-  <div class="note">
+<div class="note">
     <span class="hd">The four criteria we judge a dataset by</span>
     <p><b>1.</b> Visual imagery, not perception and not motor imagery. <b>2.</b> Real repetitions of each imagined item, not one event sliced into windows. <b>3.</b> Posterior electrode coverage, since that is where visual imagery shows up. <b>4.</b> More than one session, so a result can be shown to survive a new cap placement.</p>
   </div>
 
-  <h3>Datasets</h3>
+  <h3 id="p-reading__datasets">Datasets</h3>
   <div class="rsrc">
     <div class="ritem">
       <div class="rhead"><span class="rt">Shimizu &amp; Srinivasan (2022)</span><span class="who">Joao</span></div>
@@ -865,7 +1208,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     </div>
   </div>
 
-  <h3>Papers that changed what we do</h3>
+  <h3 id="p-reading__papers-that-changed-what-we-do">Papers that changed what we do</h3>
   <div class="rsrc">
     <div class="ritem">
       <div class="rhead"><span class="rt">Xie, Kaiser &amp; Cichy (2020), imagery and perception share neural representations</span><span class="who">Joao</span></div>
@@ -909,19 +1252,18 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     </div>
   </div>
 
-  <h3>Papers on artifact removal</h3>
+  <h3 id="p-reading__papers-on-artifact-removal">Papers on artifact removal</h3>
   <p>Aditya's batch on ICA-based artifact removal: the foundational Jung et al. paper, the Jiang, Bian &amp; Tian review, an ICA template method for blinks, and an ICA denoising study on word imagination. <strong>Useful as background rather than as a next step.</strong> Our condition D found rejection neutral on this data, so this line is parked rather than dismissed; it becomes relevant again when we record our own sessions and control the noise ourselves.</p>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
 
-<!-- ============ 09 GLOSSARY ============ -->
-<section class="panel" id="p-glossary" role="tabpanel" aria-labelledby="tab-glossary" tabindex="0" hidden>
-  <span class="kicker">Reference</span>
-  <h2>Glossary</h2>
-  <p class="oneline"><b>What this is:</b> every technical term used in this documentation, in plain language, alphabetically.</p>
+<section class="chapter" id="p-glossary" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 11</span>
+    <h2>Glossary</h2>
+    <p class="oneline"><b>What this is:</b> every technical term used in this documentation, in plain language, alphabetically.</p>
+  </header>
 
-  <div class="gloss">
+<div class="gloss">
     <div class="gitem"><p class="gt">Alpha rhythm</p><p class="gd">The visual cortex's resting oscillation near 10 cycles per second, in the 8 to 13 Hz band. Modulated by what you see or imagine.</p><p class="ge">Where the imagery signal lives, according to three independent studies and our own baseline.</p></div>
     <div class="gitem"><p class="gt">Artifact</p><p class="gd">Anything in an EEG recording that is not brain activity: blinks, muscle tension, heartbeat, electrode drift, mains hum.</p><p class="ge">Often larger than the brain signal itself.</p></div>
     <div class="gitem"><p class="gt">Band-pass filter</p><p class="gd">A step that keeps a chosen range of frequencies and discards the rest.</p><p class="ge">Like turning down every part of a stereo except one narrow slice.</p></div>
@@ -934,7 +1276,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="gitem"><p class="gt">Diffusion model</p><p class="gd">An image generator that starts from random static and removes noise step by step until a picture emerges.</p></div>
     <div class="gitem"><p class="gt">Early stopping</p><p class="gd">Halting training when performance on held-out data stops improving, instead of running a fixed number of rounds.</p><p class="ge">Prevents a model from continuing to memorise long after it has stopped learning anything general.</p></div>
     <div class="gitem"><p class="gt">EEGNet</p><p class="gd">A compact neural network designed for EEG, roughly 2,000 parameters.</p><p class="ge">One of our three baseline methods, and a candidate replacement for the 85-million-parameter encoder.</p></div>
-    <div class="gitem"><p class="gt">Electrode drift</p><p class="gd">Slow wandering of measured voltage, below 1 Hz, caused by the electrode's contact with the scalp changing over time.</p><p class="ge">Not brain activity, and unique to each recording, which makes it a fingerprint a model can exploit.</p></div>
+    <div class="gitem"><p class="gt">Electrode drift</p><p class="gd">Slow wandering of measured voltage caused by the electrode's contact with the scalp changing over time. Most of its power is below 1 Hz.</p><p class="ge">Not brain activity, and unique to each recording. Our data arrives band-passed to 1-50 Hz, so literal drift is already gone; what remains is the broader family of recording-specific nuisance signals. See <b>recording fingerprint</b>.</p></div>
     <div class="gitem"><p class="gt">Epoch</p><p class="gd">One complete pass through the training data. Confusingly, in EEG research "epoch" can also mean a segment of a recording; context decides.</p></div>
     <div class="gitem"><p class="gt">Hertz (Hz)</p><p class="gd">Cycles per second. 10 Hz means the signal completes ten up-and-down cycles every second.</p></div>
     <div class="gitem"><p class="gt">Data leakage</p><p class="gd">When information from the test set reaches the model during training, making its score better than its real ability.</p><p class="ge">In EEG this is the default state rather than an occasional mistake.</p></div>
@@ -945,23 +1287,44 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="gitem"><p class="gt">Overfitting / memorisation</p><p class="gd">When a model learns the specific training examples rather than the general pattern. It scores well on data it has seen and poorly on anything new.</p><p class="ge">We watched this happen: our alignment objective fell to 0.0001, meaning the model had effectively memorised which answer belonged to each training clip.</p></div>
     <div class="gitem"><p class="gt">Parameters</p><p class="gd">The adjustable numbers inside a network. Ours: about 85 million trainable, against roughly 360 training examples per subject.</p></div>
     <div class="gitem"><p class="gt">Permutation test</p><p class="gd">Shuffling the labels many times to see how often a result as good as yours appears by pure chance.</p><p class="ge">On our queue, because with 33 stimuli the effective sample size is small enough that the usual assumptions do not hold.</p></div>
+    <div class="gitem"><p class="gt">Recording fingerprint</p><p class="gd">Any signal that is specific to one recording session rather than to what the person was doing: residual low-frequency artifact, muscle tension, how the cap was sitting, session impedance scaling the whole spectrum.</p><p class="ge">It predicts the label perfectly when each stimulus was recorded exactly once, which is our situation. It cannot transfer to another person, which is how we detected it.</p></div>
+
     <div class="gitem"><p class="gt">Regularisation</p><p class="gd">Techniques that discourage memorisation: penalising large parameter values, freezing parts of the network, adding noise to the inputs.</p></div>
     <div class="gitem"><p class="gt">Riemannian tangent space</p><p class="gd">A way of classifying covariance patterns by mapping them from their own curved space onto a flat one first.</p><p class="ge">The standard strong baseline when EEG data is scarce, and one of our three methods.</p></div>
     <div class="gitem"><p class="gt">Sampling rate</p><p class="gd">How many measurements per second are taken. Ours is 250 Hz, so a half-second window holds 125 numbers per electrode.</p></div>
-    <div class="gitem"><p class="gt">SEM (standard error of the mean)</p><p class="gd">How much a measured average would bounce around if the experiment were repeated. Used to judge whether a difference is real.</p><p class="ge">Our perception result beat its control by 4.3 SEM, too large to be luck. The imagination result was 0.5 SEM, indistinguishable from nothing.</p></div>
-    <div class="gitem"><p class="gt">Shuffled-pairing control</p><p class="gd">Scoring generated images against deliberately mismatched ground truth. Since image quality is identical either way, any gap must come from the brain signal.</p><p class="ge">The control that makes our perception result meaningful rather than just "the generator makes nice pictures".</p></div>
+    <div class="gitem"><p class="gt">Standard error of the mean (SEM)</p><p class="gd">How much a measured average would bounce around if the experiment were repeated. Used to judge whether a difference is real.</p><p class="ge">Our perception result beat its control by 4.3 SEM, too large to be luck. The imagination result was 0.5 SEM, indistinguishable from nothing.</p></div>
+    <div class="gitem"><p class="gt">Shuffled-label control</p><p class="gd">Scoring generated images against deliberately mismatched ground truth. Since image quality is identical either way, any gap must come from the brain signal.</p><p class="ge">The control that makes our perception result meaningful rather than just "the generator makes nice pictures".</p></div>
     <div class="gitem"><p class="gt">Signal-to-noise ratio (SNR)</p><p class="gd">How large the thing you want is compared to everything else. EEG imagery has famously poor SNR.</p></div>
     <div class="gitem"><p class="gt">Split protocol</p><p class="gd">The rule deciding which trials train the model and which test it.</p><p class="ge">In EEG this choice affects the final number more than almost any modelling decision.</p></div>
     <div class="gitem"><p class="gt">Stimulus-disjoint split</p><p class="gd">A test where the images used for testing never appeared in training at all. The strictest protocol available.</p><p class="ge">Our perception result used this, which is why it is the strongest claim the project has.</p></div>
+    <div class="gitem"><p class="gt">2AFC (two-alternative forced choice)</p><p class="gd">A test with exactly two candidates, one correct. Chance is 50%. Borrowed from psychophysics.</p><p class="ge">What papers mean by "pairwise identification accuracy". Our 62.3% is a 2AFC result, and it is the weakest of the three n-way numbers we report.</p></div>
+
+    <div class="gitem"><p class="gt">CLIP-I</p><p class="gd">Image-to-image cosine similarity in CLIP embedding space, as opposed to CLIP-T which compares an image with text.</p><p class="ge">The 0.5848 and 0.5484 figures are CLIP-I. Not percentages.</p></div>
+
+    <div class="gitem"><p class="gt">Cohen's d</p><p class="gd">A standardised effect size: the difference between two means divided by their pooled standard deviation.</p><p class="ge">Related to our "gap in SEMs" but not the same. Dividing by the standard error gives a t-statistic; dividing by the standard deviation gives d.</p></div>
+
+    <div class="gitem"><p class="gt">Empirical p-value</p><p class="gd">The proportion of permutations that scored at least as well as the real result, computed as (hits + 1) / (permutations + 1).</p><p class="ge">The add-one correction prevents an impossible p = 0 when no permutation happens to beat the observed value.</p></div>
+
+    <div class="gitem"><p class="gt">Negative control</p><p class="gd">A version of an experiment deliberately arranged so that it cannot succeed. If it does succeed, the method is measuring something other than what you think.</p><p class="ge">We run two: the shuffled-label control and the random-input control.</p></div>
+
+    <div class="gitem"><p class="gt">Optimistic bias</p><p class="gd">The upward bias introduced by selecting a result from many candidates, such as taking the best validation score across many training epochs. Also called the winner's curse.</p><p class="ge">The reason our 26.3% is provisional rather than a result.</p></div>
+
+    <div class="gitem"><p class="gt">Permutation test</p><p class="gd">A significance test that shuffles the labels and re-runs the whole analysis many times, building an empirical picture of what luck alone produces.</p><p class="ge">Preferred here over a t-test because it assumes nothing about independence, and our test windows are not independent.</p></div>
+
+    <div class="gitem"><p class="gt">Recall@k</p><p class="gd">In retrieval, the proportion of queries whose correct match appears in the top k returned candidates. The retrieval name for top-k accuracy.</p><p class="ge">Our training-time metric is Recall@1 over the distinct stimuli present.</p></div>
+
+    <div class="gitem"><p class="gt">t-statistic</p><p class="gd">A difference divided by its standard error. It expresses a gap in units of measurement noise.</p><p class="ge">Our perception result of "+4.3 SEM" is t = 4.3. Saying it that way is how a paper would state it.</p></div>
+
     <div class="gitem"><p class="gt">Top-1 / Top-5 accuracy</p><p class="gd">Top-1 asks whether the model's single best guess was right. Top-5 asks whether the right answer appeared anywhere in its top five.</p><p class="ge">Top-5 is more forgiving and often reveals partial knowledge that top-1 hides.</p></div>
     <div class="gitem"><p class="gt">Trial averaging</p><p class="gd">Combining several recordings of the same thing before deciding, so random noise cancels while consistent signal accumulates.</p><p class="ge">Averaging 40 repeats improves signal-to-noise roughly sixfold. This is why repetitions matter, and why one recording per picture hurts us badly.</p></div>
     <div class="gitem"><p class="gt">Validation vs test set</p><p class="gd">Validation data is held out to make decisions during development. Test data is held out to produce the final number and touched once.</p><p class="ge">Using test data to make decisions quietly inflates your result.</p></div>
     <div class="gitem"><p class="gt">Weight decay</p><p class="gd">A regularisation method that penalises large parameter values, nudging a model toward simpler solutions.</p><p class="ge">Ours was defined in the config but silently never applied, one of the faults we found and fixed.</p></div>
     <div class="gitem"><p class="gt">Window</p><p class="gd">One half-second slice of a recording. Ours are non-overlapping and tile the full ten seconds end to end.</p><p class="ge">Twenty windows of one imagery event are not twenty measurements of it.</p></div>
   </div>
-
-  <nav class="stepnav" data-nav></nav>
 </section>
+
+</main>
+</div>
 
 <footer>
   <p>NeuroDiffusion &middot; living documentation, updated as work happens. Source at <code>docs/journal.html</code> in the project repository, alongside the improvement plan, signal-quality notes, resource evaluations and code. Deep-model per-subject figures are best-validation and provisional. Results from the SJSU COE HPC cluster.</p>
@@ -969,84 +1332,126 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 </div>
 
+<button id="top" hidden>Back to top</button>
+
 <script>
 (function(){
-  var order = [
-    {k:'start',    label:'Start here'},
-    {k:'signal',   label:'01 · The signal'},
-    {k:'data',     label:'02 · The data'},
-    {k:'pipeline', label:'03 · The pipeline'},
-    {k:'results',  label:'04 · Training results'},
-    {k:'baseline', label:'05 · The baseline'},
-    {k:'status',   label:'06 · Where we are'},
-    {k:'journal',  label:'07 · Journal'},
-    {k:'reading',  label:'08 · Resources'},
-    {k:'glossary', label:'09 · Glossary'}
-  ];
-  var tabs = Array.prototype.slice.call(document.querySelectorAll('.tabs button'));
-  var panels = {};
-  order.forEach(function(o){ panels[o.k] = document.getElementById('p-' + o.k); });
+  var ORDER = ['p-start','p-signal','p-data','p-pipeline','p-metrics','p-results','p-baseline','p-status','p-journal','p-reading','p-glossary'];
+  var LABEL = {'p-start':'The project','p-signal':'The signal','p-data':'The data','p-pipeline':'The pipeline','p-metrics':'Reading numbers','p-results':'Training results','p-baseline':'The classical baseline','p-status':'Where we are','p-journal':'Journal','p-reading':'Resources','p-glossary':'Glossary'};
+  var bar = document.getElementById('bar');
+  var top = document.getElementById('top');
+  var rail = document.querySelector('.rail');
+  var box = document.querySelector('details.railbox');
+  var chapters = {};
+  ORDER.forEach(function(id){ chapters[id] = document.getElementById(id); });
 
-  function idx(k){ for (var i=0;i<order.length;i++){ if (order[i].k===k) return i; } return 0; }
+  function pagerFor(i){
+    var prev = ORDER[i-1], next = ORDER[i+1], h = '';
+    h += prev ? '<button class="pg prev" data-go="'+prev+'"><span>Previous</span><b>'+LABEL[prev]+'</b></button>'
+              : '<span class="pg empty"></span>';
+    h += next ? '<button class="pg next" data-go="'+next+'"><span>Next chapter</span><b>'+LABEL[next]+'</b></button>'
+              : '<span class="pg empty"></span>';
+    return h;
+  }
+  ORDER.forEach(function(id, i){
+    var sec = chapters[id];
+    if (!sec) return;
+    var nav = document.createElement('nav');
+    nav.className = 'pager';
+    nav.innerHTML = pagerFor(i);
+    sec.appendChild(nav);
+  });
 
-  function show(k, push){
-    if (!panels[k]) k = 'start';
-    tabs.forEach(function(b){
-      var on = b.dataset.k === k;
-      b.setAttribute('aria-selected', on ? 'true' : 'false');
-      b.setAttribute('tabindex', on ? '0' : '-1');
-      panels[b.dataset.k].hidden = !on;
-      if (on) { try { b.scrollIntoView({block:'nearest', inline:'nearest'}); } catch(e){} }
+  var current = null;
+  function show(id, push){
+    if (!chapters[id]) id = ORDER[0];
+    current = id;
+    ORDER.forEach(function(k){ if (chapters[k]) chapters[k].hidden = (k !== id); });
+    Array.prototype.forEach.call(rail.querySelectorAll('li[data-ch]'), function(li){
+      var on = li.getAttribute('data-ch') === id;
+      li.classList.toggle('active', on);
+      var a = li.querySelector('a.ch');
+      if (a) a.setAttribute('aria-current', on ? 'true' : 'false');
     });
-    try { localStorage.setItem('nd-tab', k); } catch(e){}
+    try { localStorage.setItem('nd-chapter', id); } catch(e){}
     if (push) {
-      try { history.replaceState(null, '', '#' + k); } catch(e){ location.hash = k; }
+      try { history.replaceState(null, '', '#' + id); } catch(e){}
       window.scrollTo({top:0, behavior:'auto'});
     }
+    spy();
   }
 
-  // build prev/next navigation inside each panel
-  order.forEach(function(o, i){
-    var nav = panels[o.k] && panels[o.k].querySelector('[data-nav]');
-    if (!nav) return;
-    var prev = order[i-1], next = order[i+1];
-    var html = '';
-    html += prev
-      ? '<button class="sn prev" data-go="' + prev.k + '"><span>Previous</span><b>' + prev.label + '</b></button>'
-      : '<span class="sn empty"></span>';
-    html += next
-      ? '<button class="sn next" data-go="' + next.k + '"><span>Next step</span><b>' + next.label + '</b></button>'
-      : '<span class="sn empty"></span>';
-    nav.innerHTML = html;
-  });
+  // deep links: #p-metrics__chance-level opens the chapter, then scrolls
+  function resolve(hash){
+    hash = (hash || '').replace('#','');
+    if (!hash) return {ch:null, sub:null};
+    if (chapters[hash]) return {ch:hash, sub:null};
+    var i = hash.indexOf('__');
+    if (i > 0 && chapters[hash.slice(0,i)]) return {ch:hash.slice(0,i), sub:hash};
+    return {ch:null, sub:null};
+  }
 
-  tabs.forEach(function(b){
-    b.addEventListener('click', function(){ show(b.dataset.k, true); });
-  });
+  function go(hash, push){
+    var r = resolve(hash);
+    if (!r.ch) return false;
+    show(r.ch, push);
+    if (r.sub) {
+      var el = document.getElementById(r.sub);
+      if (el) setTimeout(function(){ el.scrollIntoView({block:'start', behavior:'smooth'}); }, 30);
+    }
+    return true;
+  }
+
+  function spy(){
+    if (!current) return;
+    var sec = chapters[current];
+    if (!sec) return;
+    var heads = Array.prototype.slice.call(sec.querySelectorAll('h3[id]'));
+    var links = Array.prototype.slice.call(rail.querySelectorAll('a.sub'));
+    if (!heads.length) return;
+    var best = heads[0].id, y = 140;
+    heads.forEach(function(h){ if (h.getBoundingClientRect().top <= y) best = h.id; });
+    links.forEach(function(a){
+      a.setAttribute('aria-current', a.getAttribute('href') === '#' + best ? 'true' : 'false');
+    });
+  }
+
+  function onScroll(){
+    var h = document.documentElement.scrollHeight - window.innerHeight;
+    bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
+    top.hidden = window.scrollY < 600;
+    spy();
+  }
+  var ticking = false;
+  window.addEventListener('scroll', function(){
+    if (!ticking) { ticking = true; requestAnimationFrame(function(){ onScroll(); ticking = false; }); }
+  }, {passive:true});
+
+  top.addEventListener('click', function(){ window.scrollTo({top:0, behavior:'smooth'}); });
+
   document.addEventListener('click', function(e){
-    var t = e.target.closest ? e.target.closest('[data-go]') : null;
-    if (t) { show(t.dataset.go, true); }
+    var t = e.target.closest ? e.target.closest('a[href^="#"], [data-go]') : null;
+    if (!t) return;
+    var target = t.getAttribute('data-go') || t.getAttribute('href');
+    var r = resolve(target);
+    if (!r.ch) return;
+    e.preventDefault();
+    if (r.ch !== current) { go(target, true); }
+    else if (r.sub) {
+      var el = document.getElementById(r.sub);
+      if (el) el.scrollIntoView({block:'start', behavior:'smooth'});
+      try { history.replaceState(null, '', '#' + r.sub); } catch(err){}
+    }
+    if (box && window.matchMedia('(max-width: 999px)').matches) { box.open = false; }
   });
 
-  // keyboard: left/right across the tab bar
-  document.querySelector('.tabs').addEventListener('keydown', function(e){
-    var cur = tabs.findIndex(function(b){ return b.getAttribute('aria-selected') === 'true'; });
-    var to = null;
-    if (e.key === 'ArrowRight') to = Math.min(cur+1, tabs.length-1);
-    if (e.key === 'ArrowLeft')  to = Math.max(cur-1, 0);
-    if (e.key === 'Home') to = 0;
-    if (e.key === 'End')  to = tabs.length-1;
-    if (to !== null) { e.preventDefault(); show(tabs[to].dataset.k, true); tabs[to].focus(); }
-  });
+  window.addEventListener('hashchange', function(){ go(location.hash, false); });
 
-  window.addEventListener('hashchange', function(){
-    show((location.hash || '').replace('#',''), false);
-  });
-
-  var startK = (location.hash || '').replace('#','');
-  if (!panels[startK]) {
-    try { var saved = localStorage.getItem('nd-tab'); if (saved && panels[saved]) startK = saved; } catch(e){}
+  var start = location.hash;
+  if (!resolve(start).ch) {
+    try { var saved = localStorage.getItem('nd-chapter'); if (saved) start = '#' + saved; } catch(e){}
   }
-  show(panels[startK] ? startK : 'start', false);
+  if (!go(start, false)) show(ORDER[0], false);
+  onScroll();
 })();
 </script>

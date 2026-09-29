@@ -265,12 +265,39 @@ def augment_eeg(eeg, noise_std=0.1, channel_drop=0.1, scale_range=(0.9, 1.1)):
     return out
 
 
+def bandpass_trials(data, lo, hi, fs=250.0, order=4):
+    """Band-pass every trial in place, along the time axis.
+
+    Applied once when the dataset loads rather than per __getitem__, and before the
+    resample to data_len: the stored trials are (channels, 125) at 250 Hz, so the band
+    edges mean what they say here. After resampling, 512 samples span the same 500 ms
+    and the effective rate is no longer 250 Hz.
+
+    The source recordings arrive from Shimizu already band-passed to 1-50 Hz, so this
+    narrows an existing band rather than cleaning raw data.
+    """
+    from scipy.signal import butter, filtfilt
+    nyq = fs / 2.0
+    b, a = butter(order, [max(lo / nyq, 1e-6), min(hi / nyq, 0.99)], btype='band')
+    padlen = 3 * max(len(a), len(b))
+    n = 0
+    for e in data:
+        x = e['eeg'].numpy()
+        if x.shape[-1] <= padlen:
+            y = filtfilt(b, a, x, axis=-1, padlen=0)
+        else:
+            y = filtfilt(b, a, x, axis=-1)
+        e['eeg'] = torch.from_numpy(y.copy()).float()
+        n += 1
+    print('[EEGDataset] band-passed %d trials to %.1f-%.1f Hz' % (n, lo, hi))
+    return data
+
 class EEGDataset(Dataset):
 
     # Constructor
     def __init__(self, eeg_signals_path, imagenet_path, image_transform=identity, subject=0,
                  strict_images=True, missing_tolerance=0.0, load_images=True,
-                 validate_scope=None):
+                 validate_scope=None, band=None):
         # Load EEG signals
         loaded = torch.load(eeg_signals_path)
 
@@ -283,6 +310,13 @@ class EEGDataset(Dataset):
             kept = list(range(len(all_data)))
         self.data = [all_data[i] for i in kept]
         self.orig_to_pos = {orig: pos for pos, orig in enumerate(kept)}
+
+        # Restrict the input to one frequency band. The classical baseline found the
+        # advantage outside 8-13 Hz does not survive crossing between subjects, so it is
+        # recording-specific rather than stimulus-specific.
+        self.band = band
+        if band is not None:
+            bandpass_trials(self.data, float(band[0]), float(band[1]))
 
         self.labels = loaded["labels"]
         self.images = loaded["images"]
@@ -434,7 +468,8 @@ def create_EEG_dataset(eeg_signals_path='../datasets/imagination_5_95_std.pth',
             splits_path='../datasets/imagination_5_95_std_splits_subject.pth',
             imagenet_path=None,
             image_transform=identity, subject=0,
-            strict_images=True, missing_tolerance=0.0, load_images=True, augment=False):
+            strict_images=True, missing_tolerance=0.0, load_images=True, augment=False,
+            band=None):
 
     # Load the splits first so the stimulus check can be scoped to the trials that
     # training will actually touch, rather than to every trial in the file.
@@ -445,14 +480,14 @@ def create_EEG_dataset(eeg_signals_path='../datasets/imagination_5_95_std.pth',
 
     if isinstance(image_transform, list):
         dataset_train = EEGDataset(eeg_signals_path, imagenet_path, image_transform[0], subject,
-                                   strict_images, missing_tolerance, load_images, validate_scope)
+                                   strict_images, missing_tolerance, load_images, validate_scope, band)
         dataset_test = EEGDataset(eeg_signals_path, imagenet_path, image_transform[1], subject,
-                                  strict_images, missing_tolerance, load_images, validate_scope)
+                                  strict_images, missing_tolerance, load_images, validate_scope, band)
     else:
         dataset_train = EEGDataset(eeg_signals_path, imagenet_path, image_transform, subject,
-                                   strict_images, missing_tolerance, load_images, validate_scope)
+                                   strict_images, missing_tolerance, load_images, validate_scope, band)
         dataset_test = EEGDataset(eeg_signals_path, imagenet_path, image_transform, subject,
-                                  strict_images, missing_tolerance, load_images, validate_scope)
+                                  strict_images, missing_tolerance, load_images, validate_scope, band)
     split_train = Splitter(dataset_train, split_path=splits_path, split_num=0, split_name='train', subject=subject)
     split_test = Splitter(dataset_test, split_path=splits_path, split_num=0, split_name='test', subject=subject)
     dataset_train.augment = bool(augment)

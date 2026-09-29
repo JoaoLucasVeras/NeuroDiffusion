@@ -187,7 +187,8 @@ def main(config):
                 image_transform=[img_transform_train, img_transform_test],
                 subject=config.subject,
                 strict_images=getattr(config, 'strict_images', True),
-                augment=getattr(config, 'augment', False))
+                augment=getattr(config, 'augment', False),
+                band=getattr(config, 'band', None))
         # eeg_latents_dataset_train, eeg_latents_dataset_test = create_EEG_dataset_viz( image_transform=[img_transform_train, img_transform_test])
         num_voxels = eeg_latents_dataset_train.data_len
 
@@ -256,6 +257,8 @@ def get_args_parser():
     parser.add_argument('--weight_decay', type=float)
     parser.add_argument('--freeze_encoder_blocks', type=int)
     parser.add_argument('--augment', type=str2bool)
+    parser.add_argument('--band', type=float, nargs=2, metavar=('LO', 'HI'),
+                        help='restrict the EEG input to this band in Hz, e.g. --band 8 13')
     parser.add_argument('--clip_loss', type=str, choices=['cosine', 'contrastive'])
     parser.add_argument('--clip_weight', type=float)
     parser.add_argument('--val_windows', type=int)
