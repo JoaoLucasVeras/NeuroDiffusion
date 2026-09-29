@@ -207,6 +207,33 @@ tbody tr:last-child td{border-bottom:0;}
 .gitem .gd{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
 .gitem .ge{font-size:.89rem;line-height:1.5;color:var(--muted);margin:.4em 0 0;font-style:italic;max-width:none;}
 
+
+/* nested chapter navigation */
+.rail ol.subs{list-style:none;margin:2px 0 8px;padding:0 0 0 32px;display:none;}
+.rail li[data-ch].active ol.subs{display:block;}
+.rail a.sub{display:block;padding:3px 0 3px 10px;margin-left:-12px;font-size:.81rem;
+  color:var(--muted);border-left:1px solid var(--rule);text-decoration:none;line-height:1.35;}
+.rail a.sub:hover{color:var(--ink-2);border-left-color:var(--rule-strong);}
+.rail a.sub[aria-current="true"]{color:var(--signal);border-left-color:var(--signal);font-weight:600;}
+.rail li[data-ch].active > a.ch{color:var(--signal);border-left-color:var(--signal);}
+.rail li[data-ch].active > a.ch .nn{color:var(--signal);}
+.rail li[data-ch].active > a.ch .nt{font-weight:600;}
+
+/* chapter pager */
+.pager{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:48px 0 0;
+  padding-top:22px;border-top:1.5px solid var(--rule-strong);}
+.pg{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:11px 14px;text-align:left;cursor:pointer;color:var(--ink);box-shadow:var(--shadow);
+  font-family:inherit;display:block;}
+.pg:hover{border-color:var(--signal);}
+.pg span{font-family:Archivo,sans-serif;font-size:.64rem;font-weight:600;letter-spacing:.11em;
+  text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.25em;}
+.pg b{font-size:.94rem;font-weight:600;}
+.pg.next{text-align:right;}
+.pg.empty{visibility:hidden;}
+@media (max-width:560px){.pager{grid-template-columns:1fr;}.pg.next{text-align:left;}.pg.empty{display:none;}}
+.chapter{padding-block:40px 4px;border-top:0;}
+
 footer{padding-block:28px 0;border-top:1.5px solid var(--rule-strong);margin-top:52px;}
 footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;line-height:1.6;max-width:72ch;}
 
@@ -250,24 +277,91 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <summary>Contents</summary>
     <p class="eyebrow">Chapters</p>
     <ol>
-      <li><a href="#p-start"><span class="nn">01</span><span class="nt">The project</span></a></li>
-      <li><a href="#p-signal"><span class="nn">02</span><span class="nt">The signal</span></a></li>
-      <li><a href="#p-data"><span class="nn">03</span><span class="nt">The data</span></a></li>
-      <li><a href="#p-pipeline"><span class="nn">04</span><span class="nt">The pipeline</span></a></li>
-      <li><a href="#p-metrics"><span class="nn">05</span><span class="nt">Reading numbers</span></a></li>
-      <li><a href="#p-results"><span class="nn">06</span><span class="nt">Training results</span></a></li>
-      <li><a href="#p-baseline"><span class="nn">07</span><span class="nt">The classical baseline</span></a></li>
-      <li><a href="#p-status"><span class="nn">08</span><span class="nt">Where we are</span></a></li>
-      <li><a href="#p-journal"><span class="nn">09</span><span class="nt">Journal</span></a></li>
-      <li><a href="#p-reading"><span class="nn">10</span><span class="nt">Resources</span></a></li>
-      <li><a href="#p-glossary"><span class="nn">11</span><span class="nt">Glossary</span></a></li>
+      <li data-ch="p-start">
+        <a class="ch" href="#p-start"><span class="nn">01</span><span class="nt">The project</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-start__where-the-project-stands-in-three-lines">Where the project stands, in three lines</a></li>
+          <li><a class="sub" href="#p-start__how-to-read-this">How to read this</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-signal">
+        <a class="ch" href="#p-signal"><span class="nn">02</span><span class="nt">The signal</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-signal__frequency-is-how-you-pull-them-apart">Frequency is how you pull them apart</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-data">
+        <a class="ch" href="#p-data"><span class="nn">03</span><span class="nt">The data</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-data__what-was-recorded">What was recorded</a></li>
+          <li><a class="sub" href="#p-data__the-leakage-problem">The leakage problem</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-pipeline">
+        <a class="ch" href="#p-pipeline"><span class="nn">04</span><span class="nt">The pipeline</span></a>
+      </li>
+      <li data-ch="p-metrics">
+        <a class="ch" href="#p-metrics"><span class="nn">05</span><span class="nt">Reading numbers</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-metrics__chance-level">5.1  Chance level</a></li>
+          <li><a class="sub" href="#p-metrics__top-k-accuracy-and-n-way-identification-">5.2  Top-k accuracy and n-way identification accuracy</a></li>
+          <li><a class="sub" href="#p-metrics__clip-image-similarity">5.3  CLIP image similarity</a></li>
+          <li><a class="sub" href="#p-metrics__negative-controls">5.4  Negative controls</a></li>
+          <li><a class="sub" href="#p-metrics__standard-error-of-the-mean">5.5  Standard error of the mean</a></li>
+          <li><a class="sub" href="#p-metrics__permutation-tests">5.6  Permutation tests</a></li>
+          <li><a class="sub" href="#p-metrics__validation-test-and-optimistic-bias">5.7  Validation, test, and optimistic bias</a></li>
+          <li><a class="sub" href="#p-metrics__the-five-questions">The five questions</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-results">
+        <a class="ch" href="#p-results"><span class="nn">06</span><span class="nt">Training results</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-results__how-we-judge-a-result-at-all">How we judge a result at all</a></li>
+          <li><a class="sub" href="#p-results__result-1-seeing-a-picture-works">Result 1 &mdash; seeing a picture works</a></li>
+          <li><a class="sub" href="#p-results__result-2-imagining-a-picture-does-not-ye">Result 2 &mdash; imagining a picture does not, yet</a></li>
+          <li><a class="sub" href="#p-results__result-3-one-subject-at-a-time">Result 3 &mdash; one subject at a time</a></li>
+          <li><a class="sub" href="#p-results__what-we-fixed-along-the-way">What we fixed along the way</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-baseline">
+        <a class="ch" href="#p-baseline"><span class="nn">07</span><span class="nt">The classical baseline</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-baseline__the-problem-it-exists-to-solve">The problem it exists to solve</a></li>
+          <li><a class="sub" href="#p-baseline__what-a-classical-baseline-is">What a classical baseline is</a></li>
+          <li><a class="sub" href="#p-baseline__the-three-methods">The three methods</a></li>
+          <li><a class="sub" href="#p-baseline__the-four-conditions">The four conditions</a></li>
+          <li><a class="sub" href="#p-baseline__the-results">The results</a></li>
+          <li><a class="sub" href="#p-baseline__what-the-baseline-changed">What the baseline changed</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-status">
+        <a class="ch" href="#p-status"><span class="nn">08</span><span class="nt">Where we are</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-status__every-experiment-and-its-number">Every experiment, and its number</a></li>
+          <li><a class="sub" href="#p-status__the-queue-in-order">The queue, in order</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-journal">
+        <a class="ch" href="#p-journal"><span class="nn">09</span><span class="nt">Journal</span></a>
+      </li>
+      <li data-ch="p-reading">
+        <a class="ch" href="#p-reading"><span class="nn">10</span><span class="nt">Resources</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-reading__datasets">Datasets</a></li>
+          <li><a class="sub" href="#p-reading__papers-that-changed-what-we-do">Papers that changed what we do</a></li>
+          <li><a class="sub" href="#p-reading__papers-on-artifact-removal">Papers on artifact removal</a></li>
+        </ol>
+      </li>
+      <li data-ch="p-glossary">
+        <a class="ch" href="#p-glossary"><span class="nn">11</span><span class="nt">Glossary</span></a>
+      </li>
     </ol>
   </details>
 </nav>
 
 <main>
 
-<section class="chapter" id="p-start">
+<section class="chapter" id="p-start" hidden>
   <header class="chead">
     <span class="cnum">Chapter 1</span>
     <h2>The project</h2>
@@ -281,14 +375,14 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p>The image generator always produces a good-looking picture, whether or not the brain data means anything at all. So "the output looks like a dog" proves nothing. The only meaningful question is: <b>does the output match the picture the person actually had in mind, more often than it matches some random other picture?</b> Every number in this documentation is built around that question.</p>
   </div>
 
-  <h3>Where the project stands, in three lines</h3>
+  <h3 id="p-start__where-the-project-stands-in-three-lines">Where the project stands, in three lines</h3>
   <ul>
     <li><strong>Seeing works.</strong> Feed it EEG recorded while someone <em>looks at</em> an image and the generated pictures match the real stimulus significantly better than chance pairings, on images and a person the model had never seen. The machine is wired correctly.</li>
     <li><strong>Imagining does not, yet.</strong> The same pipeline on imagination EEG comes back at chance. That is a measured result with working controls, not a crash.</li>
     <li><strong>The data does contain imagery signal.</strong> A deliberately simple method finds it at about three times chance. So the remaining problem is ours to fix, not a dead end in the data.</li>
   </ul>
 
-  <h3>How to read this</h3>
+  <h3 id="p-start__how-to-read-this">How to read this</h3>
   <p>The tabs run in order and build on each other. Steps 01 to 03 are the setup: what the signal is, what data we have, how the machine is put together. Steps 04 and 05 are what happened when we ran it. Step 06 is the current state and what is next. The last three tabs are for looking things up rather than reading straight through.</p>
 
   <div class="note">
@@ -297,7 +391,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-signal">
+<section class="chapter" id="p-signal" hidden>
   <header class="chead">
     <span class="cnum">Chapter 2</span>
     <h2>The signal: what EEG actually is</h2>
@@ -330,7 +424,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="ex"><b>For scale</b>An AA battery is 1.5 volts, roughly fifty thousand times larger.</p>
   </div>
 
-  <h3>Frequency is how you pull them apart</h3>
+  <h3 id="p-signal__frequency-is-how-you-pull-them-apart">Frequency is how you pull them apart</h3>
 
   <p>Different sources oscillate at different speeds, so you can separate them by frequency: how many times per second the signal cycles up and down. That unit is the <strong>hertz (Hz)</strong>.</p>
 
@@ -361,14 +455,14 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-data">
+<section class="chapter" id="p-data" hidden>
   <header class="chead">
     <span class="cnum">Chapter 3</span>
     <h2>The data, and the trap inside it</h2>
     <p class="oneline"><b>In one sentence:</b> we have four people who each imagined 33 pictures exactly once, which is far less data than it looks like and creates a shortcut a model will happily take.</p>
   </header>
 
-<h3>What was recorded</h3>
+<h3 id="p-data__what-was-recorded">What was recorded</h3>
   <p>Four people. Each was shown a picture for half a second, then a noise mask, then spent ten seconds imagining that picture <strong>with their eyes open</strong>. 128 electrodes recorded throughout, at 250 measurements per second. The dataset is from Shimizu and Srinivasan, 2022, and the same four people also did a separate perception task where they simply looked at images.</p>
 
   <div class="note">
@@ -383,7 +477,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="ex"><b>Why that detail matters</b>Because they do not overlap, gluing windows 0 to 3 back together reconstructs the genuine continuous signal from 0 to 2 seconds. Had they overlapped, concatenating them would have produced a waveform that never actually happened. This is what made one of our experiments possible at all.</p>
   </div>
 
-  <h3>The leakage problem</h3>
+  <h3 id="p-data__the-leakage-problem">The leakage problem</h3>
   <p>This is the part that makes EEG decoding unusual, and it is the key to understanding every result later.</p>
 
   <div class="def">
@@ -419,7 +513,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-pipeline">
+<section class="chapter" id="p-pipeline" hidden>
   <header class="chead">
     <span class="cnum">Chapter 4</span>
     <h2>The pipeline: how the machine is built</h2>
@@ -469,7 +563,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-metrics">
+<section class="chapter" id="p-metrics" hidden>
   <header class="chead">
     <span class="cnum">Chapter 5</span>
     <h2>Reading numbers</h2>
@@ -483,7 +577,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p>The names here are the ones used in the literature, so they are what to search for and what
      to put in a write-up. The analogies are ours, and are only teaching aids.</p>
 
-  <h3>5.1 &nbsp;Chance level</h3>
+  <h3 id="p-metrics__chance-level">5.1 &nbsp;Chance level</h3>
   <p><strong>Technically:</strong> the expected accuracy of a uniformly random classifier over
      <em>k</em> classes, equal to 1/<em>k</em>. With 33 stimuli that is 0.0303.</p>
   <p><strong>In plain terms:</strong> a multiple-choice test with 33 possible answers. Someone
@@ -500,7 +594,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        3.03% as a hard floor.</p>
   </div>
 
-  <h3>5.2 &nbsp;Top-k accuracy and n-way identification accuracy</h3>
+  <h3 id="p-metrics__top-k-accuracy-and-n-way-identification-">5.2 &nbsp;Top-k accuracy and n-way identification accuracy</h3>
   <p><strong>Technically:</strong> <b>top-<em>k</em> accuracy</b> counts a trial correct when the
      true label appears in the model's <em>k</em> highest-ranked predictions; in retrieval settings
      the same quantity is called <b>Recall@<em>k</em></b>. <b><em>n</em>-way identification
@@ -530,7 +624,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
      most.</p>
   </div>
 
-  <h3>5.3 &nbsp;CLIP image similarity</h3>
+  <h3 id="p-metrics__clip-image-similarity">5.3 &nbsp;CLIP image similarity</h3>
   <p><strong>Technically:</strong> the <b>cosine similarity</b> between CLIP embeddings of the
      generated image and the ground-truth image, in [&minus;1, 1]. Image-to-image CLIP similarity is
      commonly written <b>CLIP-I</b>, to distinguish it from CLIP-T, which compares an image against
@@ -542,7 +636,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        information. Only the comparison does.</p>
   </div>
 
-  <h3>5.4 &nbsp;Negative controls</h3>
+  <h3 id="p-metrics__negative-controls">5.4 &nbsp;Negative controls</h3>
   <p><strong>Technically:</strong> two <b>negative controls</b>. The <b>shuffled-label control</b>
      scores predictions against permuted ground truth; the <b>random-input control</b> replaces the
      EEG with noise. Both hold generation quality fixed while removing the stimulus-specific
@@ -563,7 +657,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
   <p>Read the first two columns. Looking at a picture clears the wrong key. Imagining barely moves.</p>
 
-  <h3>5.5 &nbsp;Standard error of the mean</h3>
+  <h3 id="p-metrics__standard-error-of-the-mean">5.5 &nbsp;Standard error of the mean</h3>
   <p><strong>Technically:</strong> the <b>standard error of the mean (SEM)</b> is the standard
      deviation of the sampling distribution of the mean. It estimates how much a measured average
      would move if the experiment were repeated with a fresh sample of the same size, and it shrinks
@@ -596,7 +690,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        was noisy. Rule of thumb: under 2 SEM, do not believe it. Over 4, it is hard to explain away.</p>
   </div>
 
-  <h3>5.6 &nbsp;Permutation tests</h3>
+  <h3 id="p-metrics__permutation-tests">5.6 &nbsp;Permutation tests</h3>
   <p><strong>Technically:</strong> a <b>permutation test</b>, also called a randomisation test. The
      labels are randomly permuted and the entire fitting procedure re-run many times, building an
      <b>empirical null distribution</b>. The <b>empirical p-value</b> is the fraction of permutations
@@ -633,7 +727,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        The permutation test assumes nothing.</p>
   </div>
 
-  <h3>5.7 &nbsp;Validation, test, and optimistic bias</h3>
+  <h3 id="p-metrics__validation-test-and-optimistic-bias">5.7 &nbsp;Validation, test, and optimistic bias</h3>
   <p><strong>Technically:</strong> the <b>validation set</b> guides model selection and
      hyperparameters during development; the <b>test set</b> is held out and evaluated once. A metric
      selected as the maximum over many training epochs is an order statistic and carries
@@ -652,7 +746,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        not a result.</p>
   </div>
 
-  <h3>The five questions</h3>
+  <h3 id="p-metrics__the-five-questions">The five questions</h3>
   <p>A result we believe has an answer to all five.</p>
   <div class="tbl">
   <table>
@@ -669,14 +763,14 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 </section>
 
-<section class="chapter" id="p-results">
+<section class="chapter" id="p-results" hidden>
   <header class="chead">
     <span class="cnum">Chapter 6</span>
     <h2>Training results: what the pipeline did</h2>
     <p class="oneline"><b>In one sentence:</b> perception decodes clearly and significantly, imagination comes back at chance, and we can prove both statements are measurements rather than accidents.</p>
   </header>
 
-<h3>How we judge a result at all</h3>
+<h3 id="p-results__how-we-judge-a-result-at-all">How we judge a result at all</h3>
   <p>Since the generator always makes a plausible picture, we score every result against deliberately broken versions of itself.</p>
 
   <div class="def">
@@ -691,20 +785,20 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="ex"><b>Rule of thumb</b>Below about 2 SEM, a gap is not worth believing. Above 4, it is hard to explain away as luck.</p>
   </div>
 
-  <h3>Result 1 &mdash; seeing a picture works</h3>
+  <h3 id="p-results__result-1-seeing-a-picture-works">Result 1 &mdash; seeing a picture works</h3>
   <div class="note good">
     <p>Model <b>0.5848</b>, shuffled control 0.5484, random-input control 0.4761. The gap over the shuffled control is <b>+4.3 SEM</b>.</p>
     <p>It names the right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint: the 173 test images never appeared in training, on a person the model had not seen.</p>
     <p><b>This is the load-bearing result of the project.</b> It says the machine is wired correctly end to end, so every later failure is about the difficulty of imagination rather than a broken pipeline.</p>
   </div>
 
-  <h3>Result 2 &mdash; imagining a picture does not, yet</h3>
+  <h3 id="p-results__result-2-imagining-a-picture-does-not-ye">Result 2 &mdash; imagining a picture does not, yet</h3>
   <div class="note warn">
     <p>Model <b>0.5581</b>, shuffled control 0.5541, random-input control 0.4746. The gap over the control is <b>+0.5 SEM</b>, which is nothing.</p>
     <p>Note that the random-input control still separates cleanly. The measurement works; imagination simply is not there. This is an honest null, not a bug.</p>
   </div>
 
-  <h3>Result 3 &mdash; one subject at a time</h3>
+  <h3 id="p-results__result-3-one-subject-at-a-time">Result 3 &mdash; one subject at a time</h3>
   <p>Pooling all four people made things worse, so we followed the source paper and trained each person separately. Best scores against 3.03% chance, one correct guess in 33:</p>
 
   <div class="tbl">
@@ -729,18 +823,18 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p>Second, and more seriously, these runs trained on <b>raw broadband EEG</b>. Step 05 explains why that is a problem. As of 26 September this is no longer a suspicion: the cross-subject test confirmed that broadband's advantage is a recording fingerprint, so <b>26.3% is substantially inflated</b> and the honest figure is unknown until the pipeline is re-run on alpha-band input.</p>
   </div>
 
-  <h3>What we fixed along the way</h3>
+  <h3 id="p-results__what-we-fixed-along-the-way">What we fixed along the way</h3>
   <p>Getting to a trustworthy null took rebuilding the measurement apparatus: a retrieval metric that needs no image sampling, a validation set carved from the training subjects' late windows instead of quietly reusing test data, best-checkpoint selection, early stopping, the weight decay the configuration asked for and the code silently ignored, input augmentation, and an optional contrastive objective. A crash where a saved CPU random-number state was loaded into the GPU generator was fixed too.</p>
 </section>
 
-<section class="chapter" id="p-baseline">
+<section class="chapter" id="p-baseline" hidden>
   <header class="chead">
     <span class="cnum">Chapter 7</span>
     <h2>The classical baseline</h2>
     <p class="oneline"><b>In one sentence:</b> we stopped and ran the simplest possible method, which proved the data does contain imagery signal and simultaneously caught the pipeline taking a shortcut.</p>
   </header>
 
-<h3>The problem it exists to solve</h3>
+<h3 id="p-baseline__the-problem-it-exists-to-solve">The problem it exists to solve</h3>
   <p>Every time the pipeline came back at chance, that single result could have meant four entirely different things:</p>
   <ol>
     <li><strong>There is no imagery signal in this EEG.</strong> The data is a dead end.</li>
@@ -750,7 +844,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </ol>
   <p>All four produce the identical output, "not distinguishable from chance", and each pipeline run costs one to two GPU-days while resolving none of them individually. That is an expensive place to be stuck.</p>
 
-  <h3>What a classical baseline is</h3>
+  <h3 id="p-baseline__what-a-classical-baseline-is">What a classical baseline is</h3>
   <p>A deliberately simple, well-understood method. No diffusion, no image generation, no learned representation. Its power comes from what it <em>cannot</em> do:</p>
   <ul>
     <li><strong>It cannot memorise.</strong> A logistic regression on 128 features has nowhere to hide an answer key for 33 classes.</li>
@@ -759,7 +853,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </ul>
   <p>So it isolates exactly one question: <strong>is there decodable imagery information in this EEG at all?</strong> If yes, explanation (1) is eliminated and every remaining failure is ours, which means fixable. If no, we stop optimising a pipeline pointed at noise.</p>
 
-  <h3>The three methods</h3>
+  <h3 id="p-baseline__the-three-methods">The three methods</h3>
   <div class="def">
     <p class="dt">Band power + logistic regression</p>
     <p class="dd">For each electrode, measure how much energy sits in the alpha band, then fit the simplest possible classifier, a weighted sum of those 128 numbers.</p>
@@ -776,7 +870,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="ex"><b>Note</b>This is the architecture that reached 75.8% on a modern imagery dataset. It is the most flexible of the three, which turns out to matter a great deal.</p>
   </div>
 
-  <h3>The four conditions</h3>
+  <h3 id="p-baseline__the-four-conditions">The four conditions</h3>
   <p>We ran all three methods four ways. Each condition answers one question.</p>
   <div class="steps">
     <div class="step"><span class="i">A</span><span class="t">Alpha band, 500 ms windows</span>
@@ -789,7 +883,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <p class="b"><strong>Throw away the 10% most extreme trials</strong>, mostly blinks. One paper says cleaning hurts decoding, another says it helps in low-signal cases like ours. Cheap enough to settle on our own data.</p></div>
   </div>
 
-  <h3>The results</h3>
+  <h3 id="p-baseline__the-results">The results</h3>
   <p>All four subjects, all four conditions. Chance is <span class="num">3.03%</span>. Numbers are "times better than chance", ranged across the three methods.</p>
   <div class="tbl">
   <table>
@@ -848,7 +942,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        inquiry is still live.</p>
   </div>
 
-  <h3>What the baseline changed</h3>
+  <h3 id="p-baseline__what-the-baseline-changed">What the baseline changed</h3>
   <ol>
     <li><strong>The worst possibility is eliminated.</strong> "There is no imagery signal here" is off the table. Every remaining failure points at something we control.</li>
     <li><strong>We have a number to beat.</strong> About 3&times; chance from a model with a few hundred parameters. Any complex model that cannot clear that is not earning its complexity.</li>
@@ -863,7 +957,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-status">
+<section class="chapter" id="p-status" hidden>
   <header class="chead">
     <span class="cnum">Chapter 8</span>
     <h2>Where we are, and what is next</h2>
@@ -882,7 +976,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        number we have was trained on broadband and is provisional until re-run.</p>
   </div>
 
-  <h3>Every experiment, and its number</h3>
+  <h3 id="p-status__every-experiment-and-its-number">Every experiment, and its number</h3>
   <p>Deep-model figures are best-validation rather than test, and are provisional.</p>
   <div class="tbl">
   <table>
@@ -905,7 +999,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </table>
   </div>
 
-  <h3>The queue, in order</h3>
+  <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
     <div class="step"><span class="i">1</span><span class="t">Alpha-band input to the main pipeline &mdash; next up</span>
       <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through a recording fingerprint. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
@@ -929,7 +1023,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-journal">
+<section class="chapter" id="p-journal" hidden>
   <header class="chead">
     <span class="cnum">Chapter 9</span>
     <h2>Journal, newest first</h2>
@@ -1063,7 +1157,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-reading">
+<section class="chapter" id="p-reading" hidden>
   <header class="chead">
     <span class="cnum">Chapter 10</span>
     <h2>Resources: datasets and papers</h2>
@@ -1075,7 +1169,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p><b>1.</b> Visual imagery, not perception and not motor imagery. <b>2.</b> Real repetitions of each imagined item, not one event sliced into windows. <b>3.</b> Posterior electrode coverage, since that is where visual imagery shows up. <b>4.</b> More than one session, so a result can be shown to survive a new cap placement.</p>
   </div>
 
-  <h3>Datasets</h3>
+  <h3 id="p-reading__datasets">Datasets</h3>
   <div class="rsrc">
     <div class="ritem">
       <div class="rhead"><span class="rt">Shimizu &amp; Srinivasan (2022)</span><span class="who">Joao</span></div>
@@ -1114,7 +1208,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     </div>
   </div>
 
-  <h3>Papers that changed what we do</h3>
+  <h3 id="p-reading__papers-that-changed-what-we-do">Papers that changed what we do</h3>
   <div class="rsrc">
     <div class="ritem">
       <div class="rhead"><span class="rt">Xie, Kaiser &amp; Cichy (2020), imagery and perception share neural representations</span><span class="who">Joao</span></div>
@@ -1158,11 +1252,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     </div>
   </div>
 
-  <h3>Papers on artifact removal</h3>
+  <h3 id="p-reading__papers-on-artifact-removal">Papers on artifact removal</h3>
   <p>Aditya's batch on ICA-based artifact removal: the foundational Jung et al. paper, the Jiang, Bian &amp; Tian review, an ICA template method for blinks, and an ICA denoising study on word imagination. <strong>Useful as background rather than as a next step.</strong> Our condition D found rejection neutral on this data, so this line is parked rather than dismissed; it becomes relevant again when we record our own sessions and control the noise ourselves.</p>
 </section>
 
-<section class="chapter" id="p-glossary">
+<section class="chapter" id="p-glossary" hidden>
   <header class="chead">
     <span class="cnum">Chapter 11</span>
     <h2>Glossary</h2>
@@ -1242,47 +1336,122 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 <script>
 (function(){
+  var ORDER = ['p-start','p-signal','p-data','p-pipeline','p-metrics','p-results','p-baseline','p-status','p-journal','p-reading','p-glossary'];
+  var LABEL = {'p-start':'The project','p-signal':'The signal','p-data':'The data','p-pipeline':'The pipeline','p-metrics':'Reading numbers','p-results':'Training results','p-baseline':'The classical baseline','p-status':'Where we are','p-journal':'Journal','p-reading':'Resources','p-glossary':'Glossary'};
   var bar = document.getElementById('bar');
   var top = document.getElementById('top');
-  var links = Array.prototype.slice.call(document.querySelectorAll('.rail a'));
-  var chapters = Array.prototype.slice.call(document.querySelectorAll('.chapter'));
+  var rail = document.querySelector('.rail');
+  var box = document.querySelector('details.railbox');
+  var chapters = {};
+  ORDER.forEach(function(id){ chapters[id] = document.getElementById(id); });
+
+  function pagerFor(i){
+    var prev = ORDER[i-1], next = ORDER[i+1], h = '';
+    h += prev ? '<button class="pg prev" data-go="'+prev+'"><span>Previous</span><b>'+LABEL[prev]+'</b></button>'
+              : '<span class="pg empty"></span>';
+    h += next ? '<button class="pg next" data-go="'+next+'"><span>Next chapter</span><b>'+LABEL[next]+'</b></button>'
+              : '<span class="pg empty"></span>';
+    return h;
+  }
+  ORDER.forEach(function(id, i){
+    var sec = chapters[id];
+    if (!sec) return;
+    var nav = document.createElement('nav');
+    nav.className = 'pager';
+    nav.innerHTML = pagerFor(i);
+    sec.appendChild(nav);
+  });
+
+  var current = null;
+  function show(id, push){
+    if (!chapters[id]) id = ORDER[0];
+    current = id;
+    ORDER.forEach(function(k){ if (chapters[k]) chapters[k].hidden = (k !== id); });
+    Array.prototype.forEach.call(rail.querySelectorAll('li[data-ch]'), function(li){
+      var on = li.getAttribute('data-ch') === id;
+      li.classList.toggle('active', on);
+      var a = li.querySelector('a.ch');
+      if (a) a.setAttribute('aria-current', on ? 'true' : 'false');
+    });
+    try { localStorage.setItem('nd-chapter', id); } catch(e){}
+    if (push) {
+      try { history.replaceState(null, '', '#' + id); } catch(e){}
+      window.scrollTo({top:0, behavior:'auto'});
+    }
+    spy();
+  }
+
+  // deep links: #p-metrics__chance-level opens the chapter, then scrolls
+  function resolve(hash){
+    hash = (hash || '').replace('#','');
+    if (!hash) return {ch:null, sub:null};
+    if (chapters[hash]) return {ch:hash, sub:null};
+    var i = hash.indexOf('__');
+    if (i > 0 && chapters[hash.slice(0,i)]) return {ch:hash.slice(0,i), sub:hash};
+    return {ch:null, sub:null};
+  }
+
+  function go(hash, push){
+    var r = resolve(hash);
+    if (!r.ch) return false;
+    show(r.ch, push);
+    if (r.sub) {
+      var el = document.getElementById(r.sub);
+      if (el) setTimeout(function(){ el.scrollIntoView({block:'start', behavior:'smooth'}); }, 30);
+    }
+    return true;
+  }
+
+  function spy(){
+    if (!current) return;
+    var sec = chapters[current];
+    if (!sec) return;
+    var heads = Array.prototype.slice.call(sec.querySelectorAll('h3[id]'));
+    var links = Array.prototype.slice.call(rail.querySelectorAll('a.sub'));
+    if (!heads.length) return;
+    var best = heads[0].id, y = 140;
+    heads.forEach(function(h){ if (h.getBoundingClientRect().top <= y) best = h.id; });
+    links.forEach(function(a){
+      a.setAttribute('aria-current', a.getAttribute('href') === '#' + best ? 'true' : 'false');
+    });
+  }
 
   function onScroll(){
     var h = document.documentElement.scrollHeight - window.innerHeight;
-    var pct = h > 0 ? (window.scrollY / h) * 100 : 0;
-    bar.style.width = pct + '%';
+    bar.style.width = (h > 0 ? (window.scrollY / h) * 100 : 0) + '%';
     top.hidden = window.scrollY < 600;
+    spy();
   }
   var ticking = false;
   window.addEventListener('scroll', function(){
     if (!ticking) { ticking = true; requestAnimationFrame(function(){ onScroll(); ticking = false; }); }
   }, {passive:true});
-  onScroll();
 
   top.addEventListener('click', function(){ window.scrollTo({top:0, behavior:'smooth'}); });
 
-  if ('IntersectionObserver' in window) {
-    var current = null;
-    var io = new IntersectionObserver(function(entries){
-      entries.forEach(function(e){
-        if (!e.isIntersecting) return;
-        var id = e.target.id;
-        if (id === current) return;
-        current = id;
-        links.forEach(function(a){
-          a.setAttribute('aria-current', a.getAttribute('href') === '#' + id ? 'true' : 'false');
-        });
-      });
-    }, {rootMargin: '-15% 0px -70% 0px', threshold: 0});
-    chapters.forEach(function(c){ io.observe(c); });
-  }
-
-  // close the mobile contents drawer after picking a chapter
-  var box = document.querySelector('details.railbox');
-  links.forEach(function(a){
-    a.addEventListener('click', function(){
-      if (box && window.matchMedia('(max-width: 999px)').matches) { box.open = false; }
-    });
+  document.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('a[href^="#"], [data-go]') : null;
+    if (!t) return;
+    var target = t.getAttribute('data-go') || t.getAttribute('href');
+    var r = resolve(target);
+    if (!r.ch) return;
+    e.preventDefault();
+    if (r.ch !== current) { go(target, true); }
+    else if (r.sub) {
+      var el = document.getElementById(r.sub);
+      if (el) el.scrollIntoView({block:'start', behavior:'smooth'});
+      try { history.replaceState(null, '', '#' + r.sub); } catch(err){}
+    }
+    if (box && window.matchMedia('(max-width: 999px)').matches) { box.open = false; }
   });
+
+  window.addEventListener('hashchange', function(){ go(location.hash, false); });
+
+  var start = location.hash;
+  if (!resolve(start).ch) {
+    try { var saved = localStorage.getItem('nd-chapter'); if (saved) start = '#' + saved; } catch(e){}
+  }
+  if (!go(start, false)) show(ORDER[0], false);
+  onScroll();
 })();
 </script>
