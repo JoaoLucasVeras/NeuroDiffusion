@@ -255,24 +255,33 @@ def main():
 
     if args.permute > 0:
         print("\nrunning %d permutations" % args.permute)
-        null = []
+        null, null_pooled = [], []
         for k in range(args.permute):
             yp = _permute_by_stimulus(tr, key_tr, seed=3000 + k)
             r = train_once(Xtr, yp, Xte, key_te, cand, args.epochs, args.lr, seed=k)
             null.append(r["recall_at_1"])
+            null_pooled.append(r["pooled_recall_at_1"])
             if (k + 1) % 20 == 0:
-                print("  %d/%d  null mean so far %.4f" % (k + 1, args.permute, float(np.mean(null))))
-        obs = res["recall_at_1"]
-        res["permutation"] = {
-            "n": args.permute,
-            "null_mean": float(np.mean(null)),
-            "null_p95": float(np.percentile(null, 95)),
-            "null_max": float(np.max(null)),
-            "p_value": float((np.sum(np.array(null) >= obs) + 1.0) / (args.permute + 1.0)),
-        }
-        pm = res["permutation"]
-        print("\n  null mean %.4f (chance %.4f)  p95 %.4f  max %.4f  ->  p = %.4f"
-              % (pm["null_mean"], chance, pm["null_p95"], pm["null_max"], pm["p_value"]))
+                print("  %d/%d  null mean so far %.4f (pooled %.4f)"
+                      % (k + 1, args.permute, float(np.mean(null)), float(np.mean(null_pooled))))
+
+        def summarise(vals, obs):
+            v = np.array(vals)
+            return {"n": args.permute,
+                    "null_mean": float(v.mean()),
+                    "null_p95": float(np.percentile(v, 95)),
+                    "null_max": float(v.max()),
+                    "p_value": float((np.sum(v >= obs) + 1.0) / (len(v) + 1.0))}
+
+        # Pooling the windows of a recording before deciding is what a real system would do,
+        # so it is the more relevant test. It had no null until now.
+        res["permutation"] = summarise(null, res["recall_at_1"])
+        res["permutation_pooled"] = summarise(null_pooled, res["pooled_recall_at_1"])
+
+        for label, key in (("Recall@1", "permutation"), ("pooled  ", "permutation_pooled")):
+            pm = res[key]
+            print("  %s  null mean %.4f (chance %.4f)  p95 %.4f  max %.4f  ->  p = %.4f"
+                  % (label, pm["null_mean"], chance, pm["null_p95"], pm["null_max"], pm["p_value"]))
 
     if args.json:
         os.makedirs(os.path.dirname(os.path.abspath(args.json)), exist_ok=True)
