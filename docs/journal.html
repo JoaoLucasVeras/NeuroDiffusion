@@ -263,10 +263,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">27 Sep 2026<small>Alpha-band runs in flight, jobs 82864 / 82868</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">29 Sep 2026<small>Small encoder significant on alpha</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>p &le; 0.05 in all four subjects</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
-    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
+    <div class="sc good"><span class="k">Imagery decoding</span><span class="v">p = 0.005<small>91k-parameter encoder, 3.25&times; chance</small></span></div>
   </div>
 </header>
 
@@ -994,15 +994,22 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">24 Sep</td><td>81619 &middot; D</td><td>Classical, alpha + rejection</td><td class="n">1.3&ndash;4.2&times;</td><td>Neutral</td></tr>
       <tr><td class="n">26 Sep</td><td>82079 &middot; within</td><td>Permutation null, alpha, per subject</td><td class="n hi">p .005&ndash;.050</td><td><b>Finding confirmed</b></td></tr>
       <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, alpha, 12 pairs</td><td class="n lo">1.22&times;</td><td>No transfer</td></tr>
-      <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, broadband, 12 pairs</td><td class="n lo">1.30&times;</td><td>Drift confirmed</td></tr>
+      <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, broadband, 12 pairs</td><td class="n lo">1.30&times;</td><td>Fingerprint confirmed</td></tr>
+      <tr><td class="n">28 Sep</td><td>82868</td><td>Stage 2, broad encoder / broad input</td><td class="n">2.1 SEM</td><td>Marginal, split is weak</td></tr>
+      <tr><td class="n">28 Sep</td><td>82864</td><td>Stage 2, broad encoder / alpha input</td><td class="n lo">1.3 SEM</td><td>Null, encoder mismatched</td></tr>
+      <tr><td class="n">29 Sep</td><td>83354</td><td>Stage 2, alpha encoder / alpha input</td><td class="n lo">0.8 SEM</td><td>Null, mismatch ruled out</td></tr>
+      <tr><td class="n">29 Sep</td><td>83896 &middot; alpha</td><td>Small encoder, 91k params, alpha</td><td class="n hi">3.25&times;, p .005</td><td><b>Best result yet</b></td></tr>
+      <tr><td class="n">29 Sep</td><td>83896 &middot; broad</td><td>Small encoder, 91k params, broadband</td><td class="n">6.00&times;, p .005</td><td>Inflated by fingerprint</td></tr>
     </tbody>
   </table>
   </div>
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">Alpha-band input to the main pipeline &mdash; next up</span>
-      <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through a recording fingerprint. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
+    <div class="step"><span class="i">1</span><span class="t">Small encoder into the diffusion conditioning path &mdash; next up</span>
+      <p class="b">Replace the 85M encoder with the 91k one. Every previous Stage 2 run failed because the conditioning signal was noise; for the first time it measurably is not. One GPU-day, and the first run with a real chance of a defensible end-to-end number.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Small encoder on subjects 2, 3 and 4</span>
+      <p class="b">Minutes each. Tells us whether 3.25&times; generalises or is a subject-1 artifact. Subject 4 is the one to watch: significant in the baseline, exactly chance in the large model.</p></div>
     <div class="step"><span class="i">2</span><span class="t">Recover the four lost test reports</span>
       <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers. Worth doing regardless, since the current headline figure cannot properly be cited.</p></div>
     <div class="step"><span class="i">3</span><span class="t">A small encoder</span>
@@ -1029,6 +1036,57 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">result</span><span class="tag res">best yet</span></div>
+    <span class="when">29 SEP 2026 &middot; JOB 83896</span>
+    <h3>A 91,000-parameter encoder succeeds where 85 million failed</h3>
+    <p><span class="lbl">The problem it solves</span>The classical baseline proved alpha carries
+       imagery signal, but three Stage 2 runs could not use it. The missing piece was never
+       classification: the baseline's own EEGNet arm classifies alpha at 2.0&times; chance. It was
+       whether any small model could produce usable <b>CLIP-space embeddings</b>, which is what the
+       diffusion model consumes and what the large encoder failed to deliver.</p>
+    <p><span class="lbl">Result, subject 1, test set, 200-permutation null</span>Alpha 8&ndash;13 Hz:
+       Recall@1 <b>0.0985, 3.25&times; chance, p = 0.005</b>, and <b>4.00&times;</b> pooled across
+       the windows of each recording. Broadband: 6.00&times;, also p = 0.005. Both nulls centre on
+       0.0297 against a chance of 0.0303, so the test is calibrated.</p>
+    <p><span class="lbl">Why it matters</span>3.25&times; is exactly what band power plus logistic
+       regression achieves on this subject, so the small encoder recovers the full signal the
+       baseline found &mdash; but in the representation the generator can actually use. A
+       <b>930&times; reduction in parameters</b> turned a null into a significant result.</p>
+    <p><span class="lbl">The caveat</span>Broadband still beats alpha, and the cross-subject test
+       says that extra lift does not transfer between people. The small model exploits the recording
+       fingerprint too; it is simply also capable of the real thing. <b>Alpha at 3.25&times;,
+       p = 0.005, is the number to carry forward.</b></p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">null result</span><span class="tag nul">hypothesis eliminated</span></div>
+    <span class="when">28&ndash;29 SEP 2026 &middot; JOBS 82864 / 82868 / 83354</span>
+    <h3>Alpha input to the large pipeline fails, and the mismatch hypothesis is wrong</h3>
+    <p>Three Stage 2 runs on subject 1, same split, differing only in the encoder and the input
+       band. Chance at 33-way is 0.0303; noise input scores 0.0435.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Run</th><th>Encoder / input</th><th class="n">CLIP gap</th><th class="n">33-way</th></tr></thead>
+      <tbody>
+        <tr><td>82868</td><td>broad / broad</td><td class="n">+0.0182 (2.1 SEM)</td><td class="n">0.1034</td></tr>
+        <tr><td>82864</td><td>broad / alpha</td><td class="n">+0.0079 (1.3 SEM)</td><td class="n lo">0.0253</td></tr>
+        <tr><td>83354</td><td>alpha / alpha</td><td class="n">+0.0057 (0.8 SEM)</td><td class="n lo">0.0321</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">A hypothesis of mine, eliminated</span>Job 82864 band-passed the Stage 2
+       input while loading an encoder pretrained on the unfiltered signal. I proposed that mismatch
+       as a sufficient explanation for its collapse, and re-pretrained Stage 1 on alpha to remove
+       it. Job 83354 came back <em>slightly worse</em>, so the mismatch was not the cause. A
+       GPU-day for a clean elimination.</p>
+    <p><span class="lbl">What remains</span>An 85M-parameter model cannot extract from 495 training
+       trials what 128 features extract from the same data. The control's 3.4&times; is the only
+       above-chance figure and it came from the window split, where every test recording shares a
+       subject and stimulus with training, at 2.1 SEM. <b>We have no large-model result we would
+       defend.</b> That is what moved the small encoder from a follow-up to the main line.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">correction</span><span class="tag fix">running</span></div>
