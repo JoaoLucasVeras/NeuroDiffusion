@@ -263,10 +263,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">27 Sep 2026<small>Alpha-band runs in flight, jobs 82864 / 82868</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">1 Oct 2026<small>Four-subject sweep; encoder trails the baseline</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>p &le; 0.05 in all four subjects</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
-    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">At chance<small>+0.5 SEM, an honest null</small></span></div>
+    <div class="sc good"><span class="k">Imagery decoding</span><span class="v">p = 0.005<small>subject 1; the encoder loses the signal on the other three</small></span></div>
   </div>
 </header>
 
@@ -994,26 +994,38 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">24 Sep</td><td>81619 &middot; D</td><td>Classical, alpha + rejection</td><td class="n">1.3&ndash;4.2&times;</td><td>Neutral</td></tr>
       <tr><td class="n">26 Sep</td><td>82079 &middot; within</td><td>Permutation null, alpha, per subject</td><td class="n hi">p .005&ndash;.050</td><td><b>Finding confirmed</b></td></tr>
       <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, alpha, 12 pairs</td><td class="n lo">1.22&times;</td><td>No transfer</td></tr>
-      <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, broadband, 12 pairs</td><td class="n lo">1.30&times;</td><td>Drift confirmed</td></tr>
+      <tr><td class="n">26 Sep</td><td>82079 &middot; cross</td><td>Cross-subject, broadband, 12 pairs</td><td class="n lo">1.30&times;</td><td>Fingerprint confirmed</td></tr>
+      <tr><td class="n">28 Sep</td><td>82868</td><td>Stage 2, broad encoder / broad input</td><td class="n">2.1 SEM</td><td>Marginal, split is weak</td></tr>
+      <tr><td class="n">28 Sep</td><td>82864</td><td>Stage 2, broad encoder / alpha input</td><td class="n lo">1.3 SEM</td><td>Null, encoder mismatched</td></tr>
+      <tr><td class="n">29 Sep</td><td>83354</td><td>Stage 2, alpha encoder / alpha input</td><td class="n lo">0.8 SEM</td><td>Null, mismatch ruled out</td></tr>
+      <tr><td class="n">29 Sep</td><td>83896 &middot; alpha</td><td>Small encoder, 91k params, alpha</td><td class="n hi">3.25&times;, p .005</td><td><b>Best result yet</b></td></tr>
+      <tr><td class="n">29 Sep</td><td>83896 &middot; broad</td><td>Small encoder, 91k params, broadband</td><td class="n">6.00&times;, p .005</td><td>Inflated by fingerprint</td></tr>
+      <tr><td class="n">30 Sep</td><td>84326</td><td>Small encoder, alpha, subjects 1&ndash;3 + pooled nulls</td><td class="n">3.25 / 0.50 / 2.00&times;</td><td>Encoder trails baseline</td></tr>
+      <tr><td class="n">1 Oct</td><td>84567</td><td>Small encoder, alpha, subject 4 null re-run</td><td class="n lo">1.75&times;, p .144</td><td>Null, at the p95 boundary</td></tr>
+      <tr><td class="n">1 Oct</td><td>84642</td><td>Encoder checkpoint format, round-trip test</td><td class="n hi">passes</td><td>Conditioning unblocked</td></tr>
     </tbody>
   </table>
   </div>
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">Alpha-band input to the main pipeline &mdash; next up</span>
-      <p class="b">Stage 2 currently trains on raw broadband, now measured to be the condition that produced up to 12&times; chance through a recording fingerprint. This is a fix to a confirmed problem rather than a guess at an improvement. One to two GPU-days per subject.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Recover the four lost test reports</span>
-      <p class="b">The checkpoints survived the collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers. Worth doing regardless, since the current headline figure cannot properly be cited.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">A small encoder</span>
-      <p class="b">EEGNet class, a few thousand parameters instead of 85 million. The argument got stronger on 26 September: subject 4 is significant at 3&times; chance in the baseline while the big model scored exactly chance on the same data. The signal is there and the large model cannot find it.</p></div>
-    <div class="step"><span class="i">4</span><span class="t">ICA artifact removal, as a fifth baseline condition</span>
+    <div class="step"><span class="i">1</span><span class="t">Why does the encoder lose what logistic regression keeps? &mdash; next up</span>
+      <p class="b">On the same split and the same null, band power plus logistic regression is significant on <b>all four</b> subjects; the small encoder is significant on <b>one</b>. The signal is in the recordings and our objective is discarding it. Two candidates, both cheap: the InfoNCE temperature and batch size, which at batch 64 over 33 stimuli puts many positives in every batch, and the CLIP target itself &mdash; ViT-L/14 image embeddings have mean pairwise cosine 0.54, so the 33 targets occupy a narrow cone and retrieval among them is intrinsically harder than 33-way classification. Diagnostic first: train the encoder with a 33-way classification head instead of the CLIP head. If that recovers the baseline on subjects 2&ndash;4, the problem is the CLIP target, not the architecture.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Which band? Alpha or broadband</span>
+      <p class="b">Broadband scores <b>6.00&times;</b> on subject 1 against alpha's 3.25&times;, yet the whole four-subject sweep was run on alpha. Broadband is also where the recording fingerprint lives: residual 1&ndash;8 Hz artifact, 30&ndash;50 Hz muscle, per-session impedance. The discriminating test is a band ablation with matched nulls &mdash; alpha, broadband, 1&ndash;8 Hz alone, 30&ndash;50 Hz alone. If the low and high bands carry it by themselves, broadband's lead is artifact and alpha is the honest number; if they do not, we have been conditioning on the wrong band. <b>This has to resolve first</b>, or the next GPU-day is spent on the wrong representation.</p></div>
+    <div class="step"><span class="i">3</span><span class="t">The small encoder into the diffusion conditioning path</span>
+      <p class="b">Replace the 85M encoder with the 91k one at <code>cond_stage_model</code>. The encoder emits one 768-d vector where cross-attention wants a sequence, so the bridge is a broadcast to 77 tokens &mdash; deliberately the dumbest option, because it adds no learnable parameters and so cannot manufacture an effect the representation does not have. Judged by <b>CLIP-I against both negative controls</b>, not by whether the pictures look right. Every Stage 2 run so far failed with a conditioning signal that was statistically noise; this is the first where it measurably is not.</p></div>
+    <div class="step"><span class="i">4</span><span class="t">Does the large pipeline still earn its place?</span>
+      <p class="b">A 91k-parameter encoder beat an 85M one. The regularisation fixes from the improvement plan were never actually tested: <code>weight_decay</code> never reaches AdamW, the lower blocks are never frozen, and the checkpoint is chosen by last epoch rather than held-out retrieval. Two GPU-days, and the honest expectation is that it confirms the small model wins &mdash; worth spending to retire the question rather than leaving 85M parameters in the repository on an assumption.</p></div>
+    <div class="step"><span class="i">5</span><span class="t">Recover the four lost test reports</span>
+      <p class="b">The checkpoints survived the run collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers.</p></div>
+    <div class="step"><span class="i">6</span><span class="t">ICA artifact removal, as a fifth baseline condition</span>
       <p class="b">Condition D tested discarding whole trials, not repairing them. ICA removes a blink and keeps the trial, which matters when there are only 363 of them. Minutes of CPU to settle.</p></div>
-    <div class="step"><span class="i">5</span><span class="t">Shrink the label space</span>
+    <div class="step"><span class="i">7</span><span class="t">Shrink the label space</span>
       <p class="b">Gao et al.'s headline 75.8% is a <em>three-class</em> result. A working three-class imagery-to-image system is far more likely to function than 33 classes at 3&times; chance, and 75% on three categories is enough to steer a generator into the right region. Arguably the better plan rather than a fallback.</p></div>
-    <div class="step"><span class="i">7</span><span class="t">The Gao et al. 2026 dataset</span>
-      <p class="b">22 participants, 10 classes, 40 repetitions per class per session, two sessions. Roughly 800 real imagery events per person against our 33. Second track and validation target.</p></div>
-    <div class="step"><span class="i">8</span><span class="t">Our own recordings</span>
+    <div class="step"><span class="i">8</span><span class="t">The Gao et al. 2026 dataset</span>
+      <p class="b">22 participants, 40 repetitions per class per session, two sessions. The only item that answers the question the current data cannot: <b>is subject 1 a finding or a single recording?</b> It also unlocks cross-subject pretraining, session drift, and longer windows, all three parked on the pinboard for exactly this reason.</p></div>
+    <div class="step"><span class="i">9</span><span class="t">Our own recordings</span>
       <p class="b">The long game, and the only path past the data ceiling. Hardware first, then the classical baseline on day one to check the protocol before collecting at volume.</p></div>
   </div>
 
@@ -1029,6 +1041,127 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">null result</span><span class="tag res">scope narrowed</span></div>
+    <span class="when">30 SEP &ndash; 1 OCT 2026 &middot; JOBS 84326 / 84567</span>
+    <h3>The small encoder works on one subject out of four, and the baseline works on all four</h3>
+    <p><span class="lbl">What was asked</span>The 3.25&times; result came from subject 1 alone. The
+       question was whether it generalises. All four subjects, alpha 8&ndash;13 Hz, identical
+       architecture and split, with a 200-permutation null on both the single-window and the pooled
+       metric. Chance is 0.0303.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Subject</th><th class="n">Recall@1</th><th class="n">&times; chance</th><th class="n">p</th><th class="n">Pooled</th><th class="n">&times; chance</th><th class="n">pooled p</th></tr></thead>
+      <tbody>
+        <tr><td><b>1</b></td><td class="n hi">0.0985</td><td class="n hi">3.25&times;</td><td class="n hi">0.0050</td><td class="n hi">0.1212</td><td class="n hi">4.00&times;</td><td class="n hi">0.0149</td></tr>
+        <tr><td>2</td><td class="n lo">0.0152</td><td class="n lo">0.50&times;</td><td class="n lo">0.9303</td><td class="n">0.0606</td><td class="n">2.00&times;</td><td class="n lo">0.2388</td></tr>
+        <tr><td>3</td><td class="n">0.0606</td><td class="n">2.00&times;</td><td class="n">0.0647</td><td class="n">0.0909</td><td class="n">3.00&times;</td><td class="n">0.0597</td></tr>
+        <tr><td>4</td><td class="n">0.0530</td><td class="n">1.75&times;</td><td class="n lo">0.1443</td><td class="n">0.0606</td><td class="n">2.00&times;</td><td class="n lo">0.2338</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>Only subject 1 is significant, and it survives a
+       Bonferroni correction for four subjects at 0.0125. Subject 3 is the near-miss at 0.065 and
+       <b>pooling does not rescue it</b> &mdash; 0.0597, essentially unchanged. Subject 2 lands below
+       chance. Subject 4's observed 0.0530 <em>equals its own null 95th percentile</em>, so it is not
+       a weak effect but the boundary of noise.</p>
+    <p><span class="lbl">The instrument is sound</span>Null means across the four subjects are
+       0.0298, 0.0302, 0.0313 and 0.0313 against a chance of 0.0303. The test is measuring what it
+       claims to, which is what makes the single positive worth taking seriously rather than
+       dismissing.</p>
+    <p><span class="lbl">The comparison that reframes this</span>The obvious reading is &ldquo;only
+       subject 1 has signal&rdquo;. That reading is wrong. The classical baseline, on the
+       <em>same</em> split, the same 33 stimuli and the same permutation code, found all four
+       subjects significant &mdash; the small encoder even imports
+       <code>_permute_by_stimulus</code> from it, so the nulls are not merely comparable but
+       identical.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Subject</th><th class="n">Band power + logistic regression</th><th class="n">p</th><th class="n">Small encoder, CLIP space</th><th class="n">p</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td class="n hi">3.25&times;</td><td class="n hi">0.0050</td><td class="n hi">3.25&times;</td><td class="n hi">0.0050</td></tr>
+        <tr><td>2</td><td class="n hi">2.25&times;</td><td class="n hi">0.0498</td><td class="n lo">0.50&times;</td><td class="n lo">0.9303</td></tr>
+        <tr><td>3</td><td class="n hi">2.75&times;</td><td class="n hi">0.0100</td><td class="n lo">2.00&times;</td><td class="n lo">0.0647</td></tr>
+        <tr><td>4</td><td class="n hi">3.00&times;</td><td class="n hi">0.0050</td><td class="n lo">1.75&times;</td><td class="n lo">0.1443</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">What that actually means</span><b>The signal is in all four recordings. The
+       small encoder loses it in three of them.</b> It matches logistic regression exactly on
+       subject 1 and is beaten on every other subject by a method with no learned representation at
+       all. One caveat keeps this honest: the baseline solves 33-way classification directly, while
+       the encoder has to land in CLIP space and be retrieved, which is the harder target. But the
+       two are scored identically, as top-1 of 33 against the same null.</p>
+    <p><span class="lbl">Why this is better news than it reads</span>&ldquo;Three of four subjects
+       have no signal&rdquo; would be a dead end, and it is not what happened. &ldquo;Our objective
+       discards signal that logistic regression keeps&rdquo; is a <b>tractable</b> problem, and it
+       moves the suspicion off the data and onto the CLIP alignment &mdash; the same component whose
+       pointwise cosine version was already caught collapsing to a memorised mean embedding. It also
+       means the four-subject table above should not be read as a result about subjects.</p>
+    <p><span class="lbl">What four subjects still cannot do</span>Even with the baseline positive on
+       all four, 33 events per person cannot separate &ldquo;this person imagines vividly&rdquo; from
+       &ldquo;this person's recording has a quirk&rdquo;. Only a dataset with real repetitions
+       can.</p>
+    <p><span class="lbl">Two notes on the runs</span>Job 84326 was killed by its 8-hour wall limit
+       after subject 4's 60th permutation; 84567 re-ran that subject alone and reproduced
+       <b>0.0530 and 0.0606 to the fourth decimal</b>, which is the seeding working as intended. And
+       a gap found while reading the code: <code>train_once</code> never wrote its weights to disk,
+       so subject 1's encoder had only ever existed in memory. <code>--save</code> now persists the
+       state dict together with the input normalisation, because loading these weights beside
+       differently scaled input produces output that is indistinguishable from no signal at all.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">result</span><span class="tag res">best yet</span></div>
+    <span class="when">29 SEP 2026 &middot; JOB 83896</span>
+    <h3>A 91,000-parameter encoder succeeds where 85 million failed</h3>
+    <p><span class="lbl">The problem it solves</span>The classical baseline proved alpha carries
+       imagery signal, but three Stage 2 runs could not use it. The missing piece was never
+       classification: the baseline's own EEGNet arm classifies alpha at 2.0&times; chance. It was
+       whether any small model could produce usable <b>CLIP-space embeddings</b>, which is what the
+       diffusion model consumes and what the large encoder failed to deliver.</p>
+    <p><span class="lbl">Result, subject 1, test set, 200-permutation null</span>Alpha 8&ndash;13 Hz:
+       Recall@1 <b>0.0985, 3.25&times; chance, p = 0.005</b>, and <b>4.00&times;</b> pooled across
+       the windows of each recording. Broadband: 6.00&times;, also p = 0.005. Both nulls centre on
+       0.0297 against a chance of 0.0303, so the test is calibrated.</p>
+    <p><span class="lbl">Why it matters</span>3.25&times; is exactly what band power plus logistic
+       regression achieves on this subject, so the small encoder recovers the full signal the
+       baseline found &mdash; but in the representation the generator can actually use. A
+       <b>930&times; reduction in parameters</b> turned a null into a significant result.</p>
+    <p><span class="lbl">The caveat</span>Broadband still beats alpha, and the cross-subject test
+       says that extra lift does not transfer between people. The small model exploits the recording
+       fingerprint too; it is simply also capable of the real thing. <b>Alpha at 3.25&times;,
+       p = 0.005, is the number to carry forward.</b></p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">null result</span><span class="tag nul">hypothesis eliminated</span></div>
+    <span class="when">28&ndash;29 SEP 2026 &middot; JOBS 82864 / 82868 / 83354</span>
+    <h3>Alpha input to the large pipeline fails, and the mismatch hypothesis is wrong</h3>
+    <p>Three Stage 2 runs on subject 1, same split, differing only in the encoder and the input
+       band. Chance at 33-way is 0.0303; noise input scores 0.0435.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Run</th><th>Encoder / input</th><th class="n">CLIP gap</th><th class="n">33-way</th></tr></thead>
+      <tbody>
+        <tr><td>82868</td><td>broad / broad</td><td class="n">+0.0182 (2.1 SEM)</td><td class="n">0.1034</td></tr>
+        <tr><td>82864</td><td>broad / alpha</td><td class="n">+0.0079 (1.3 SEM)</td><td class="n lo">0.0253</td></tr>
+        <tr><td>83354</td><td>alpha / alpha</td><td class="n">+0.0057 (0.8 SEM)</td><td class="n lo">0.0321</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">A hypothesis of mine, eliminated</span>Job 82864 band-passed the Stage 2
+       input while loading an encoder pretrained on the unfiltered signal. I proposed that mismatch
+       as a sufficient explanation for its collapse, and re-pretrained Stage 1 on alpha to remove
+       it. Job 83354 came back <em>slightly worse</em>, so the mismatch was not the cause. A
+       GPU-day for a clean elimination.</p>
+    <p><span class="lbl">What remains</span>An 85M-parameter model cannot extract from 495 training
+       trials what 128 features extract from the same data. The control's 3.4&times; is the only
+       above-chance figure and it came from the window split, where every test recording shares a
+       subject and stimulus with training, at 2.1 SEM. <b>We have no large-model result we would
+       defend.</b> That is what moved the small encoder from a follow-up to the main line.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">correction</span><span class="tag fix">running</span></div>
