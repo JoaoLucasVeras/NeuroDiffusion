@@ -1,0 +1,249 @@
+<title>NeuroDiffusion Team Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+:root{
+  color-scheme: light;
+  --ground:#EDF0F4; --surface:#FFFFFF; --surface-2:#F6F8FA;
+  --ink:#141B26; --ink-2:#3C4757; --muted:#5A6779;
+  --rule:#D3DAE3; --rule-strong:#B6C0CD;
+  --signal:#2A6DB0; --signal-soft:#E2EBF5;
+  --alpha:#C07C12; --alpha-soft:#F7EDDB;
+  --good:#1F7A5A; --good-soft:#E0F0E9;
+  --warn:#A13D2D; --warn-soft:#F7E6E2;
+  --shadow:0 1px 2px rgba(20,27,38,.06),0 8px 24px -12px rgba(20,27,38,.18);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  color-scheme: dark;
+  --ground:#10141A; --surface:#191F28; --surface-2:#141A22;
+  --ink:#E7ECF3; --ink-2:#BCC6D3; --muted:#96A2B2;
+  --rule:#2A323D; --rule-strong:#3B4552;
+  --signal:#3F86CE; --signal-soft:#1B2836;
+  --alpha:#BE8A24; --alpha-soft:#2A2517;
+  --good:#3D9B78; --good-soft:#15251F;
+  --warn:#D2705C; --warn-soft:#2A1A16;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --ground:#10141A; --surface:#191F28; --surface-2:#141A22;
+  --ink:#E7ECF3; --ink-2:#BCC6D3; --muted:#96A2B2;
+  --rule:#2A323D; --rule-strong:#3B4552;
+  --signal:#3F86CE; --signal-soft:#1B2836;
+  --alpha:#BE8A24; --alpha-soft:#2A2517;
+  --good:#3D9B78; --good-soft:#15251F;
+  --warn:#D2705C; --warn-soft:#2A1A16;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px -12px rgba(0,0,0,.6);
+}
+
+*{box-sizing:border-box;}
+body{background:var(--ground);color:var(--ink);margin:0;
+  font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.62;
+  -webkit-font-smoothing:antialiased;}
+.wrap{max-width:820px;margin:0 auto;padding-inline:20px;padding-block:0 80px;}
+h1,h2,h3,.eyebrow,.step .t,.exp .q,.exp .k,.size,th{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
+h1{font-size:clamp(1.9rem,5vw,2.7rem);line-height:1.06;letter-spacing:-.028em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
+h2{font-size:clamp(1.3rem,3.2vw,1.7rem);line-height:1.15;letter-spacing:-.02em;font-weight:700;margin:0 0 .3em;text-wrap:balance;}
+p{margin:0 0 1.05em;max-width:66ch;}
+ul{margin:0 0 1.05em;padding-left:1.2em;max-width:66ch;}
+li{margin-bottom:.4em;}
+a{color:var(--signal);text-underline-offset:2px;}
+code{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--surface-2);
+  border:1px solid var(--rule);border-radius:2px;padding:1px 5px;}
+pre{font-family:"IBM Plex Mono",monospace;font-size:.8rem;line-height:1.6;
+  background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;
+  padding:12px 14px;overflow-x:auto;margin:0;}
+pre code{background:none;border:0;padding:0;font-size:1em;}
+.eyebrow{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin:0 0 .5em;}
+
+header.mast{padding-block:44px 26px;border-bottom:1.5px solid var(--rule-strong);margin-bottom:10px;}
+.lede{font-size:1.1rem;line-height:1.55;color:var(--ink-2);margin-top:12px;max-width:62ch;}
+
+section{padding-block:30px 0;}
+section+section{border-top:1px solid var(--rule);margin-top:34px;}
+
+.state{display:grid;gap:10px;margin:18px 0 6px;max-width:70ch;}
+.state div{display:grid;grid-template-columns:7.5rem 1fr;gap:14px;align-items:baseline;
+  padding-bottom:10px;border-bottom:1px solid var(--rule);}
+.state div:last-child{border-bottom:0;}
+.state b{font-family:Archivo,sans-serif;font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+.state span{font-size:.97rem;color:var(--ink-2);}
+
+.steps{display:grid;gap:11px;margin:22px 0;max-width:70ch;}
+.step{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
+  padding:14px 17px;display:grid;grid-template-columns:auto 1fr;gap:6px 15px;
+  align-items:baseline;box-shadow:var(--shadow);}
+.step .i{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;
+  color:var(--signal);grid-row:span 3;padding-top:3px;}
+.step .t{font-weight:600;font-size:.98rem;}
+.step .b{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
+.step pre{grid-column:2;margin-top:4px;}
+
+.exps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0;}
+.exp{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px 18px;
+  display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);}
+.exp .top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
+.exp .id{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;color:var(--signal);}
+.size{font-size:.66rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px;}
+.size.s{background:var(--good-soft);color:var(--good);}
+.size.m{background:var(--alpha-soft);color:var(--alpha);}
+.size.l{background:var(--warn-soft);color:var(--warn);}
+.exp .q{font-weight:600;font-size:1.05rem;line-height:1.3;letter-spacing:-.01em;margin:0;text-wrap:balance;}
+.exp p{font-size:.91rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
+.exp .k{display:block;font-size:.66rem;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
+.exp pre{font-size:.74rem;}
+.exp .fit{font-size:.85rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:9px;margin-top:auto;}
+
+.rules{display:grid;gap:0;margin:20px 0;max-width:70ch;counter-reset:r;}
+.rules div{padding:12px 0 12px 2.2rem;border-bottom:1px solid var(--rule);position:relative;font-size:.96rem;color:var(--ink-2);}
+.rules div:last-child{border-bottom:0;}
+.rules div::before{counter-increment:r;content:counter(r);position:absolute;left:0;top:12px;
+  font-family:"IBM Plex Mono",monospace;font-size:.75rem;font-weight:600;color:var(--warn);}
+.rules b{color:var(--ink);}
+
+.note{border-radius:0 3px 3px 0;padding:14px 18px;margin:22px 0;border-left:3px solid var(--signal);
+  background:var(--signal-soft);max-width:70ch;}
+.note.good{border-left-color:var(--good);background:var(--good-soft);}
+.note p{margin:0;font-size:.95rem;line-height:1.55;color:var(--ink-2);max-width:none;}
+.note p+p{margin-top:.6em;}
+.note b{color:var(--ink);}
+.note .hd{font-family:Archivo,sans-serif;font-weight:600;color:var(--ink);display:block;margin-bottom:.35em;font-size:.94rem;}
+
+footer{padding-block:26px 0;border-top:1.5px solid var(--rule-strong);margin-top:44px;}
+footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;}
+:focus-visible{outline:2px solid var(--signal);outline-offset:2px;}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
+@media (max-width:640px){.exps{grid-template-columns:1fr;}}
+@media (max-width:560px){body{font-size:16px;}.wrap{padding-inline:16px;}
+  .step{grid-template-columns:1fr;}.step .i{grid-row:auto;}.step pre{grid-column:1;}
+  .state div{grid-template-columns:1fr;gap:2px;}}
+</style>
+
+<div class="wrap">
+
+<header class="mast">
+  <p class="eyebrow">NeuroDiffusion &middot; for the team</p>
+  <h1>How we work on this project</h1>
+  <p class="lede">Each of us owns one experiment, works on it in our own branch, and pushes often so everyone can see progress. Everything on this page runs on a laptop. None of it needs the GPU cluster.</p>
+</header>
+
+<section>
+  <h2>Where things stand</h2>
+  <div class="state">
+    <div><b>Good news</b><span>There is a real signal. When people imagine one of 33 pictures, a simple method on their brain waves picks the right picture 2 to 3 times more often than random guessing.</span></div>
+    <div><b>The problem</b><span>Our neural network keeps that signal for only 1 of the 4 people. We are testing why right now.</span></div>
+    <div><b>The limit</b><span>Data. Each person imagined each picture only once, so we have 33 recordings per person. The experiments below either squeeze more out of that or prepare a bigger dataset.</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Getting started, step by step</h2>
+  <p>Steps 1 to 4 are a one-time setup. After that it is steps 5 to 8, once per experiment.</p>
+
+  <div class="steps">
+    <div class="step"><span class="i">01</span><span class="t">Accept the GitHub invite</span>
+      <p class="b">Check your email or <a href="https://github.com/JoaoLucasVeras/NeuroDiffusion/invitations">github.com/JoaoLucasVeras/NeuroDiffusion/invitations</a>. Do this before cloning, or you will not be able to push.</p></div>
+
+    <div class="step"><span class="i">02</span><span class="t">Clone the project and install</span>
+      <p class="b">Needs <a href="https://docs.conda.io/en/latest/miniconda.html">conda</a>.</p>
+<pre><code>git clone https://github.com/JoaoLucasVeras/NeuroDiffusion.git
+cd NeuroDiffusion
+conda env create -f env.yaml
+conda activate neurodiffusion</code></pre></div>
+
+    <div class="step"><span class="i">03</span><span class="t">Get the data</span>
+      <p class="b">The data is never stored on GitHub. Download the four <code>Imagine_Sub00*.mat</code> files from <a href="https://osf.io/2fgks/">OSF</a> into <code>datasets/Imagination Experiment/</code>, then run these from the project folder. The image download is about 412&nbsp;MB, and the split step needs it.</p>
+<pre><code>python code/download_stimuli.py
+python code/prepare_shimizu_data.py
+python code/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol window --require_images
+python code/check_data.py</code></pre></div>
+
+    <div class="step"><span class="i">04</span><span class="t">Check you match our numbers</span>
+      <p class="b">Run this. If the <code>bandpower</code> line says <b>top1 0.0985</b>, your setup is identical to ours and you are ready. If not, ask before going further.</p>
+<pre><code>cd code
+python classical_baseline.py --subject 1 --band 8 13 --skip_eegnet</code></pre></div>
+
+    <div class="step"><span class="i">05</span><span class="t">Pick an experiment and make your branch</span>
+      <p class="b">Choose one from the list below and tell Joao, so two people do not take the same one. Name the branch after yourself.</p>
+<pre><code>git fetch origin
+git checkout -b yourname/band-sweep origin/main
+git push -u origin yourname/band-sweep</code></pre></div>
+
+    <div class="step"><span class="i">06</span><span class="t">Work, and push at the end of every session</span>
+      <p class="b">Push even when it is unfinished. That is how Joao follows your progress. Add files by name rather than everything at once.</p>
+<pre><code>git add code/my_change.py
+git commit -m "Add a 30-50 Hz run to the band sweep"
+git push</code></pre></div>
+
+    <div class="step"><span class="i">07</span><span class="t">Open a pull request when you have a result</span>
+      <p class="b">GitHub shows a button after you push. Fill in the template it gives you, especially &ldquo;How it was checked&rdquo; and the numbers.</p></div>
+
+    <div class="step"><span class="i">08</span><span class="t">Joao reviews and merges</span>
+      <p class="b">Expect questions about the numbers. That is the review working, not a judgement on your work. Results in this field are easy to misread.</p></div>
+  </div>
+</section>
+
+<section>
+  <h2>The experiments</h2>
+  <p>Each one is independent, so nobody waits on anyone else. Each answers one question, and each is finished when it produces the table described under &ldquo;Done when&rdquo;.</p>
+
+  <div class="exps">
+    <article class="exp">
+      <div class="top"><span class="id">A &middot; band-sweep</span><span class="size s">Small</span></div>
+      <h3 class="q">Which brain waves carry the signal?</h3>
+      <p><span class="k">Why it matters</span>Using all frequencies scores almost twice as high as the 8&ndash;13&nbsp;Hz alpha band on subject 1. But very low frequencies pick up eye movement, and high ones pick up jaw muscle. If those bands decode well on their own, the extra score is noise from the recording, not imagination.</p>
+      <p><span class="k">Start here</span>No new code. Run each band below, for every subject.</p>
+<pre><code>mkdir ../results
+python classical_baseline.py --all_subjects --skip_eegnet --permute 200 --band 1 8 --json ../results/band_1_8.json</code></pre>
+      <p>Then the same with <code>--band 13 30</code>, <code>--band 30 50</code>, and <code>--band 0 0</code> for all frequencies, changing the file name each time.</p>
+      <p><span class="k">Done when</span>A table of band by subject, with times-chance and p-value in each cell. Leave it running overnight.</p>
+    </article>
+
+    <article class="exp">
+      <div class="top"><span class="id">B &middot; ica-cleanup</span><span class="size m">Medium</span></div>
+      <h3 class="q">Does removing blinks with ICA help?</h3>
+      <p><span class="k">Why it matters</span>We tried throwing away noisy recordings, and it did not help. ICA instead repairs a recording by removing just the blink, so we keep it. With only 33 recordings per person, keeping them matters.</p>
+      <p><span class="k">Start here</span>Add an optional ICA step to <code>prepare()</code> in <code>classical_baseline.py</code>, behind a new <code>--ica</code> flag. Use scikit-learn&rsquo;s FastICA or MNE. Ask before adding a package to <code>env.yaml</code>.</p>
+      <p><span class="k">Done when</span>The same permutation test with and without <code>--ica</code>, all four subjects, side by side.</p>
+      <p class="fit">Good fit for Aditya, who found the ICA papers.</p>
+    </article>
+
+    <article class="exp">
+      <div class="top"><span class="id">C &middot; fewer-choices</span><span class="size m">Medium</span></div>
+      <h3 class="q">How well can we do with only a few pictures to choose from?</h3>
+      <p><span class="k">Why it matters</span>Picking 1 of 33 is hard. The Gao et al. paper reached 75.8% with only 3 categories. A few categories working well would make a realistic first demo.</p>
+      <p><span class="k">Start here</span>Add a <code>--stimuli</code> option that keeps only the pictures you list, then rerun the baseline. <b>Choose and write down your pictures before running anything.</b> Choosing after seeing results only fools ourselves.</p>
+      <p><span class="k">Done when</span>Accuracy against chance (1 in 3, or 1 in 5) with a p-value, all four subjects.</p>
+    </article>
+
+    <article class="exp">
+      <div class="top"><span class="id">D &middot; gao-dataset</span><span class="size l">Large</span></div>
+      <h3 class="q">Get the bigger dataset ready</h3>
+      <p><span class="k">Why it matters</span>Ours has 4 people who imagined each picture once. Gao et al. has 22 people with 40 repeats each. It is the only way to learn whether our results hold up for people in general.</p>
+      <p><span class="k">Start here</span>Download it from <a href="https://doi.org/10.6084/m9.figshare.30227503">figshare</a> and read the <a href="https://doi.org/10.1038/s41597-025-06512-5">paper</a>&rsquo;s data section. Write a loader that outputs the same fields ours uses (<code>eeg</code>, <code>label</code>, <code>image</code>, <code>subject</code>), then run the baseline on it.</p>
+      <p><span class="k">Done when</span>Baseline numbers with p-values on the new dataset. Its license is non-commercial, so research use only.</p>
+    </article>
+  </div>
+</section>
+
+<section>
+  <h2>Four rules</h2>
+  <div class="rules">
+    <div><b>Stay in your own branch.</b> Everyone can technically push to anyone&rsquo;s branch, so please don&rsquo;t push to one with someone else&rsquo;s name on it.</div>
+    <div><b>Never commit data, results or model files.</b> They are large, and removing them later means rewriting history for everyone.</div>
+    <div><b>Every result comes with its chance level and a p-value.</b> &ldquo;9% accuracy&rdquo; means nothing until you know random guessing gets 3%. Use <code>--permute 200</code> for the p-value.</div>
+    <div><b>Ask before using the cluster.</b> Nothing here needs it, and GPU time is shared.</div>
+  </div>
+
+  <div class="note good">
+    <span class="hd">If a result looks surprisingly good</span>
+    <p>Be suspicious first and excited second. This field has a long history of exciting results that turned out to be recording noise, and we have already caught one of our own. Post it in the pull request and we will check it together.</p>
+  </div>
+</section>
+
+<footer>
+  <p>Questions go to Joao. The full rules are in <code>CONTRIBUTING.md</code> in the repository.</p>
+</footer>
+
+</div>

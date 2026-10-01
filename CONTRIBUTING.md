@@ -73,7 +73,8 @@ The **classical baseline** is the cheap instrument. Five CPU-minutes, and it tel
 whether a preprocessing or representation change helped before anyone spends a GPU-day:
 
 ```bash
-python code/classical_baseline.py --subject 1 --band 8 13 --permute 200
+cd code      # the experiment scripts find the data relative to code/
+python classical_baseline.py --subject 1 --band 8 13 --permute 200
 ```
 
 Most changes worth making can be evaluated this way first.

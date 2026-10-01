@@ -41,7 +41,7 @@ signal-detection results without this step.
 
 ```sh
 python code/prepare_shimizu_data.py
-python code/make_splits.py
+python code/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol window --require_images
 python code/check_data.py          # exits non-zero if anything is wrong
 ```
 
