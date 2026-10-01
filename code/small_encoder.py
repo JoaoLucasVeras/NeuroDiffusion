@@ -151,7 +151,8 @@ def pooled_retrieval(pred, cand, key_true):
     return ((p @ cand.T).argmax(1) == t).float().mean().item()
 
 
-def train_once(Xtr, key_tr, Xte, key_te, cand, epochs, lr, seed, verbose=False):
+def train_once(Xtr, key_tr, Xte, key_te, cand, epochs, lr, seed, verbose=False,
+               return_model=False):
     torch.manual_seed(seed)
     np.random.seed(seed)
     dev = "cuda" if torch.cuda.is_available() else "cpu"
@@ -193,8 +194,14 @@ def train_once(Xtr, key_tr, Xte, key_te, cand, epochs, lr, seed, verbose=False):
         pe = model(xe).cpu()
     t1, t5 = retrieval(pe, cand, kte)
     pooled = pooled_retrieval(pe, cand, kte)
-    return {"recall_at_1": t1, "recall_at_5": t5, "pooled_recall_at_1": pooled,
-            "n_params": n_params(model)}
+    out = {"recall_at_1": t1, "recall_at_5": t5, "pooled_recall_at_1": pooled,
+           "n_params": n_params(model)}
+    if return_model:
+        # The permutation loop calls this hundreds of times and wants only the numbers.
+        # The observed run wants the weights, because nothing else reconstructs them.
+        out["model"] = model
+        out["arch"] = {"n_ch": xt.shape[2], "n_time": xt.shape[3], "out_dim": C.shape[1]}
+    return out
 
 
 # ------------------------------------------------------------------------- main
@@ -214,6 +221,8 @@ def main():
                    help="permutation null: refits on stimulus-shuffled labels this many times")
     p.add_argument("--cache", default="../datasets/clip_stimulus_emb.pt")
     p.add_argument("--json", default=None)
+    p.add_argument("--save", default=None,
+                   help="write the trained encoder weights here, for the conditioning path")
     args = p.parse_args()
 
     tr, te, _ = load_split(args.dataset, args.splits, args.subject)
@@ -243,7 +252,10 @@ def main():
     print("subject %d | band %s | train %d test %d | %d stimuli, chance %.4f"
           % (args.subject, band, len(Xtr), len(Xte), len(uniq), chance))
 
-    res = train_once(Xtr, key_tr, Xte, key_te, cand, args.epochs, args.lr, 0, verbose=True)
+    res = train_once(Xtr, key_tr, Xte, key_te, cand, args.epochs, args.lr, 0, verbose=True,
+                     return_model=args.save is not None)
+    model = res.pop("model", None)
+    arch = res.pop("arch", None)
     res.update({"subject": args.subject, "band": band, "n_train": len(Xtr),
                 "n_test": len(Xte), "n_stimuli": len(uniq), "chance": chance})
 
@@ -252,6 +264,18 @@ def main():
     print("  Recall@1          %.4f  (%.2fx chance)" % (res["recall_at_1"], res["recall_at_1"] / chance))
     print("  Recall@5          %.4f" % res["recall_at_5"])
     print("  pooled Recall@1   %.4f  (%.2fx chance)" % (res["pooled_recall_at_1"], res["pooled_recall_at_1"] / chance))
+
+    if args.save:
+        os.makedirs(os.path.dirname(os.path.abspath(args.save)) or ".", exist_ok=True)
+        torch.save({"state_dict": model.state_dict(),
+                    "arch": arch,
+                    "norm": {"mu": float(mu), "sd": float(sd)},
+                    "stimulus_order": uniq,
+                    "metrics": {k: v for k, v in res.items()},
+                    "argv": vars(args)}, args.save)
+        print("\n[save] encoder -> %s" % args.save)
+        print("[save] the input normalisation travels with it; the conditioning path")
+        print("       must apply the same mu/sd or the weights mean nothing")
 
     if args.permute > 0:
         print("\nrunning %d permutations" % args.permute)
