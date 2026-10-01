@@ -6,6 +6,10 @@ accident, because your branches live in your repository rather than this one.
 
 ---
 
+> **Prefer a picture?** [`docs/workflow.html`](docs/workflow.html) shows the same
+> thing as diagrams: the three copies of the repository, the permission boundary
+> between them, and what happens to a pull request after you open it.
+
 ## One-time setup
 
 **1. Fork the repository.** Press *Fork* at the top right of the GitHub page. You now have
