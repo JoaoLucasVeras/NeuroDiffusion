@@ -9,7 +9,18 @@ on your branch, so update it every time you push.
 
 What are you trying to find out, and why would the answer help NeuroDiffusion?
 
-## The source
+## Which part of the pipeline
+
+Data, cleaning the signal, reading the brain waves, translating to image numbers,
+generating the image, or measuring? Or a whole new pipeline?
+
+## If you changed a method
+
+- **What it replaces or adds:** e.g. "ICA before the band filter", "a new encoder in place of EEGNet"
+- **Where the code is:** file names on your branch
+- **Compared against:** which row of "the numbers to beat" in the team guide, on the same split
+
+## If you used a dataset or paper
 
 - **Dataset or paper:** name, link, license
 - **People:** how many
