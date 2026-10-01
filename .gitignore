@@ -37,3 +37,21 @@ analysis/visualizations/
 .conda/
 analysis/research_report_render/
 *.docx
+
+# independent research: write-ups and code are committed, data never is
+research/*/data/
+research/**/*.edf
+research/**/*.bdf
+research/**/*.fif
+research/**/*.set
+research/**/*.fdt
+research/**/*.vhdr
+research/**/*.vmrk
+research/**/*.eeg
+research/**/*.mat
+research/**/*.npy
+research/**/*.npz
+research/**/*.pth
+research/**/*.pt
+research/**/*.h5
+research/**/*.zip

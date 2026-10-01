@@ -42,12 +42,13 @@ body{background:var(--ground);color:var(--ink);margin:0;
   font-family:"Source Serif 4",Georgia,serif;font-size:17px;line-height:1.62;
   -webkit-font-smoothing:antialiased;}
 .wrap{max-width:820px;margin:0 auto;padding-inline:20px;padding-block:0 80px;}
-h1,h2,h3,.eyebrow,.step .t,.exp .q,.exp .k,.size,th{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
+h1,h2,h3,.eyebrow,.step .t,.crit .n,th,.lane b,.gate{font-family:Archivo,"Helvetica Neue",Arial,sans-serif;}
 h1{font-size:clamp(1.9rem,5vw,2.7rem);line-height:1.06;letter-spacing:-.028em;font-weight:700;margin:0 0 .25em;text-wrap:balance;}
 h2{font-size:clamp(1.3rem,3.2vw,1.7rem);line-height:1.15;letter-spacing:-.02em;font-weight:700;margin:0 0 .3em;text-wrap:balance;}
+h3{font-size:1.04rem;font-weight:600;margin:1.6em 0 .4em;letter-spacing:-.01em;}
 p{margin:0 0 1.05em;max-width:66ch;}
 ul{margin:0 0 1.05em;padding-left:1.2em;max-width:66ch;}
-li{margin-bottom:.4em;}
+li{margin-bottom:.45em;}
 a{color:var(--signal);text-underline-offset:2px;}
 code{font-family:"IBM Plex Mono",monospace;font-size:.86em;background:var(--surface-2);
   border:1px solid var(--rule);border-radius:2px;padding:1px 5px;}
@@ -63,12 +64,18 @@ header.mast{padding-block:44px 26px;border-bottom:1.5px solid var(--rule-strong)
 section{padding-block:30px 0;}
 section+section{border-top:1px solid var(--rule);margin-top:34px;}
 
-.state{display:grid;gap:10px;margin:18px 0 6px;max-width:70ch;}
-.state div{display:grid;grid-template-columns:7.5rem 1fr;gap:14px;align-items:baseline;
-  padding-bottom:10px;border-bottom:1px solid var(--rule);}
-.state div:last-child{border-bottom:0;}
-.state b{font-family:Archivo,sans-serif;font-size:.74rem;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;}
-.state span{font-size:.97rem;color:var(--ink-2);}
+/* the loop: your branch on the left, the main project on the right, one gate between */
+.lanes{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:14px;align-items:stretch;margin:22px 0 8px;}
+.lane{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:14px 16px;box-shadow:var(--shadow);}
+.lane.main{border-color:var(--signal);}
+.lane b{display:block;font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:6px;}
+.lane.main b{color:var(--signal);}
+.lane ol{margin:0;padding-left:1.15em;font-size:.92rem;color:var(--ink-2);}
+.lane li{margin-bottom:.3em;}
+.gate{align-self:center;text-align:center;font-size:.72rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--good);
+  display:flex;flex-direction:column;align-items:center;gap:6px;}
+.gate svg{width:48px;height:20px;color:var(--good);}
+.lanes-cap{font-size:.9rem;color:var(--muted);max-width:66ch;}
 
 .steps{display:grid;gap:11px;margin:22px 0;max-width:70ch;}
 .step{background:var(--surface);border:1px solid var(--rule);border-radius:3px;
@@ -78,24 +85,35 @@ section+section{border-top:1px solid var(--rule);margin-top:34px;}
   color:var(--signal);grid-row:span 3;padding-top:3px;}
 .step .t{font-weight:600;font-size:.98rem;}
 .step .b{font-size:.93rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
+.step ul{grid-column:2;font-size:.92rem;color:var(--ink-2);margin:2px 0 0;}
 .step pre{grid-column:2;margin-top:4px;}
 
-.exps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:22px 0;}
-.exp{background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:16px 18px 18px;
-  display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow);}
-.exp .top{display:flex;justify-content:space-between;align-items:center;gap:10px;}
-.exp .id{font-family:"IBM Plex Mono",monospace;font-size:.72rem;font-weight:600;color:var(--signal);}
-.size{font-size:.66rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border-radius:2px;}
-.size.s{background:var(--good-soft);color:var(--good);}
-.size.m{background:var(--alpha-soft);color:var(--alpha);}
-.size.l{background:var(--warn-soft);color:var(--warn);}
-.exp .q{font-weight:600;font-size:1.05rem;line-height:1.3;letter-spacing:-.01em;margin:0;text-wrap:balance;}
-.exp p{font-size:.91rem;line-height:1.55;color:var(--ink-2);margin:0;max-width:none;}
-.exp .k{display:block;font-size:.66rem;font-weight:600;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:2px;}
-.exp pre{font-size:.74rem;}
-.exp .fit{font-size:.85rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:9px;margin-top:auto;}
+.crits{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:20px 0;}
+.crit{border-top:2px solid var(--signal);padding-top:10px;}
+.crit .n{font-weight:600;font-size:.97rem;display:block;margin-bottom:4px;}
+.crit p{font-size:.9rem;line-height:1.5;color:var(--ink-2);margin:0;}
+.crit.hard{border-top-color:var(--warn);}
+.crit .tag{font-family:Archivo,sans-serif;font-size:.62rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);margin-left:6px;}
 
-.rules{display:grid;gap:0;margin:20px 0;max-width:70ch;counter-reset:r;}
+.tbl{overflow-x:auto;margin:20px 0;}
+table{border-collapse:collapse;width:100%;min-width:560px;font-size:.88rem;}
+th,td{text-align:left;padding:9px 13px 9px 0;border-bottom:1px solid var(--rule);vertical-align:top;}
+th{font-size:.66rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);border-bottom-color:var(--rule-strong);}
+td:first-child{font-weight:600;color:var(--ink);white-space:nowrap;}
+td{color:var(--ink-2);}
+tbody tr:last-child td{border-bottom:0;}
+.v{font-family:Archivo,sans-serif;font-size:.68rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:2px;white-space:nowrap;}
+.v.use{background:var(--good-soft);color:var(--good);}
+.v.next{background:var(--signal-soft);color:var(--signal);}
+.v.no{background:var(--warn-soft);color:var(--warn);}
+
+.ideas{margin:16px 0;max-width:68ch;padding-left:0;list-style:none;}
+.ideas li{padding:10px 0 10px 1.1rem;border-bottom:1px solid var(--rule);position:relative;font-size:.95rem;color:var(--ink-2);margin:0;}
+.ideas li:last-child{border-bottom:0;}
+.ideas li::before{content:"";position:absolute;left:0;top:1.05em;width:6px;height:6px;border-radius:50%;background:var(--alpha);}
+.ideas b{color:var(--ink);}
+
+.rules{display:grid;margin:20px 0;max-width:70ch;counter-reset:r;}
 .rules div{padding:12px 0 12px 2.2rem;border-bottom:1px solid var(--rule);position:relative;font-size:.96rem;color:var(--ink-2);}
 .rules div:last-child{border-bottom:0;}
 .rules div::before{counter-increment:r;content:counter(r);position:absolute;left:0;top:12px;
@@ -114,136 +132,160 @@ footer{padding-block:26px 0;border-top:1.5px solid var(--rule-strong);margin-top
 footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);margin:0;}
 :focus-visible{outline:2px solid var(--signal);outline-offset:2px;}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important;}}
-@media (max-width:640px){.exps{grid-template-columns:1fr;}}
+@media (max-width:640px){.crits{grid-template-columns:1fr;}
+  .lanes{grid-template-columns:1fr;}.gate{flex-direction:row;}.gate svg{transform:rotate(90deg);}}
 @media (max-width:560px){body{font-size:16px;}.wrap{padding-inline:16px;}
-  .step{grid-template-columns:1fr;}.step .i{grid-row:auto;}.step pre{grid-column:1;}
-  .state div{grid-template-columns:1fr;gap:2px;}}
+  .step{grid-template-columns:1fr;}.step .i{grid-row:auto;}.step pre,.step ul{grid-column:1;}}
 </style>
 
 <div class="wrap">
 
 <header class="mast">
   <p class="eyebrow">NeuroDiffusion &middot; for the team</p>
-  <h1>How we work on this project</h1>
-  <p class="lede">Each of us owns one experiment, works on it in our own branch, and pushes often so everyone can see progress. Everything on this page runs on a laptop. None of it needs the GPU cluster.</p>
+  <h1>Your own research, on our problem</h1>
+  <p class="lede">Each of you runs a small research project of your own. You pick the question, find the data, and produce the findings. You report back to Joao, and anything that holds up gets brought into the main project.</p>
 </header>
 
 <section>
-  <h2>Where things stand</h2>
-  <div class="state">
-    <div><b>Good news</b><span>There is a real signal. When people imagine one of 33 pictures, a simple method on their brain waves picks the right picture 2 to 3 times more often than random guessing.</span></div>
-    <div><b>The problem</b><span>Our neural network keeps that signal for only 1 of the 4 people. We are testing why right now.</span></div>
-    <div><b>The limit</b><span>Data. Each person imagined each picture only once, so we have 33 recordings per person. The experiments below either squeeze more out of that or prepare a bigger dataset.</span></div>
-  </div>
+  <h2>The problem we are all working on</h2>
+  <p>NeuroDiffusion tries to turn what someone <em>imagines</em> into an image, using EEG brain recordings and an image generator.</p>
+  <p>Where it stands: in our current dataset there is a real but weak signal. When people imagine one of 33 pictures, a simple method picks the right one 2 to 3 times more often than random guessing. The biggest thing holding us back is <b>data</b>. Each of our 4 people imagined each picture only once.</p>
+  <p>So the most useful research finds better data, better ways to clean it, or evidence about what works. It does not have to be big. A clear answer to a small question is worth more than a vague answer to a big one.</p>
 </section>
 
 <section>
-  <h2>Getting started, step by step</h2>
-  <p>Steps 1 to 4 are a one-time setup. After that it is steps 5 to 8, once per experiment.</p>
+  <h2>How it works</h2>
+  <div class="lanes" role="img" aria-label="Your research happens on your own branch. When Joao agrees a finding holds up, it moves across into the main project.">
+    <div class="lane">
+      <b>Your branch</b>
+      <ol>
+        <li>Pick a question</li>
+        <li>Find a dataset or paper</li>
+        <li>Try something simple</li>
+        <li>Write up what you found</li>
+      </ol>
+    </div>
+    <div class="gate">
+      <svg viewBox="0 0 48 20" aria-hidden="true"><line x1="2" y1="10" x2="40" y2="10" stroke="currentColor" stroke-width="2"/><path d="M38 4 L46 10 L38 16 z" fill="currentColor"/></svg>
+      Joao agrees<br>it holds up
+    </div>
+    <div class="lane main">
+      <b>Main project</b>
+      <ol>
+        <li>Pull request</li>
+        <li>Joao reviews</li>
+        <li>Merged into the project</li>
+        <li>Credited in the journal</li>
+      </ol>
+    </div>
+  </div>
+  <p class="lanes-cap">Everything on the left is yours to run however you like. Only the right side has rules about review. Most findings, including &ldquo;this dataset won&rsquo;t work&rdquo;, stay as a write-up on your branch, and that is a good outcome.</p>
+</section>
+
+<section>
+  <h2>Step by step</h2>
 
   <div class="steps">
-    <div class="step"><span class="i">01</span><span class="t">Accept the GitHub invite</span>
-      <p class="b">Check your email or <a href="https://github.com/JoaoLucasVeras/NeuroDiffusion/invitations">github.com/JoaoLucasVeras/NeuroDiffusion/invitations</a>. Do this before cloning, or you will not be able to push.</p></div>
-
-    <div class="step"><span class="i">02</span><span class="t">Clone the project and install</span>
-      <p class="b">Needs <a href="https://docs.conda.io/en/latest/miniconda.html">conda</a>.</p>
+    <div class="step"><span class="i">01</span><span class="t">Set up, once</span>
+      <p class="b">Accept the GitHub invite first (check your email or <a href="https://github.com/JoaoLucasVeras/NeuroDiffusion/invitations">the invitations page</a>), or you won&rsquo;t be able to push. Then:</p>
 <pre><code>git clone https://github.com/JoaoLucasVeras/NeuroDiffusion.git
 cd NeuroDiffusion
 conda env create -f env.yaml
 conda activate neurodiffusion</code></pre></div>
 
-    <div class="step"><span class="i">03</span><span class="t">Get the data</span>
-      <p class="b">The data is never stored on GitHub. Download the four <code>Imagine_Sub00*.mat</code> files from <a href="https://osf.io/2fgks/">OSF</a> into <code>datasets/Imagination Experiment/</code>, then run these from the project folder. The image download is about 412&nbsp;MB, and the split step needs it.</p>
-<pre><code>python code/download_stimuli.py
-python code/prepare_shimizu_data.py
-python code/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol window --require_images
-python code/check_data.py</code></pre></div>
+    <div class="step"><span class="i">02</span><span class="t">Pick a question and tell Joao</span>
+      <p class="b">One sentence you could answer with yes, no or a number. Tell Joao before starting, so two people don&rsquo;t chase the same thing. The ideas further down are a starting point, not a list you have to choose from.</p></div>
 
-    <div class="step"><span class="i">04</span><span class="t">Check you match our numbers</span>
-      <p class="b">Run this. If the <code>bandpower</code> line says <b>top1 0.0985</b>, your setup is identical to ours and you are ready. If not, ask before going further.</p>
-<pre><code>cd code
-python classical_baseline.py --subject 1 --band 8 13 --skip_eegnet</code></pre></div>
+    <div class="step"><span class="i">03</span><span class="t">Make your branch and your folder</span>
+      <p class="b">All your work lives in <code>research/yourname/</code>. Copy the findings template in as your write-up.</p>
+<pre><code>git checkout -b yourname/your-topic origin/main
+mkdir research/yourname
+cp research/TEMPLATE.md research/yourname/FINDINGS.md
+git add research/yourname/FINDINGS.md
+git commit -m "Start research: your question here"
+git push -u origin yourname/your-topic</code></pre></div>
 
-    <div class="step"><span class="i">05</span><span class="t">Pick an experiment and make your branch</span>
-      <p class="b">Choose one from the list below and tell Joao, so two people do not take the same one. Name the branch after yourself.</p>
-<pre><code>git fetch origin
-git checkout -b yourname/band-sweep origin/main
-git push -u origin yourname/band-sweep</code></pre></div>
+    <div class="step"><span class="i">04</span><span class="t">Find your data</span>
+      <p class="b">Check the table of datasets we already reviewed first, so you don&rsquo;t redo work. Then judge a new one against the four checks below. Put downloaded data in <code>research/yourname/data/</code>, which Git ignores.</p></div>
 
-    <div class="step"><span class="i">06</span><span class="t">Work, and push at the end of every session</span>
-      <p class="b">Push even when it is unfinished. That is how Joao follows your progress. Add files by name rather than everything at once.</p>
-<pre><code>git add code/my_change.py
-git commit -m "Add a 30-50 Hz run to the band sweep"
-git push</code></pre></div>
+    <div class="step"><span class="i">05</span><span class="t">Try the simplest thing first</span>
+      <p class="b">Before anything fancy, see whether a simple method finds any signal at all. Our <code>code/classical_baseline.py</code> does exactly that. If you convert your dataset into our format, it runs unchanged, and your numbers become directly comparable to ours.</p></div>
 
-    <div class="step"><span class="i">07</span><span class="t">Open a pull request when you have a result</span>
-      <p class="b">GitHub shows a button after you push. Fill in the template it gives you, especially &ldquo;How it was checked&rdquo; and the numbers.</p></div>
+    <div class="step"><span class="i">06</span><span class="t">Write it up and push, every session</span>
+      <p class="b">Keep <code>FINDINGS.md</code> current and push at the end of each work session, even if it&rsquo;s unfinished. That&rsquo;s how Joao follows along without needing a meeting.</p></div>
 
-    <div class="step"><span class="i">08</span><span class="t">Joao reviews and merges</span>
-      <p class="b">Expect questions about the numbers. That is the review working, not a judgement on your work. Results in this field are easy to misread.</p></div>
+    <div class="step"><span class="i">07</span><span class="t">Report to Joao</span>
+      <p class="b">When you have an answer, even &ldquo;no&rdquo;, send Joao your branch name. He reads your write-up and you talk it through.</p></div>
+
+    <div class="step"><span class="i">08</span><span class="t">If it holds up, bring it into the project</span>
+      <p class="b">You and Joao decide together what goes in: maybe a new data loader, a cleaning step, or just your write-up added to the project&rsquo;s resources. Then open a pull request and Joao reviews it.</p></div>
   </div>
 </section>
 
 <section>
-  <h2>The experiments</h2>
-  <p>Each one is independent, so nobody waits on anyone else. Each answers one question, and each is finished when it produces the table described under &ldquo;Done when&rdquo;.</p>
+  <h2>How to judge a dataset</h2>
+  <p>We have learned the hard way that most EEG datasets cannot help us. These four checks rule out most of them, usually from the description alone.</p>
 
-  <div class="exps">
-    <article class="exp">
-      <div class="top"><span class="id">A &middot; band-sweep</span><span class="size s">Small</span></div>
-      <h3 class="q">Which brain waves carry the signal?</h3>
-      <p><span class="k">Why it matters</span>Using all frequencies scores almost twice as high as the 8&ndash;13&nbsp;Hz alpha band on subject 1. But very low frequencies pick up eye movement, and high ones pick up jaw muscle. If those bands decode well on their own, the extra score is noise from the recording, not imagination.</p>
-      <p><span class="k">Start here</span>No new code. Run each band below, for every subject.</p>
-<pre><code>mkdir ../results
-python classical_baseline.py --all_subjects --skip_eegnet --permute 200 --band 1 8 --json ../results/band_1_8.json</code></pre>
-      <p>Then the same with <code>--band 13 30</code>, <code>--band 30 50</code>, and <code>--band 0 0</code> for all frequencies, changing the file name each time.</p>
-      <p><span class="k">Done when</span>A table of band by subject, with times-chance and p-value in each cell. Leave it running overnight.</p>
-    </article>
-
-    <article class="exp">
-      <div class="top"><span class="id">B &middot; ica-cleanup</span><span class="size m">Medium</span></div>
-      <h3 class="q">Does removing blinks with ICA help?</h3>
-      <p><span class="k">Why it matters</span>We tried throwing away noisy recordings, and it did not help. ICA instead repairs a recording by removing just the blink, so we keep it. With only 33 recordings per person, keeping them matters.</p>
-      <p><span class="k">Start here</span>Add an optional ICA step to <code>prepare()</code> in <code>classical_baseline.py</code>, behind a new <code>--ica</code> flag. Use scikit-learn&rsquo;s FastICA or MNE. Ask before adding a package to <code>env.yaml</code>.</p>
-      <p><span class="k">Done when</span>The same permutation test with and without <code>--ica</code>, all four subjects, side by side.</p>
-      <p class="fit">Good fit for Aditya, who found the ICA papers.</p>
-    </article>
-
-    <article class="exp">
-      <div class="top"><span class="id">C &middot; fewer-choices</span><span class="size m">Medium</span></div>
-      <h3 class="q">How well can we do with only a few pictures to choose from?</h3>
-      <p><span class="k">Why it matters</span>Picking 1 of 33 is hard. The Gao et al. paper reached 75.8% with only 3 categories. A few categories working well would make a realistic first demo.</p>
-      <p><span class="k">Start here</span>Add a <code>--stimuli</code> option that keeps only the pictures you list, then rerun the baseline. <b>Choose and write down your pictures before running anything.</b> Choosing after seeing results only fools ourselves.</p>
-      <p><span class="k">Done when</span>Accuracy against chance (1 in 3, or 1 in 5) with a p-value, all four subjects.</p>
-    </article>
-
-    <article class="exp">
-      <div class="top"><span class="id">D &middot; gao-dataset</span><span class="size l">Large</span></div>
-      <h3 class="q">Get the bigger dataset ready</h3>
-      <p><span class="k">Why it matters</span>Ours has 4 people who imagined each picture once. Gao et al. has 22 people with 40 repeats each. It is the only way to learn whether our results hold up for people in general.</p>
-      <p><span class="k">Start here</span>Download it from <a href="https://doi.org/10.6084/m9.figshare.30227503">figshare</a> and read the <a href="https://doi.org/10.1038/s41597-025-06512-5">paper</a>&rsquo;s data section. Write a loader that outputs the same fields ours uses (<code>eeg</code>, <code>label</code>, <code>image</code>, <code>subject</code>), then run the baseline on it.</p>
-      <p><span class="k">Done when</span>Baseline numbers with p-values on the new dataset. Its license is non-commercial, so research use only.</p>
-    </article>
+  <div class="crits">
+    <div class="crit hard"><span class="n">People imagined images<span class="tag">must have</span></span>
+      <p>Not just looked at them, and not imagined movements. &ldquo;Motor imagery&rdquo; means imagining moving a hand, which has no picture in it.</p></div>
+    <div class="crit hard"><span class="n">Electrodes on the back of the head<span class="tag">must have</span></span>
+      <p>Imagery signal sits over the back of the head. Look for O1, O2, Oz or PO channels. Many consumer headsets don&rsquo;t have them.</p></div>
+    <div class="crit hard"><span class="n">Real repeats<span class="tag">must have</span></span>
+      <p>Each image or category recorded several separate times per person. Cutting one long recording into pieces doesn&rsquo;t count.</p></div>
+    <div class="crit"><span class="n">More than one session</span>
+      <p>Recordings on different days let us test whether a model survives putting the headset back on. Nice to have.</p></div>
   </div>
+
+  <h3>Already reviewed, so you don&rsquo;t have to</h3>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Dataset</th><th>Verdict</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Shimizu &amp; Srinivasan (2022)</td><td><span class="v use">In use</span></td><td>Our current data. Real imagery and 128 electrodes, but each picture imagined only once.</td></tr>
+      <tr><td>Gao et al. (2026)</td><td><span class="v next">Next up</span></td><td>Passes all four checks: 22 people, 40 repeats, two sessions. <a href="https://doi.org/10.6084/m9.figshare.30227503">Data</a>, non-commercial license.</td></tr>
+      <tr><td>MindBigData</td><td><span class="v no">No</span></td><td>5-electrode consumer headset with none on the back of the head. One repeat per image.</td></tr>
+      <tr><td>OpenNeuro ds007162</td><td><span class="v no">No</span></td><td>Very well built, but people only looked at images. No imagining.</td></tr>
+      <tr><td>PhysioNet Motor Imagery</td><td><span class="v no">No</span></td><td>Imagined hand and foot movements, not images.</td></tr>
+      <tr><td>THINGS-EEG</td><td><span class="v no">No</span></td><td>Looking, not imagining. The standard benchmark for perception work.</td></tr>
+      <tr><td>meagmohit/EEG-Datasets list</td><td><span class="v no">Exhausted</span></td><td>No visual imagery category at all. Public imagery datasets are very rare.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Full reasoning for each is in <code>docs/RESOURCES.md</code>. If you find one that passes the three must-haves, tell Joao straight away. That alone would be a big result.</p>
 </section>
 
 <section>
-  <h2>Four rules</h2>
+  <h2>Ideas to start from</h2>
+  <p>Take one, change one, or bring your own. Anything that connects back to the problem above counts.</p>
+  <ul class="ideas">
+    <li><b>Is there a visual imagery dataset we&rsquo;ve missed?</b> Search OpenNeuro, figshare, Zenodo and the &ldquo;data availability&rdquo; sections of recent imagery papers.</li>
+    <li><b>Which headsets could we record with ourselves?</b> Affordable ones with electrodes on the back of the head. This decides whether we can collect our own data.</li>
+    <li><b>Does cleaning out blinks help?</b> ICA removes eye blinks from a recording without throwing it away. Try it on our data or yours.</li>
+    <li><b>What do recent papers actually achieve on imagery?</b> And how did they test it? Many published results don&rsquo;t hold up, and knowing which ones are solid tells us what to aim for.</li>
+    <li><b>Can data from seeing images help with imagining them?</b> There is far more perception data than imagery data. Is there evidence a model trained on one transfers to the other?</li>
+    <li><b>How well can we do with only a few categories?</b> Gao et al. reached 75.8% with 3 categories. Would a few categories be a realistic first demo?</li>
+  </ul>
+</section>
+
+<section>
+  <h2>Five rules</h2>
   <div class="rules">
     <div><b>Stay in your own branch.</b> Everyone can technically push to anyone&rsquo;s branch, so please don&rsquo;t push to one with someone else&rsquo;s name on it.</div>
-    <div><b>Never commit data, results or model files.</b> They are large, and removing them later means rewriting history for everyone.</div>
-    <div><b>Every result comes with its chance level and a p-value.</b> &ldquo;9% accuracy&rdquo; means nothing until you know random guessing gets 3%. Use <code>--permute 200</code> for the p-value.</div>
-    <div><b>Ask before using the cluster.</b> Nothing here needs it, and GPU time is shared.</div>
+    <div><b>Never commit data.</b> Keep it in <code>research/yourname/data/</code>, which Git ignores. Removing a committed dataset later means rewriting history for everyone.</div>
+    <div><b>Every number comes with its chance level.</b> &ldquo;9% accuracy&rdquo; means nothing until you know random guessing gets 3%. If you can, add a p-value from a permutation test. <code>classical_baseline.py --permute 200</code> does one for you.</div>
+    <div><b>Check the license.</b> Note it in your write-up. Some datasets are research-only.</div>
+    <div><b>Ask before using the GPU cluster.</b> It&rsquo;s shared, and most research questions don&rsquo;t need it.</div>
   </div>
 
   <div class="note good">
     <span class="hd">If a result looks surprisingly good</span>
-    <p>Be suspicious first and excited second. This field has a long history of exciting results that turned out to be recording noise, and we have already caught one of our own. Post it in the pull request and we will check it together.</p>
+    <p>Be suspicious first and excited second. This field has a long history of exciting results that turned out to be recording noise, and we have already caught one of our own. Bring it to Joao and we will check it together. That is the point of the review, not a judgement on your work.</p>
   </div>
 </section>
 
 <footer>
-  <p>Questions go to Joao. The full rules are in <code>CONTRIBUTING.md</code> in the repository.</p>
+  <p>Questions go to Joao. The findings template is <code>research/TEMPLATE.md</code>; the full contribution rules are in <code>CONTRIBUTING.md</code>.</p>
 </footer>
 
 </div>
