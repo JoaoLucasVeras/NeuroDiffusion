@@ -407,18 +407,23 @@ def run_subject(args, subject, dataset, splits):
     # ---- permutation null: refit on shuffled stimulus labels, so "above chance"
     #      becomes a claim we can defend. With 33 stimuli the effective sample size
     #      is ~33, not the 132 test windows, and the usual assumptions do not hold.
+    #      The observed score is the best of the l2 grid, chosen on test, so every
+    #      shuffle gets the same best-of-grid. Re-running only the winning l2 (as this
+    #      did until 2026-10-01) pits a best-of-4 against a best-of-1 and makes p optimistic.
     if getattr(args, "permute", 0) > 0:
-        l2 = res["bandpower"].get("l2", 1e-2)
         null_top1, null_avg = [], []
         for k in range(args.permute):
             yp = _permute_by_stimulus(tr, ytr, seed=2000 + k)
-            pr = logreg(Ftr, yp, Fte, n_classes, l2)
-            sc = score(pr, te, n_classes)
-            null_top1.append(sc["top1"])
-            null_avg.append(sc["trial_avg_top1"])
+            best = None
+            for l2 in args.l2:
+                sc = score(logreg(Ftr, yp, Fte, n_classes, l2), te, n_classes)
+                if best is None or sc["top1"] > best["top1"]:
+                    best = sc
+            null_top1.append(best["top1"])
+            null_avg.append(best["trial_avg_top1"])
         obs = res["bandpower"]["top1"]
         res["permutation"] = {
-            "n": args.permute, "method": "bandpower", "l2": l2,
+            "n": args.permute, "method": "bandpower, best of l2 grid", "l2": list(args.l2),
             "null_top1_mean": float(np.mean(null_top1)),
             "null_top1_p95": float(np.percentile(null_top1, 95)),
             "null_top1_max": float(np.max(null_top1)),
@@ -527,19 +532,22 @@ def run_cross(args, train_subj, test_subj, by_subject):
         except Exception as e:
             res["eegnet"] = {"error": "%s: %s" % (type(e).__name__, e)}
 
-    # ---- permutation null: refit on shuffled stimulus labels
+    # ---- permutation null: refit on shuffled stimulus labels, best of the l2 grid on
+    #      every shuffle, for the same reason as in run_subject
     if args.permute > 0:
-        l2 = res["bandpower"].get("l2", 1e-2)
         null_top1, null_avg = [], []
         for k in range(args.permute):
             yp = _permute_by_stimulus(tr, ytr, seed=1000 + k)
-            pr = logreg(Ftr, yp, Fte, n_classes, l2)
-            sc = score(pr, te, n_classes)
-            null_top1.append(sc["top1"])
-            null_avg.append(sc["trial_avg_top1"])
+            best = None
+            for l2 in args.l2:
+                sc = score(logreg(Ftr, yp, Fte, n_classes, l2), te, n_classes)
+                if best is None or sc["top1"] > best["top1"]:
+                    best = sc
+            null_top1.append(best["top1"])
+            null_avg.append(best["trial_avg_top1"])
         obs = res["bandpower"]["top1"]
         res["permutation"] = {
-            "n": args.permute, "method": "bandpower", "l2": l2,
+            "n": args.permute, "method": "bandpower, best of l2 grid", "l2": list(args.l2),
             "null_top1_mean": float(np.mean(null_top1)),
             "null_top1_p95": float(np.percentile(null_top1, 95)),
             "null_top1_max": float(np.max(null_top1)),
