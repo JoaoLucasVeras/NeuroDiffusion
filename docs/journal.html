@@ -263,10 +263,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">1 Oct 2026<small>Four-subject sweep; encoder trails the baseline</small></span></div>
-    <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>p &le; 0.05 in all four subjects</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">3 Oct 2026<small>Band power into CLIP keeps the signal</small></span></div>
+    <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
-    <div class="sc good"><span class="k">Imagery decoding</span><span class="v">p = 0.005<small>subject 1; the encoder loses the signal on the other three</small></span></div>
+    <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
   </div>
 </header>
 
@@ -1003,18 +1003,21 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">30 Sep</td><td>84326</td><td>Small encoder, alpha, subjects 1&ndash;3 + pooled nulls</td><td class="n">3.25 / 0.50 / 2.00&times;</td><td>Encoder trails baseline</td></tr>
       <tr><td class="n">1 Oct</td><td>84567</td><td>Small encoder, alpha, subject 4 null re-run</td><td class="n lo">1.75&times;, p .144</td><td>Null, at the p95 boundary</td></tr>
       <tr><td class="n">1 Oct</td><td>84642</td><td>Encoder checkpoint format, round-trip test</td><td class="n hi">passes</td><td>Conditioning unblocked</td></tr>
+      <tr><td class="n">1 Oct</td><td>84691 &middot; bp_cls</td><td>Baseline re-run, selection inside the null</td><td class="n">p .005 / .055 / .015 / .005</td><td>Supersedes 82079 p-values</td></tr>
+      <tr><td class="n">1 Oct</td><td>84691 &middot; bp_clip</td><td>Band power into CLIP space, 99k params</td><td class="n hi">3.25 / 2.25 / 3.00 / 2.50&times;</td><td><b>Best CLIP encoder</b></td></tr>
+      <tr><td class="n">1 Oct</td><td>84692 &middot; eeg_cls</td><td>EEGNet with a classification head</td><td class="n lo">2.00 / 0.75 / 2.25 / 2.50&times;</td><td>Backbone is the weak part</td></tr>
     </tbody>
   </table>
   </div>
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">Why does the encoder lose what logistic regression keeps? &mdash; next up</span>
-      <p class="b">On the same split and the same null, band power plus logistic regression is significant on <b>all four</b> subjects; the small encoder is significant on <b>one</b>. The signal is in the recordings and our objective is discarding it. Two candidates, both cheap: the InfoNCE temperature and batch size, which at batch 64 over 33 stimuli puts many positives in every batch, and the CLIP target itself &mdash; ViT-L/14 image embeddings have mean pairwise cosine 0.54, so the 33 targets occupy a narrow cone and retrieval among them is intrinsically harder than 33-way classification. Diagnostic first: train the encoder with a 33-way classification head instead of the CLIP head. If that recovers the baseline on subjects 2&ndash;4, the problem is the CLIP target, not the architecture.</p></div>
+    <div class="step"><span class="i">1</span><span class="t">Band-power encoder into the diffusion conditioning path &mdash; next up</span>
+      <p class="b">Answered on 1 October: the learned backbone loses the signal and the CLIP target does not. Band power mapped linearly into CLIP keeps it on three of four subjects. Train and save that map per subject, broadcast its 768-d output to the 77 conditioning tokens, and generate. Judged by CLIP-I against both negative controls. The first end-to-end run where the conditioning signal is measurably not noise on more than one person. One GPU-day.</p></div>
     <div class="step"><span class="i">2</span><span class="t">Which band? Alpha or broadband</span>
       <p class="b">Broadband scores <b>6.00&times;</b> on subject 1 against alpha's 3.25&times;, yet the whole four-subject sweep was run on alpha. Broadband is also where the recording fingerprint lives: residual 1&ndash;8 Hz artifact, 30&ndash;50 Hz muscle, per-session impedance. The discriminating test is a band ablation with matched nulls &mdash; alpha, broadband, 1&ndash;8 Hz alone, 30&ndash;50 Hz alone. If the low and high bands carry it by themselves, broadband's lead is artifact and alpha is the honest number; if they do not, we have been conditioning on the wrong band. <b>This has to resolve first</b>, or the next GPU-day is spent on the wrong representation.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">The small encoder into the diffusion conditioning path</span>
-      <p class="b">Replace the 85M encoder with the 91k one at <code>cond_stage_model</code>. The encoder emits one 768-d vector where cross-attention wants a sequence, so the bridge is a broadcast to 77 tokens &mdash; deliberately the dumbest option, because it adds no learnable parameters and so cannot manufacture an effect the representation does not have. Judged by <b>CLIP-I against both negative controls</b>, not by whether the pictures look right. Every Stage 2 run so far failed with a conditioning signal that was statistically noise; this is the first where it measurably is not.</p></div>
+    <div class="step"><span class="i">3</span><span class="t">A learned backbone that beats band power</span>
+      <p class="b">Every learned EEGNet variant trails fixed band power on 495 trials. Augmentation, cross-subject pretraining, or a pretrained EEG model might change that, but only a dataset with real repetitions makes it a fair contest. Lower priority now that band power works.</p></div>
     <div class="step"><span class="i">4</span><span class="t">Does the large pipeline still earn its place?</span>
       <p class="b">A 91k-parameter encoder beat an 85M one. The regularisation fixes from the improvement plan were never actually tested: <code>weight_decay</code> never reaches AdamW, the lower blocks are never frozen, and the checkpoint is chosen by last epoch rather than held-out retrieval. Two GPU-days, and the honest expectation is that it confirms the small model wins &mdash; worth spending to retire the question rather than leaving 85M parameters in the repository on an assumption.</p></div>
     <div class="step"><span class="i">5</span><span class="t">Recover the four lost test reports</span>
@@ -1041,6 +1044,51 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">result</span><span class="tag res">question answered</span><span class="tag fix">bug fixed</span></div>
+    <span class="when">1 OCT 2026 &middot; JOBS 84691 / 84692</span>
+    <h3>The CLIP target is fine; the learned backbone is what loses the signal</h3>
+    <p><span class="lbl">What was asked</span>The small encoder changes two things relative to the
+       baseline at once: learned EEGNet features in place of fixed band power, and a CLIP head in place
+       of a 33-way classifier. Crossing the two attributes the loss. Same split, same 33 stimuli, same
+       200 shuffles for every arm.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Features &rarr; head</th><th class="n">Subj 1</th><th class="n">Subj 2</th><th class="n">Subj 3</th><th class="n">Subj 4</th></tr></thead>
+      <tbody>
+        <tr><td>Band power &rarr; classifier</td><td class="n hi">3.25&times; &middot; .005</td><td class="n">2.25&times; &middot; .055</td><td class="n hi">2.75&times; &middot; .015</td><td class="n hi">3.00&times; &middot; .005</td></tr>
+        <tr><td><b>Band power &rarr; CLIP</b></td><td class="n hi">3.25&times; &middot; .005</td><td class="n">2.25&times; &middot; .085</td><td class="n hi">3.00&times; &middot; .005</td><td class="n hi">2.50&times; &middot; .025</td></tr>
+        <tr><td>EEGNet &rarr; classifier</td><td class="n">2.00&times; &middot; .070</td><td class="n lo">0.75&times; &middot; .766</td><td class="n hi">2.25&times; &middot; .020</td><td class="n hi">2.50&times; &middot; .015</td></tr>
+        <tr><td>EEGNet &rarr; CLIP</td><td class="n hi">3.25&times; &middot; .005</td><td class="n lo">0.50&times; &middot; .930</td><td class="n">2.00&times; &middot; .065</td><td class="n">1.75&times; &middot; .144</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The answer</span><b>Fixed band-power features keep the signal when they are
+       mapped into CLIP space.</b> Band power into CLIP matches band power into a classifier on every
+       subject, within one test recording: 3.25, 2.25, 3.00, 2.50&times; against 3.25, 2.25, 2.75,
+       3.00&times;. Both EEGNet rows trail both band-power rows. So the CLIP target is not what
+       discards the signal; the learned backbone is, on 495 training trials, regardless of which head
+       sits on it.</p>
+    <p><span class="lbl">Why it matters</span>The project now has an encoder that keeps the signal on
+       three of four subjects at p &lt; 0.05, and outputs exactly what the image generator reads: a
+       linear map from 128 log-variance features to 768 CLIP dimensions, about 99,000 parameters.
+       Subjects 1 and 3 survive a Bonferroni correction for four subjects (0.0125); subject 4 at 0.025
+       does not. That is the encoder to condition on, rather than the one that works on a single
+       subject.</p>
+    <p><span class="lbl">The baseline correction, measured</span>The old baseline kept the best of
+       four regularisation strengths on test but re-ran only the winner on each shuffle. With the full
+       best-of-four inside the null, the null mean rises from about 0.030 to <b>0.040&ndash;0.042</b>,
+       well above the 0.0303 chance level, which is the size of the advantage selection had been
+       given for free. The observed scores are unchanged; the p-values move: subject 2
+       <b>0.0498 &rarr; 0.0547</b>, no longer significant; subject 3 0.0100 &rarr; 0.0149; subjects 1
+       and 4 stay at the 0.005 floor. The 26 September entry keeps its original figures, and this one
+       supersedes them.</p>
+    <p><span class="lbl">Checks on the run</span>Every arm reports training accuracy, so none of the
+       weak results is a failure to optimise: the EEGNet classifier reaches 0.40&ndash;0.61 on training
+       data and still generalises worse than band power. The bp_cls arm reproduced the published
+       observed scores exactly, confirming it reads the data the same way the baseline does.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">null result</span><span class="tag res">scope narrowed</span></div>
