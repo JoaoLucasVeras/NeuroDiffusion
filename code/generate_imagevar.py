@@ -60,6 +60,11 @@ def load_pipe(model_dir, device, dtype):
     pipe = StableDiffusionImageVariationPipeline.from_pretrained(
         model_dir, torch_dtype=dtype, safety_checker=None, local_files_only=True)
     pipe.set_progress_bar_config(disable=True)
+    # torch 1.12 has no fused attention, so each attention call materialises the full
+    # 4096 x 4096 score matrix per head; at batch 8 that is a single 4 GB allocation and
+    # it ran a 12 GB P100 out of memory (job 85809). Slicing computes the heads one at a
+    # time: identical arithmetic, a fraction of the peak memory.
+    pipe.enable_attention_slicing("max")
     return pipe.to(device)
 
 
@@ -107,7 +112,7 @@ def main():
     p.add_argument("--steps", type=int, default=30)
     p.add_argument("--guidance", type=float, default=3.0)
     p.add_argument("--size", type=int, default=512)
-    p.add_argument("--batch", type=int, default=8)
+    p.add_argument("--batch", type=int, default=4)
     p.add_argument("--seed", type=int, default=2022)
     p.add_argument("--limit", type=int, default=0, help="first N test trials only, for a smoke test")
     args = p.parse_args()
