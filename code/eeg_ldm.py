@@ -198,12 +198,32 @@ def main(config):
 
     # prepare pretrained mbm 
 
-    pretrain_mbm_metafile = torch.load(config.pretrain_mbm_path, map_location='cpu')
+    cond_encoder = getattr(config, 'cond_encoder', None)
+    if cond_encoder:
+        # Generator A with the band-power encoder. The encoder was trained on one band and
+        # one subject; feeding it anything else produces output indistinguishable from no
+        # signal, so a mismatch stops the run rather than warning.
+        blob = torch.load(cond_encoder, map_location='cpu')
+        enc_band = tuple(float(b) for b in blob['band']) if blob['band'] else None
+        run_band = tuple(float(b) for b in config.band) if getattr(config, 'band', None) else None
+        if enc_band != run_band:
+            raise SystemExit("FATAL: --cond_encoder was trained on band %s but this run uses %s. "
+                             "Pass --band %s." % (enc_band, run_band,
+                                                  ' '.join('%g' % b for b in enc_band or ())))
+        if int(blob['subject']) != int(config.subject):
+            raise SystemExit("FATAL: --cond_encoder is for subject %s but this run is subject %s"
+                             % (blob['subject'], config.subject))
+        print('conditioning: band-power encoder %s (subject %s, band %s, l2 %g)'
+              % (cond_encoder, blob['subject'], enc_band, blob['l2']))
+        pretrain_mbm_metafile = None
+    else:
+        pretrain_mbm_metafile = torch.load(config.pretrain_mbm_path, map_location='cpu')
 
     # create generateive model
     generative_model = eLDM(pretrain_mbm_metafile, num_voxels,
-                device=device, pretrain_root=config.pretrain_gm_path, logger=config.logger, 
-                ddim_steps=config.ddim_steps, global_pool=config.global_pool, use_time_cond=config.use_time_cond, clip_tune = config.clip_tune, cls_tune = config.cls_tune)
+                device=device, pretrain_root=config.pretrain_gm_path, logger=config.logger,
+                ddim_steps=config.ddim_steps, global_pool=config.global_pool, use_time_cond=config.use_time_cond, clip_tune = config.clip_tune, cls_tune = config.cls_tune,
+                cond_encoder=cond_encoder)
     
     # resume training if applicable
     if config.checkpoint_path is not None:
@@ -244,6 +264,8 @@ def get_args_parser():
     parser.add_argument('--seed', type=int)
     parser.add_argument('--root_path', type=str, default = '../dreamdiffusion/')
     parser.add_argument('--pretrain_mbm_path', type=str)
+    parser.add_argument('--cond_encoder', type=str,
+                        help='bp_clip_encoder.py checkpoint: condition on band power instead of the MAE')
     parser.add_argument('--checkpoint_path', type=str)
     parser.add_argument('--crop_ratio', type=float)
     parser.add_argument('--dataset', type=str)
