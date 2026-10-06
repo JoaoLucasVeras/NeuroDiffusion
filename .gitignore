@@ -55,3 +55,7 @@ research/**/*.pth
 research/**/*.pt
 research/**/*.h5
 research/**/*.zip
+
+# Gao et al. 2026: raw downloads and converted trials (never committed)
+datasets/gao/
+datasets/gao_raw/
