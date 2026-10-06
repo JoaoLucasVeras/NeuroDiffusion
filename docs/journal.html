@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">3 Oct 2026<small>Band power into CLIP keeps the signal</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">5 Oct 2026<small>Generator at ceiling; brain signal too faint for images</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
@@ -1006,14 +1006,17 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">1 Oct</td><td>84691 &middot; bp_cls</td><td>Baseline re-run, selection inside the null</td><td class="n">p .005 / .055 / .015 / .005</td><td>Supersedes 82079 p-values</td></tr>
       <tr><td class="n">1 Oct</td><td>84691 &middot; bp_clip</td><td>Band power into CLIP space, 99k params</td><td class="n hi">3.25 / 2.25 / 3.00 / 2.50&times;</td><td><b>Best CLIP encoder</b></td></tr>
       <tr><td class="n">1 Oct</td><td>84692 &middot; eeg_cls</td><td>EEGNet with a classification head</td><td class="n lo">2.00 / 0.75 / 2.25 / 2.50&times;</td><td>Backbone is the weak part</td></tr>
+      <tr><td class="n">4 Oct</td><td>85801</td><td>Band power &rarr; CLIP, l2 chosen on training data</td><td class="n">2.25 / 2.25 / 1.25 / 2.25&times;</td><td>Faint, honest</td></tr>
+      <tr><td class="n">5 Oct</td><td>85810 &middot; oracle</td><td>Image Variations from true embeddings</td><td class="n hi">33&ndash;34 SEM</td><td>Generator works</td></tr>
+      <tr><td class="n">5 Oct</td><td>85810 &middot; eeg</td><td>Image Variations from brain predictions</td><td class="n lo">0.3 / 1.1 / 0.0 / 0.3 SEM</td><td><b>Phase 1 gate: go to data</b></td></tr>
     </tbody>
   </table>
   </div>
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">Band-power encoder into the diffusion conditioning path &mdash; next up</span>
-      <p class="b">Answered on 1 October: the learned backbone loses the signal and the CLIP target does not. Band power mapped linearly into CLIP keeps it on three of four subjects. Train and save that map per subject, broadcast its 768-d output to the 77 conditioning tokens, and generate. Judged by CLIP-I against both negative controls. The first end-to-end run where the conditioning signal is measurably not noise on more than one person. One GPU-day.</p></div>
+    <div class="step"><span class="i">1</span><span class="t">The Gao et al. 2026 dataset &mdash; next up</span>
+      <p class="b">Phase 1 answered on 5 October: the generator reaches the ceiling from true embeddings, and brain predictions on this dataset carry too little to show in the images. 22 participants with 40 repetitions per class is the change most likely to move that, and the only way to tell a general effect from a quirk of four recordings. First step: loader into our format, then the classical baseline and band-power encoder on it, then generator B, which is already built.</p></div>
     <div class="step"><span class="i">2</span><span class="t">Which band? Alpha or broadband</span>
       <p class="b">Broadband scores <b>6.00&times;</b> on subject 1 against alpha's 3.25&times;, yet the whole four-subject sweep was run on alpha. Broadband is also where the recording fingerprint lives: residual 1&ndash;8 Hz artifact, 30&ndash;50 Hz muscle, per-session impedance. The discriminating test is a band ablation with matched nulls &mdash; alpha, broadband, 1&ndash;8 Hz alone, 30&ndash;50 Hz alone. If the low and high bands carry it by themselves, broadband's lead is artifact and alpha is the honest number; if they do not, we have been conditioning on the wrong band. <b>This has to resolve first</b>, or the next GPU-day is spent on the wrong representation.</p></div>
     <div class="step"><span class="i">3</span><span class="t">A learned backbone that beats band power</span>
@@ -1026,9 +1029,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <p class="b">Condition D tested discarding whole trials, not repairing them. ICA removes a blink and keeps the trial, which matters when there are only 363 of them. Minutes of CPU to settle.</p></div>
     <div class="step"><span class="i">7</span><span class="t">Shrink the label space</span>
       <p class="b">Gao et al.'s headline 75.8% is a <em>three-class</em> result. A working three-class imagery-to-image system is far more likely to function than 33 classes at 3&times; chance, and 75% on three categories is enough to steer a generator into the right region. Arguably the better plan rather than a fallback.</p></div>
-    <div class="step"><span class="i">8</span><span class="t">The Gao et al. 2026 dataset</span>
-      <p class="b">22 participants, 40 repetitions per class per session, two sessions. The only item that answers the question the current data cannot: <b>is subject 1 a finding or a single recording?</b> It also unlocks cross-subject pretraining, session drift, and longer windows, all three parked on the pinboard for exactly this reason.</p></div>
-    <div class="step"><span class="i">9</span><span class="t">Our own recordings</span>
+    <div class="step"><span class="i">8</span><span class="t">Our own recordings</span>
       <p class="b">The long game, and the only path past the data ceiling. Hardware first, then the classical baseline on day one to check the protocol before collecting at volume.</p></div>
   </div>
 
@@ -1044,6 +1045,51 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">null result</span><span class="tag dec">decision gate</span></div>
+    <span class="when">4&ndash;5 OCT 2026 &middot; JOBS 85801 / 85810</span>
+    <h3>The generator works; the brain signal does not survive into the images</h3>
+    <p><span class="lbl">What was run</span>Phase 1. The band-power &rarr; CLIP encoder retrained per
+       subject with its regularisation chosen on training windows only (job 85801), then generator B,
+       Stable Diffusion Image Variations, conditioned on its test predictions (job 85810). Three arms
+       per subject sharing their starting noise trial by trial: <b>eeg</b>, <b>oracle</b> (true
+       stimulus embeddings, the ceiling) and <b>mean</b> (the average embedding, no information).
+       The generator&rsquo;s image encoder matched ours to cosine 1.0000.</p>
+    <p><span class="lbl">The encoder, honestly selected</span>Recall@1 2.25, 2.25, 1.25, 2.25&times;
+       chance with p = 0.050, 0.035, 0.41, 0.035; pooled over each recording 2.00, 5.00, 4.00,
+       3.00&times; with p = 0.29, 0.015, 0.020, 0.075. Lower than the diagnostic&rsquo;s 3.25, 2.25,
+       3.00, 2.50&times;, which chose l2 on the test set. Each subject clears 0.05 on one measure or
+       the other; none survives a correction for four subjects.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>CLIP-I gap over shuffled, in SEM</th><th class="n">Subj 1</th><th class="n">Subj 2</th><th class="n">Subj 3</th><th class="n">Subj 4</th></tr></thead>
+      <tbody>
+        <tr><td>Oracle (ceiling)</td><td class="n hi">34.2</td><td class="n hi">34.2</td><td class="n hi">33.6</td><td class="n hi">32.9</td></tr>
+        <tr><td><b>EEG</b></td><td class="n lo">0.3</td><td class="n">1.1</td><td class="n lo">0.0</td><td class="n lo">0.3</td></tr>
+        <tr><td>Mean (no information)</td><td class="n">&minus;0.4</td><td class="n">&minus;0.6</td><td class="n">&minus;0.2</td><td class="n">0.8</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span><b>The image side of the pipeline is not the bottleneck.</b>
+       From true embeddings the generator&rsquo;s images are named correctly in 33-way zero-shot
+       classification 87&ndash;92% of the time. From the brain predictions, no subject&rsquo;s images
+       beat the shuffled pairing by more than 1.1 SEM; subject 2 comes closest, with 33-way zero-shot
+       at 0.079 against 0.030 chance, which is suggestive and no more. The eeg images even score below
+       the mean-embedding images in absolute CLIP-I (about 0.51 against 0.54), so the predictions move
+       away from the typical stimulus without moving reliably toward the right one.</p>
+    <p><span class="lbl">What it does and does not mean</span>It does not show the signal is
+       destroyed by generation. An encoder right on 9 of 132 windows where chance gives 4 leaves an
+       image-level effect too small for 132 images to detect. It does show that <b>on this dataset
+       the signal is too faint to reach the pictures</b>, and that more tuning of the generator
+       cannot fix it, since the generator already performs at the ceiling. Phase 1&rsquo;s decision
+       gate therefore points to Phase 3: data with real repetitions.</p>
+    <p><span class="lbl">Two run notes</span>The first attempt, job 85809, ran a 12 GB P100 out of
+       memory: torch 1.12 has no fused attention, so batch 8 needed one 4 GB score matrix. Attention
+       slicing fixed it with identical arithmetic. And the l2 choice proved fragile enough that the
+       laptop and the cluster chose differently for subjects 1 and 2 from rounding alone, which is
+       why the permutation p-values, not the point estimates, are what to trust here.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag res">result</span><span class="tag res">question answered</span><span class="tag fix">bug fixed</span></div>
