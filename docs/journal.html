@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">5 Oct 2026<small>Generator at ceiling; brain signal too faint for images</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">5 Oct 2026<small>Gao et al. data in: 22 people, 40 repeats each</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
@@ -1045,6 +1045,34 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag fix">data</span><span class="tag fix">two faults found</span></div>
+    <span class="when">5 OCT 2026 &middot; JOBS 86201 / 86232</span>
+    <h3>The Gao et al. dataset is downloaded, checked and converted</h3>
+    <p><span class="lbl">What it is</span>22 participants, 32 channels at 1000 Hz with full
+       parieto-occipital coverage, two sessions on separate days (sub-09 and sub-10 have one),
+       <b>40 imagery trials per stimulus per session</b> against our one. Ten stimuli in three tasks
+       recorded as separate runs: animals (dog, bird, fish), figures (circle, pentagram, square),
+       objects (scissor, watch, cup, chair). Version 3 of the record relicensed it <b>CC BY 4.0</b>,
+       which permits commercial use with credit; our notes had said non-commercial.</p>
+    <p><span class="lbl">When the person is imagining</span>The paper does not say where the event
+       marker sits in the trial, and that decides whether the authors&rsquo; 4 s epochs are
+       imagery or perception. Measured on sub-09 from the occipital response, alpha power and
+       frontal eye activity: the picture is on screen from about &minus;5.8 to &minus;1.7 s, and the
+       4 s after the marker are black screen with the eyes still and alpha rising. The epochs are
+       imagery. Each converted trial keeps &minus;7 to +5 s, so the perception period is available
+       as a positive control.</p>
+    <p><span class="lbl">Two faults in the raw data</span>Of 125 runs, two are wrong in the
+       recordings themselves, not just in the event files. sub-08 ses-01 objects sent trigger 1 for
+       both scissor and watch, so those 80 trials cannot be told apart; sub-13 ses-02 objects has no
+       chair and 40 trials of an undocumented code 5. Both are excluded rather than guessed, and
+       recorded in each subject&rsquo;s file. Labels come from the numeric codes, verified against
+       the BDF trigger channel to within 2 samples, not from the text column. The authors&rsquo;
+       example script reads only codes 1&ndash;3 and would silently drop every chair trial.</p>
+    <p><span class="lbl">What was kept</span>16,560 trials, 250 Hz, microvolts, float32, nothing
+       filtered or cleaned beyond the anti-aliasing the resample needs. 5.7 GB on the cluster.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">null result</span><span class="tag dec">decision gate</span></div>

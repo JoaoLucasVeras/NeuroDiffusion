@@ -45,6 +45,15 @@ TASKS = ("AVI", "FVI", "OVI")
 # decoding should stay within a task (3 or 4 way) or it can separate runs instead.
 CLASSES = ["dog", "bird", "fish", "circle", "pentagram", "square",
            "scissor", "watch", "cup", "chair"]
+# Labels come from the numeric event value, which is checked against the BDF's own
+# trigger channel, using the dataset's task-*_events.json tables. The text "type" column
+# is not trusted: it can disagree, and the raw files hold two real faults. sub-08 ses-01
+# OVI sent trigger 1 for both scissor and watch (80 trials, inseparable), and sub-13
+# ses-02 OVI has no chair and 40 trials of an undocumented code 5. Neither is guessed.
+VALUE_MAP = {"AVI": {1: "dog", 2: "bird", 3: "fish"},
+             "FVI": {1: "pentagram", 2: "square", 3: "circle"},
+             "OVI": {1: "scissor", 2: "watch", 3: "cup", 4: "chair"}}
+PER_CLASS = 40          # trials per class per run, by the protocol
 IMAGE = {"dog": "Animal_dog", "bird": "Animal_bird", "fish": "Animal_fish",
          "circle": "Figure_circle", "pentagram": "Figure_pentagram", "square": "Figure_square",
          "scissor": "Object_scissor", "watch": "Object_watch", "cup": "Object_cup",
@@ -110,10 +119,30 @@ def convert_run(bdf, subject, session, task):
         raise SystemExit("FATAL: %s events disagree with its Status channel "
                          "(%d events, %d triggers)" % (os.path.basename(bdf), len(lat), len(on)))
 
+    # label from the verified code; refuse codes the dataset does not define, and any
+    # code whose count says two stimuli shared it
+    vmap = VALUE_MAP[task]
+    excluded = {}
+    counts = {v: int((val == v).sum()) for v in np.unique(val)}
+    usable = np.ones(len(val), bool)
+    for v, c in counts.items():
+        if v not in vmap:
+            usable &= val != v
+            excluded["code %d undocumented" % v] = c
+        elif c > PER_CLASS:
+            usable &= val != v
+            excluded["code %d (%s) used %d times, stimuli inseparable" % (v, vmap[v], c)] = c
+    disagree = sum(1 for v, n in zip(val, names) if v in vmap and n != vmap[v])
+    if disagree:
+        excluded["type column disagrees with code (labelled by code)"] = disagree
+
     x = np.stack([chan(c) for c in eeg_names])                    # (32, time), microvolts
     lo, hi = int(round(TMIN * fs)), int(round(TMAX * fs))
     trials, dropped = [], 0
-    for k, (l, name) in enumerate(zip(lat, names)):
+    for k, l in enumerate(lat):
+        if not usable[k]:
+            continue
+        name = vmap[int(val[k])]
         if l + lo < 0 or l + hi > x.shape[1]:
             dropped += 1
             continue
@@ -122,7 +151,7 @@ def convert_run(bdf, subject, session, task):
         trials.append({"eeg": torch.from_numpy(seg), "label": CLASSES.index(name),
                        "class": name, "image": IMAGE[name], "task": task,
                        "subject": subject, "session": session, "trial": k + 1})
-    return trials, eeg_names, dropped, units[0]
+    return trials, eeg_names, dropped, units[0], excluded
 
 
 def main():
@@ -137,12 +166,12 @@ def main():
     if not runs:
         raise SystemExit("FATAL: no BDF files under %s" % os.path.join(args.bids, sub))
 
-    entries, channels = [], None
+    entries, channels, notes = [], None, {}
     for bdf in runs:
         base = os.path.basename(bdf)
         session = int(base.split("_ses-")[1][:2])
         task = base.split("_task-")[1].split("_")[0]
-        trials, ch, dropped, unit = convert_run(bdf, args.subject, session, task)
+        trials, ch, dropped, unit, excluded = convert_run(bdf, args.subject, session, task)
         if channels is None:
             channels = ch
         elif ch != channels:
@@ -152,13 +181,17 @@ def main():
             counts[t["class"]] = counts.get(t["class"], 0) + 1
         print("  %-38s %3d trials %s%s  (unit %s)" % (base, len(trials), counts,
               "  DROPPED %d at the run edges" % dropped if dropped else "", unit))
+        for why, n in excluded.items():
+            print("      EXCLUDED %d trials: %s" % (n, why))
+        if excluded:
+            notes[base] = excluded
         entries.extend(trials)
 
     os.makedirs(args.out, exist_ok=True)
     out = os.path.join(args.out, "gao_%s.pt" % sub)
     torch.save({"dataset": entries, "classes": CLASSES, "channels": channels,
                 "fs": FS_OUT, "tmin": TMIN, "tmax": TMAX,
-                "imagery_window": (0.0, 4.0),
+                "imagery_window": (0.0, 4.0), "exclusions": notes,
                 "source": "Gao et al. 2026, figshare 10.6084/m9.figshare.30227503 v3, CC BY 4.0"},
                out)
     print("%s: %d trials, %d channels, %d samples each -> %s"

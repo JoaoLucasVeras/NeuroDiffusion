@@ -98,6 +98,13 @@ def main():
     for task, classes in TASK_CLASSES.items():
         tr = [t for t in trials if t["task"] == task and t["session"] == sessions[0]]
         te = [t for t in trials if t["task"] == task and t["session"] == sessions[1]]
+        missing = [c for c in classes
+                   if not any(t["class"] == c for t in tr) or not any(t["class"] == c for t in te)]
+        if missing:
+            # e.g. sub-08 ses-01 OVI and sub-13 ses-02 OVI, excluded at conversion
+            print("  %s skipped: %s absent from one session" % (task, ", ".join(missing)))
+            res["tasks"][task] = {"skipped": "absent from one session: " + ", ".join(missing)}
+            continue
         ytr = np.array([classes.index(t["class"]) for t in tr])
         yte = np.array([classes.index(t["class"]) for t in te])
         n = len(classes)
