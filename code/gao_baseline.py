@@ -82,6 +82,52 @@ def score(Ftr, ytr, Fte, yte, n):
     return float((p.argmax(1) == yte).mean())
 
 
+def cv_score(F, y, n, folds):
+    """Mean accuracy over the given (train_idx, test_idx) folds."""
+    return float(np.mean([score(F[a], y[a], F[b], y[b], n) for a, b in folds]))
+
+
+def within_session(trials, classes, band, fs, tmin, n_perm, rng):
+    """--split within: train and test inside one session, the paper's design, two ways.
+
+    random:  stratified 5-fold, trials shuffled across the session. The paper used one
+             stratified 80/20 split; five folds of the same 80/20 average out its noise.
+    blocked: train on the first 80% of the run in time order, test on the last 20%.
+    Training and test trials of a random split are interleaved in time, so anything that
+    drifts slowly through a session (electrode settling, fatigue) is shared between them.
+    A blocked split keeps them apart in time. random minus blocked is therefore an
+    estimate of how much a within-session score owes to drift rather than to imagery.
+    """
+    n = len(classes)
+    y = np.array([classes.index(t["class"]) for t in trials])
+    order = np.argsort([t["trial"] for t in trials])          # recording order
+    cut = int(round(0.8 * len(trials)))
+    blocked = [(order[:cut], order[cut:])]
+
+    def stratified(labels):
+        folds = [[] for _ in range(5)]
+        for c in range(n):
+            idx = rng.permutation(np.where(labels == c)[0])
+            for k, i in enumerate(idx):
+                folds[k % 5].append(i)
+        allidx = np.arange(len(labels))
+        return [(np.setdiff1d(allidx, f), np.array(sorted(f))) for f in folds]
+
+    random_folds = stratified(y)
+    out = {}
+    for kind in ("power", "waveform"):
+        for wname, w in WINDOWS.items():
+            F = features(trials, w, band, fs, tmin, kind)
+            for split, folds in (("random", random_folds), ("blocked", blocked)):
+                acc = cv_score(F, y, n, folds)
+                null = [cv_score(F, rng.permutation(y), n, folds) for _ in range(n_perm)]
+                pval = (np.sum(np.array(null) >= acc) + 1.0) / (len(null) + 1.0) if null else None
+                out["%s_%s_%s" % (kind, wname, split)] = {
+                    "accuracy": acc, "x_chance": acc * n,
+                    "null_mean": float(np.mean(null)) if null else None, "p_value": pval}
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description="Gao et al. classical baseline")
     ap.add_argument("--data", default="../datasets/gao")
@@ -90,12 +136,42 @@ def main():
     ap.add_argument("--permute", type=int, default=200)
     ap.add_argument("--align", choices=["none", "session"], default="none",
                     help="session: standardise features within each session (no labels used)")
+    ap.add_argument("--split", choices=["cross", "within"], default="cross",
+                    help="cross: train session 1, test session 2. within: inside each session")
     ap.add_argument("--json", default=None)
     args = ap.parse_args()
 
     trials, fs, tmin = load(os.path.join(args.data, "gao_sub-%02d.pt" % args.subject))
     band = None if args.band[0] <= 0 else tuple(args.band)
     sessions = sorted({t["session"] for t in trials})
+
+    if args.split == "within":
+        # every session counts, so subjects 9 and 10 take part here
+        rng = np.random.default_rng(args.subject)
+        res = {"subject": args.subject, "band": band, "l2": L2, "split": "within", "sessions": {}}
+        print("sub-%02d | band %s | within each session | l2 %g fixed in advance"
+              % (args.subject, band, L2))
+        for ses in sessions:
+            res["sessions"][ses] = {}
+            for task, classes in TASK_CLASSES.items():
+                tt = [t for t in trials if t["task"] == task and t["session"] == ses]
+                missing = [c for c in classes if not any(t["class"] == c for t in tt)]
+                if not tt or missing:
+                    res["sessions"][ses][task] = {"skipped": "missing: " + ", ".join(missing or ["run"])}
+                    continue
+                r = within_session(tt, classes, band, fs, tmin, args.permute, rng)
+                r["chance"], r["n"] = 1.0 / len(classes), len(tt)
+                res["sessions"][ses][task] = r
+                for k in ("power_imagery_random", "power_imagery_blocked",
+                          "power_perception_random", "power_perception_blocked"):
+                    print("  ses %d %s %-26s acc %.3f (%.2fx)  p %s" % (
+                        ses, task, k, r[k]["accuracy"], r[k]["x_chance"],
+                        "%.4f" % r[k]["p_value"] if r[k]["p_value"] is not None else "-"))
+        if args.json:
+            with open(args.json, "w") as f:
+                json.dump(res, f, indent=2)
+        return
+
     if len(sessions) < 2:
         print("sub-%02d has only session(s) %s; cross-session test not possible, skipping"
               % (args.subject, sessions))
