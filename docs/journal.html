@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">10 Oct 2026<small>Gao: seeing decodes across days, imagining does not</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">10 Oct 2026<small>Aligned: imagery of shapes survives across days, faintly</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
@@ -1011,6 +1011,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">5 Oct</td><td>85810 &middot; eeg</td><td>Image Variations from brain predictions</td><td class="n lo">0.3 / 1.1 / 0.0 / 0.3 SEM</td><td><b>Phase 1 gate: go to data</b></td></tr>
       <tr><td class="n">10 Oct</td><td>87331 &middot; imagery</td><td>Gao, cross-session, band power and waveform</td><td class="n lo">0.99&ndash;1.12&times;</td><td>Null on all 3 tasks</td></tr>
       <tr><td class="n">10 Oct</td><td>87331 &middot; perception</td><td>Gao, cross-session, positive control</td><td class="n hi">1.14&ndash;1.29&times;, p &le; 0.0007</td><td>Control passes</td></tr>
+      <tr><td class="n">10 Oct</td><td>87790 &middot; figures</td><td>Gao, cross-session, session-aligned band power</td><td class="n hi">1.11&times;, p 0.0018</td><td><b>First cross-day imagery</b></td></tr>
     </tbody>
   </table>
   </div>
@@ -1047,6 +1048,41 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">result</span><span class="tag res">first cross-day imagery</span></div>
+    <span class="when">10 OCT 2026 &middot; JOB 87790</span>
+    <h3>Per-session alignment: a small imagery signal survives across days, for shapes</h3>
+    <p><span class="lbl">What changed</span>Only one thing against job 87331: every feature is
+       standardised within its own session before the classifier, using that session&rsquo;s EEG and
+       never its labels. Electrode contact changes each time the cap goes on, which shifts and rescales
+       band power per channel; this removes that shift.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Band power, cross-session</th><th class="n">Before</th><th class="n">Aligned</th><th class="n">Combined p, aligned</th></tr></thead>
+      <tbody>
+        <tr><td>Animals, imagery</td><td class="n">1.00&times;</td><td class="n lo">1.01&times;</td><td class="n lo">0.42</td></tr>
+        <tr><td><b>Figures, imagery</b></td><td class="n">1.06&times;</td><td class="n hi">1.11&times;, 4 of 20</td><td class="n hi">0.0018</td></tr>
+        <tr><td>Objects, imagery</td><td class="n">1.06&times;</td><td class="n">1.09&times;</td><td class="n">0.12</td></tr>
+        <tr><td>Animals, perception</td><td class="n">1.14&times;, 3 of 19</td><td class="n hi">1.24&times;, 9 of 19</td><td class="n hi">9e-8</td></tr>
+        <tr><td>Figures, perception</td><td class="n">1.26&times;</td><td class="n hi">1.32&times;</td><td class="n hi">8e-11</td></tr>
+        <tr><td>Objects, perception</td><td class="n">1.29&times;</td><td class="n hi">1.33&times;</td><td class="n hi">1e-9</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>Alignment strengthens the perception control on all
+       three tasks, the clearest on animals, so the shift it removes was real. For imagery it moves
+       one task: <b>figures, band power, 1.11&times; chance across days with combined p = 0.0018</b>,
+       which survives a Bonferroni correction for all twelve imagery tests run on this data across
+       both jobs (threshold 0.0042). Animals and objects stay at chance; waveform features stay at
+       chance on every task.</p>
+    <p><span class="lbl">Keeping it in proportion</span>1.11&times; is 37% against 33% chance: real
+       by this test, and small. Fisher&rsquo;s method can be carried by a few strong subjects, and
+       four of twenty are individually significant here. It is the first imagery signal in this project
+       to survive taking the cap off and putting it back on, and the first evidence that cross-day
+       failure is partly calibration rather than absence. Figures being the task that carries it is
+       plausible: simple shapes are the most distinct of the three sets.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">null result</span><span class="tag res">control passes</span></div>
