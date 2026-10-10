@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">10 Oct 2026<small>Aligned: imagery of shapes survives across days, faintly</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">11 Oct 2026<small>Within session: paper not reproduced; shuffled splits inflate</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
@@ -1012,6 +1012,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">10 Oct</td><td>87331 &middot; imagery</td><td>Gao, cross-session, band power and waveform</td><td class="n lo">0.99&ndash;1.12&times;</td><td>Null on all 3 tasks</td></tr>
       <tr><td class="n">10 Oct</td><td>87331 &middot; perception</td><td>Gao, cross-session, positive control</td><td class="n hi">1.14&ndash;1.29&times;, p &le; 0.0007</td><td>Control passes</td></tr>
       <tr><td class="n">10 Oct</td><td>87790 &middot; figures</td><td>Gao, cross-session, session-aligned band power</td><td class="n hi">1.11&times;, p 0.0018</td><td><b>First cross-day imagery</b></td></tr>
+      <tr><td class="n">11 Oct</td><td>87812 &middot; imagery</td><td>Gao, within session, shuffled and time-ordered</td><td class="n lo">0.92&ndash;1.10&times;</td><td>Paper not reproduced</td></tr>
+      <tr><td class="n">11 Oct</td><td>87812 &middot; perception</td><td>Gao, within session, shuffled vs time-ordered</td><td class="n">16&ndash;19 vs 5&ndash;9 sessions sig.</td><td>Shuffled splits inflate</td></tr>
     </tbody>
   </table>
   </div>
@@ -1048,6 +1050,43 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">does not reproduce</span><span class="tag res">drift measured</span></div>
+    <span class="when">10&ndash;11 OCT 2026 &middot; JOB 87812</span>
+    <h3>Within a session, our simple decoder does not reach the paper&rsquo;s numbers, and shuffled splits flatter</h3>
+    <p><span class="lbl">What was run</span>The paper&rsquo;s design, within each session of all 22
+       subjects (42 sessions), alpha band power and waveform, two splits. <b>Shuffled</b>: stratified
+       5-fold over the whole session, as the paper does with one 80/20 split. <b>Time-ordered</b>: train
+       on the first 80% of the run, test on the last 20%. 50-shuffle null per session.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Band power, within session</th><th class="n">Shuffled</th><th class="n">Time-ordered</th></tr></thead>
+      <tbody>
+        <tr><td>Animals, imagery (3-way)</td><td class="n lo">1.00&times;, p 0.45</td><td class="n lo">0.92&times;, p 0.97</td></tr>
+        <tr><td>Figures, imagery (3-way)</td><td class="n">1.06&times;, p 0.004</td><td class="n lo">1.10&times;, p 0.21</td></tr>
+        <tr><td>Objects, imagery (4-way)</td><td class="n lo">1.04&times;, p 0.065</td><td class="n lo">1.08&times;, p 0.39</td></tr>
+        <tr><td>Animals, perception</td><td class="n hi">1.21&times;, 18 of 41, p 8e-11</td><td class="n">1.19&times;, 5 of 41, p 0.005</td></tr>
+        <tr><td>Figures, perception</td><td class="n hi">1.30&times;, 19 of 42, p 6e-15</td><td class="n">1.23&times;, 7 of 42, p 6e-5</td></tr>
+        <tr><td>Objects, perception</td><td class="n hi">1.26&times;, 16 of 40, p 5e-11</td><td class="n">1.23&times;, 9 of 40, p 2e-4</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span><b>Imagery within a session is near chance with this
+       decoder</b>, about 33&ndash;37% on 3-way tasks, against the paper&rsquo;s 50% with CSP and
+       75.8% with EEGNet. Only figures under the shuffled split reaches significance. Perception
+       decodes under both splits, but the shuffled split makes it look far stronger: individually
+       significant sessions fall from 16&ndash;19 to 5&ndash;9 once training and test trials are kept
+       apart in time. That gap is drift shared between interleaved trials, and it is the same
+       mechanism that flattered our own early numbers.</p>
+    <p><span class="lbl">What it does and does not mean</span>It does not show the paper is wrong.
+       Their pipeline differs from ours in ways that each could matter: ICA cleaning, a 4&ndash;80 Hz
+       band against our alpha only, CSP spatial filters and EEGNet against per-channel band power,
+       and a single random 80/20 split. It does show that the shuffled split inflates results on this
+       very dataset, and that KNN, their classical method, is especially exposed to it, since a
+       trial&rsquo;s nearest neighbours tend to be its neighbours in time. The decisive test is their
+       own pipeline under a time-ordered split.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag res">result</span><span class="tag res">first cross-day imagery</span></div>
