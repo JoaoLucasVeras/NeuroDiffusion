@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">5 Oct 2026<small>Gao et al. data in: 22 people, 40 repeats each</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">10 Oct 2026<small>Gao: seeing decodes across days, imagining does not</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
@@ -1009,6 +1009,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">4 Oct</td><td>85801</td><td>Band power &rarr; CLIP, l2 chosen on training data</td><td class="n">2.25 / 2.25 / 1.25 / 2.25&times;</td><td>Faint, honest</td></tr>
       <tr><td class="n">5 Oct</td><td>85810 &middot; oracle</td><td>Image Variations from true embeddings</td><td class="n hi">33&ndash;34 SEM</td><td>Generator works</td></tr>
       <tr><td class="n">5 Oct</td><td>85810 &middot; eeg</td><td>Image Variations from brain predictions</td><td class="n lo">0.3 / 1.1 / 0.0 / 0.3 SEM</td><td><b>Phase 1 gate: go to data</b></td></tr>
+      <tr><td class="n">10 Oct</td><td>87331 &middot; imagery</td><td>Gao, cross-session, band power and waveform</td><td class="n lo">0.99&ndash;1.12&times;</td><td>Null on all 3 tasks</td></tr>
+      <tr><td class="n">10 Oct</td><td>87331 &middot; perception</td><td>Gao, cross-session, positive control</td><td class="n hi">1.14&ndash;1.29&times;, p &le; 0.0007</td><td>Control passes</td></tr>
     </tbody>
   </table>
   </div>
@@ -1045,6 +1047,44 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">null result</span><span class="tag res">control passes</span></div>
+    <span class="when">8&ndash;10 OCT 2026 &middot; JOB 87331</span>
+    <h3>Across days, seeing decodes and imagining does not</h3>
+    <p><span class="lbl">What was run</span>The classical baseline on the Gao et al. data, every
+       setting fixed before any result: train on session 1, test on session 2, within each task
+       (3, 3 and 4 way), l2 = 0.01, 200-shuffle null per subject. Two windows from the same trials,
+       imagery (black screen, 0&ndash;4 s) and perception (picture on screen), and two feature sets,
+       alpha band power and 1&ndash;15 Hz waveform. 20 two-session subjects; three task-subject
+       pairs skipped where a stimulus was missing from one session.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Task, condition</th><th class="n">Mean &times; chance</th><th class="n">Subjects p &lt; .05</th><th class="n">Combined p</th></tr></thead>
+      <tbody>
+        <tr><td>Animals, imagery (power / waveform)</td><td class="n lo">1.00 / 0.99</td><td class="n">2 / 3 of 19</td><td class="n lo">0.42 / 0.42</td></tr>
+        <tr><td>Figures, imagery</td><td class="n lo">1.06 / 1.11</td><td class="n">2 / 1 of 20</td><td class="n lo">0.11 / 0.27</td></tr>
+        <tr><td>Objects, imagery</td><td class="n lo">1.06 / 1.12</td><td class="n">2 / 2 of 18</td><td class="n lo">0.23 / 0.66</td></tr>
+        <tr><td>Animals, perception</td><td class="n">1.14 / 1.03</td><td class="n">3 / 1 of 19</td><td class="n hi">0.0007 / 0.17</td></tr>
+        <tr><td>Figures, perception</td><td class="n">1.26 / 1.09</td><td class="n">10 / 1 of 20</td><td class="n hi">1e-8 / 0.47</td></tr>
+        <tr><td>Objects, perception</td><td class="n">1.29 / 1.24</td><td class="n">8 / 5 of 18</td><td class="n hi">3e-9 / 0.0005</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span><b>The positive control passes and imagery does
+       not.</b> Seeing the picture decodes on a different day in all three tasks, most strongly
+       with band power, so the data, the timing reading and the method work. Imagining the
+       picture sits at chance in every task with both feature sets: the count of significant
+       subjects is what chance alone produces (about one in twenty), and no combined p-value is
+       below 0.1. Combined p is Fisher&rsquo;s method over subjects.</p>
+    <p><span class="lbl">What it does and does not mean</span>This is the strictest test the
+       dataset allows, with a deliberately simple decoder on 32 features. It does not rule out
+       imagery decoding within a session, which is what the published 75.8% reports, nor a stronger
+       decoder. It does say that <b>whatever imagery signal a simple decoder can reach does not
+       survive taking the cap off and putting it back on</b>, even with 40 repetitions where the
+       Shimizu data had one. Band power beat waveform for perception, against the expectation
+       written into the script; noted, not acted on.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag fix">data</span><span class="tag fix">two faults found</span></div>
