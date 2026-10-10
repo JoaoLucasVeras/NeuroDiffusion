@@ -20,6 +20,14 @@ What is fixed in advance, before any Gao result was seen
   mostly produces a time-locked waveform, which band power discards by design, so the
   perception control is only meaningful with waveform features. Both run on both windows.
 
+--align session (added after the first run, job 87331, which found perception decoding
+across days and imagery at chance): standardise every feature within each session using
+that session's own mean and spread, before the classifier. Each time the cap goes on the
+electrode contact changes, which shifts and rescales band power per channel; a classifier
+calibrated on session 1's levels then misreads session 2. The test session's statistics
+come from its EEG alone, never its labels, and every class is equally represented in it,
+so this is unsupervised per-session recalibration, the standard remedy, not leakage.
+
 Trials here are separate events, so the permutation null shuffles labels across training
 trials directly. That is the correct null for this dataset; it would not have been for
 Shimizu, where windows of one recording shared a label.
@@ -80,6 +88,8 @@ def main():
     ap.add_argument("--subject", type=int, required=True)
     ap.add_argument("--band", type=float, nargs=2, default=[8.0, 13.0], help="0 0 = broadband")
     ap.add_argument("--permute", type=int, default=200)
+    ap.add_argument("--align", choices=["none", "session"], default="none",
+                    help="session: standardise features within each session (no labels used)")
     ap.add_argument("--json", default=None)
     args = ap.parse_args()
 
@@ -90,11 +100,11 @@ def main():
         print("sub-%02d has only session(s) %s; cross-session test not possible, skipping"
               % (args.subject, sessions))
         return
-    print("sub-%02d | band %s | train session %d, test session %d | l2 %g fixed in advance"
-          % (args.subject, band, sessions[0], sessions[1], L2))
+    print("sub-%02d | band %s | train session %d, test session %d | l2 %g fixed in advance | align %s"
+          % (args.subject, band, sessions[0], sessions[1], L2, args.align))
 
     rng = np.random.default_rng(args.subject)
-    res = {"subject": args.subject, "band": band, "l2": L2, "tasks": {}}
+    res = {"subject": args.subject, "band": band, "l2": L2, "align": args.align, "tasks": {}}
     for task, classes in TASK_CLASSES.items():
         tr = [t for t in trials if t["task"] == task and t["session"] == sessions[0]]
         te = [t for t in trials if t["task"] == task and t["session"] == sessions[1]]
@@ -113,6 +123,9 @@ def main():
             for wname, w in WINDOWS.items():
                 Ftr = features(tr, w, band, fs, tmin, kind)
                 Fte = features(te, w, band, fs, tmin, kind)
+                if args.align == "session":
+                    Ftr = (Ftr - Ftr.mean(0)) / (Ftr.std(0) + 1e-8)
+                    Fte = (Fte - Fte.mean(0)) / (Fte.std(0) + 1e-8)
                 acc = score(Ftr, ytr, Fte, yte, n)
                 null = [score(Ftr, rng.permutation(ytr), Fte, yte, n) for _ in range(args.permute)]
                 pval = (np.sum(np.array(null) >= acc) + 1.0) / (len(null) + 1.0) if null else None

@@ -21,5 +21,6 @@ cd "$ROOT/code"
 R="$ROOT/results/s12_${SLURM_ARRAY_JOB_ID}"
 mkdir -p "$R"
 S="$SLURM_ARRAY_TASK_ID"
-$PYTHON -u gao_baseline.py --subject "$S" --band 8 13 --permute 200 \
+# EXTRA_ARGS="--align session" standardises features within each session (no labels used)
+$PYTHON -u gao_baseline.py --subject "$S" --band 8 13 --permute 200 ${EXTRA_ARGS:-} \
     --json "$R/gao_baseline_s$(printf %02d "$S").json"
