@@ -191,6 +191,41 @@ SEMs. The harness was validated on synthetic controls: same-class generations sc
 22.3 SEM (verdict: signal present), random-class generations scored 1.6 SEM (verdict: not
 distinguishable).
 
+## Generating images: two interchangeable generators
+
+Both start from the same band-power encoder and write the same `samples.npz`, so
+`eval_report.py` scores either one and switching is one command.
+
+**1. Train the encoder (CPU, per subject).** Chooses its regularisation on training
+windows only and saves the test predictions both generators read.
+
+```sh
+sbatch jobs/s9_bp_clip.sh                    # -> results/s9_<jobid>/bp_clip_s{1..4}.pt
+```
+
+**2a. Generator A, DreamDiffusion.** Retrains Stable Diffusion's cross-attention to read
+the encoder. The existing Stage 2 job, with the encoder in place of the MAE. The band
+and subject must match the encoder's, or `eeg_ldm.py` stops the run.
+
+```sh
+PROTOCOL=window EXTRA_ARGS="--subject 1 --band 8 13 --cond_encoder $HOME/NeuroDiffusion/results/s9_<jobid>/bp_clip_s1.pt" \
+    sbatch --gres=gpu:1 hpc_submit_stage2.sh
+```
+
+**2b. Generator B, SD Image Variations.** A Stable Diffusion already trained to take CLIP
+image embeddings; nothing is retrained. One-time setup on coe-hpc1 (internet, 5.0 GB),
+then a GPU job that generates and scores three arms per subject: `eeg` (the test),
+`oracle` (true stimulus embeddings, the ceiling) and `mean` (no information, the floor).
+
+```sh
+bash jobs/setup_imagevar.sh                  # once, on coe-hpc1, not through Slurm
+ENC_DIR=$HOME/NeuroDiffusion/results/s9_<jobid> sbatch jobs/s10_imagevar.sh
+```
+
+**Which to use.** B first: nothing can overfit, and the oracle arm says how good the
+images could be. A when B shows a signal worth adapting the generator to, or when a
+result must stay comparable with the earlier DreamDiffusion runs.
+
 ## Things that will bite you
 
 - `argparse` booleans use a real parser now, so `--use_time_cond False` means False. It

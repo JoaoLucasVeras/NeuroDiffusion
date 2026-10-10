@@ -103,7 +103,7 @@ Two details worth knowing, both verified from the Methods:
 
 ### Gao et al. (2026) — EEG dataset for visual imagery BCI
 *Found by: Joao*
-[Paper](https://doi.org/10.1038/s41597-025-06512-5) · [Data (figshare)](https://doi.org/10.6084/m9.figshare.30227503) · CC BY-NC-ND 4.0
+[Paper](https://doi.org/10.1038/s41597-025-06512-5) · [Data (figshare)](https://doi.org/10.6084/m9.figshare.30227503) · CC BY 4.0 (since version 3, July 2026; earlier versions were CC BY-NC-ND 4.0)
 
 22 participants (19 completed both sessions), 32 channels at 1000 Hz, 10 classes in
 three groups (figures / animals / objects). **40 trials per class per session**, 400

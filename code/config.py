@@ -126,6 +126,9 @@ class Config_Generative_Model:
         
         self.dataset = 'EEG' 
         self.pretrain_mbm_path = None
+        # bp_clip_encoder.py checkpoint; replaces the MAE when set. update_config only
+        # copies CLI options that already exist here, so this default must stay.
+        self.cond_encoder = None
 
         self.img_size = 512
 
