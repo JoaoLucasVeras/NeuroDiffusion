@@ -91,8 +91,12 @@ class EEGNetModel(nn.Module):
 DEV = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-def prepare(trials, fs, tmin):
-    """Average reference, 4-80 Hz on the full 12 s trial, then the 0-4 s imagery window."""
+def prepare(trials, fs, tmin, variant=None):
+    """Average reference, 4-80 Hz on the full 12 s trial, then the 0-4 s imagery window.
+    variant "ica" (gao_ica_prep.py, the authors' own preprocessing) is already cleaned,
+    filtered and cut to 0-4 s, so it is used exactly as stored."""
+    if variant == "ica":
+        return np.stack([t["eeg"].numpy() for t in trials]).astype(np.float32)
     a, b = int(round(-tmin * fs)), int(round((4.0 - tmin) * fs))
     X = []
     for t in trials:
@@ -156,10 +160,12 @@ def main():
     args = ap.parse_args()
 
     d = torch.load(os.path.join(args.data, "gao_sub-%02d.pt" % args.subject), map_location="cpu")
-    trials, fs, tmin = d["dataset"], d["fs"], d["tmin"]
+    trials, fs, tmin, variant = d["dataset"], d["fs"], d["tmin"], d.get("variant")
     rng = np.random.default_rng(args.subject)
-    res = {"subject": args.subject, "epochs": args.epochs, "device": str(DEV), "sessions": {}}
-    print("sub-%02d | %d epochs | device %s" % (args.subject, args.epochs, DEV))
+    res = {"subject": args.subject, "epochs": args.epochs, "device": str(DEV),
+           "variant": variant or "ours", "sessions": {}}
+    print("sub-%02d | %d epochs | device %s | data %s" % (args.subject, args.epochs, DEV,
+                                                        variant or "ours"))
 
     for ses in sorted({t["session"] for t in trials}):
         res["sessions"][ses] = {}
@@ -169,7 +175,7 @@ def main():
                 res["sessions"][ses][task] = {"skipped": "stimulus missing"}
                 continue
             tt = sorted(tt, key=lambda t: t["trial"])                 # recording order
-            X = prepare(tt, fs, tmin)
+            X = prepare(tt, fs, tmin, variant)
             y = np.array([classes.index(t["class"]) for t in tt])
             n = len(classes)
             folds = stratified_folds(y, n, 5, rng)

@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">11 Oct 2026<small>Within session: paper not reproduced; shuffled splits inflate</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">12 Oct 2026<small>Published EEGNet scoring matches its scrambled-label null</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
@@ -1014,6 +1014,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">10 Oct</td><td>87790 &middot; figures</td><td>Gao, cross-session, session-aligned band power</td><td class="n hi">1.11&times;, p 0.0018</td><td><b>First cross-day imagery</b></td></tr>
       <tr><td class="n">11 Oct</td><td>87812 &middot; imagery</td><td>Gao, within session, shuffled and time-ordered</td><td class="n lo">0.92&ndash;1.10&times;</td><td>Paper not reproduced</td></tr>
       <tr><td class="n">11 Oct</td><td>87812 &middot; perception</td><td>Gao, within session, shuffled vs time-ordered</td><td class="n">16&ndash;19 vs 5&ndash;9 sessions sig.</td><td>Shuffled splits inflate</td></tr>
+      <tr><td class="n">12 Oct</td><td>87908</td><td>Authors&rsquo; EEGNet, published scoring vs scrambled labels</td><td class="n lo">43% vs 43%</td><td>Scoring artifact</td></tr>
     </tbody>
   </table>
   </div>
@@ -1050,6 +1051,38 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">scoring artifact</span><span class="tag res">method check</span></div>
+    <span class="when">11&ndash;12 OCT 2026 &middot; JOB 87908</span>
+    <h3>The published EEGNet scoring reports the same accuracy on scrambled labels</h3>
+    <p><span class="lbl">What the authors&rsquo; code does</span>Their EEGNet.py records, per fold,
+       the <b>highest test-fold accuracy over every training epoch</b>, and its learning-rate scheduler
+       steps on that same test accuracy. Their classical script likewise reports the best of sixteen
+       KNN settings. The maximum of hundreds of noisy evaluations on about 24 test trials sits above
+       chance whether or not anything is learned.</p>
+    <p><span class="lbl">What was run</span>Their network and settings, unchanged, on our stored trials
+       (average reference, 4&ndash;80 Hz, no ICA), 41&ndash;42 sessions per task, scored four ways.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Within session</th><th class="n">As published</th><th class="n">As published, labels scrambled</th><th class="n">Honest, shuffled</th><th class="n">Honest, time-ordered</th></tr></thead>
+      <tbody>
+        <tr><td>Animals (chance 33%)</td><td class="n">42.8%</td><td class="n lo">43.3%</td><td class="n">32.1%</td><td class="n">33.2%</td></tr>
+        <tr><td>Figures (chance 33%)</td><td class="n">44.0%</td><td class="n lo">42.8%</td><td class="n">34.7%</td><td class="n">33.2%</td></tr>
+        <tr><td>Objects (chance 25%)</td><td class="n">32.6%</td><td class="n lo">33.3%</td><td class="n">24.1%</td><td class="n">23.3%</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span><b>On this data the published scoring is
+       indistinguishable from its own scrambled-label null</b>: about 1.3&times; chance either way.
+       Scored honestly, the network sits at chance on every task, shuffled or time-ordered. So the
+       scoring procedure alone adds roughly ten percentage points, from nothing.</p>
+    <p><span class="lbl">What it leaves open</span>The paper reports 75.8%, well above the 43% that
+       scoring inflation produces here, so inflation is not the whole story. The remaining difference
+       is preprocessing: theirs is ICA-cleaned with ICLabel, and their main script trains for 1500
+       epochs where the paper states 500, which would inflate the maximum further. Option B, their
+       own preprocessing code on the raw data, is running.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">does not reproduce</span><span class="tag res">drift measured</span></div>
