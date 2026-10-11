@@ -264,9 +264,9 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <div class="statusgrid">
     <div class="sc"><span class="k">Updated</span><span class="v">12 Oct 2026<small>Option B cleaning done; network running</small></span></div>
-    <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
-    <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
-    <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
+    <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
+    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (1.11&times;, p 0.0018)</small></span></div>
+    <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
   </div>
 </header>
 
@@ -377,13 +377,13 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-start__where-the-project-stands-in-three-lines">Where the project stands, in three lines</h3>
   <ul>
-    <li><strong>Seeing works.</strong> Feed it EEG recorded while someone <em>looks at</em> an image and the generated pictures match the real stimulus significantly better than chance pairings, on images and a person the model had never seen. The machine is wired correctly.</li>
-    <li><strong>Imagining does not, yet.</strong> The same pipeline on imagination EEG comes back at chance. That is a measured result with working controls, not a crash.</li>
-    <li><strong>The data does contain imagery signal.</strong> A deliberately simple method finds it at about three times chance. So the remaining problem is ours to fix, not a dead end in the data.</li>
+    <li><strong>Seeing works.</strong> EEG recorded while someone <em>looks at</em> a picture decodes on both datasets we use, and on the larger one it holds across days. The machine is wired correctly, and the image generator reaches near-perfect matches when given the true picture&rsquo;s description.</li>
+    <li><strong>Imagining is faint.</strong> On our first dataset a simple method finds imagery at two to three times chance in three of four people, too weak to steer the generator. On the 22-person Gao dataset, imagery holds up across days only for simple shapes, at a small margin.</li>
+    <li><strong>Published imagery numbers need checking.</strong> The Gao paper&rsquo;s 75.8% comes mostly from how it was scored: the same scoring gives the same accuracy on scrambled labels. Honest measurement is the base everything else here builds on.</li>
   </ul>
 
   <h3 id="p-start__how-to-read-this">How to read this</h3>
-  <p>The tabs run in order and build on each other. Steps 01 to 03 are the setup: what the signal is, what data we have, how the machine is put together. Steps 04 and 05 are what happened when we ran it. Step 06 is the current state and what is next. The last three tabs are for looking things up rather than reading straight through.</p>
+  <p>The tabs run in order and build on each other. Chapters 02 to 04 are the setup: what the signal is, what data we started with, how the machine is put together. Chapter 05 explains how to read the numbers, and 06 and 07 are what happened on our first dataset. Chapter 08 is the current state and what is next, 09 is the dated journal, and the last two tabs are for looking things up rather than reading straight through.</p>
 
   <div class="note">
     <span class="hd">Who is doing this</span>
@@ -398,7 +398,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="oneline"><b>In one sentence:</b> an electrode on the scalp measures a voltage that is mostly not brain activity, and the trick is knowing which part is.</p>
   </header>
 
-<p>An electrode on your scalp measures voltage, the tiny electrical field produced by millions of neurons firing together beneath it. In our data there are 128 of these, each sampled 250 times per second.</p>
+<p>An electrode on your scalp measures voltage, the tiny electrical field produced by millions of neurons firing together beneath it. Our first dataset has 128 of these, each sampled 250 times per second; the Gao dataset has 32, sampled 1,000 times per second.</p>
 
   <p>That voltage is not "brain activity". It is a <strong>sum of several things stacked on top of each other</strong>, and several of the non-brain contributions are <em>larger</em> than the brain signal:</p>
 
@@ -462,7 +462,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="oneline"><b>In one sentence:</b> we have four people who each imagined 33 pictures exactly once, which is far less data than it looks like and creates a shortcut a model will happily take.</p>
   </header>
 
-<h3 id="p-data__what-was-recorded">What was recorded</h3>
+<div class="note">
+    <span class="hd">Which dataset this chapter is about</span>
+    <p>Chapters 3, 6 and 7 describe our <b>first</b> dataset (Shimizu &amp; Srinivasan). Since 10 October the main dataset is <b>Gao et al. 2026</b>: 22 people, 40 real repetitions of each imagined picture per session, two sessions on different days. Its results are in Chapter 8 and the Journal.</p>
+  </div>
+
+  <h3 id="p-data__what-was-recorded">What was recorded</h3>
   <p>Four people. Each was shown a picture for half a second, then a noise mask, then spent ten seconds imagining that picture <strong>with their eyes open</strong>. 128 electrodes recorded throughout, at 250 measurements per second. The dataset is from Shimizu and Srinivasan, 2022, and the same four people also did a separate perception task where they simply looked at images.</p>
 
   <div class="note">
@@ -961,19 +966,22 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <header class="chead">
     <span class="cnum">Chapter 8</span>
     <h2>Where we are, and what is next</h2>
-    <p class="oneline"><b>In one sentence:</b> forward, decisively, but it is the kind of forward step that makes some earlier numbers look worse.</p>
+    <p class="oneline"><b>In one sentence:</b> seeing decodes reliably, imagining is faint, and honest measurement has shown that a published imagery result does not hold up.</p>
   </header>
 
-<p>The project a week ago: an expensive pipeline producing ambiguous nulls, with no way to tell whether the data was the problem. The project now: signal in the data confirmed at p &le; 0.05 in all four subjects, the shortcut measured rather than suspected, a benchmark to beat, and a fast way to test the next idea.</p>
+<p>The first dataset showed a faint imagery signal, and the full pipeline showed the image generator works but the signal is too weak to reach the images. We moved to the 22-person Gao dataset for more real repetitions, and to test whether its published 75.8% imagery accuracy holds under honest scoring.</p>
 
   <div class="note good">
-    <span class="hd">Where the evidence stands after 26 September</span>
-    <p><b>Solid:</b> perception decodes at +4.3 SEM on unseen images. Imagery signal exists in the
-       alpha band, significant in all four subjects under a permutation null.</p>
-    <p><b>Settled negative:</b> imagery does not transfer between people in this data. Broadband's
-       advantage is a recording fingerprint.</p>
-    <p><b>Unknown:</b> what the pipeline actually achieves on alpha-band input. Every deep-model
-       number we have was trained on broadband and is provisional until re-run.</p>
+    <span class="hd">Where the evidence stands on 12 October</span>
+    <p><b>Solid:</b> seeing a picture decodes, on both datasets and across days. Given a picture&rsquo;s
+       true description, the generator&rsquo;s output is matched to the right picture out of 33 in 87&ndash;92% of cases.</p>
+    <p><b>Faint:</b> imagery in alpha band power, 2&ndash;3&times; chance in 3 of 4 people on the first
+       dataset; on Gao, across days, only for shapes (1.11&times;, p 0.0018).</p>
+    <p><b>Settled negative:</b> imagery from the first dataset does not survive into generated
+       images; imagery does not transfer between people; the Gao paper&rsquo;s published scoring
+       matches its own scrambled-label null.</p>
+    <p><b>Open:</b> whether the authors&rsquo; ICA cleaning changes the honest imagery numbers
+       (job 88171), and whether a decoder of seeing can read imagining (job 88200).</p>
   </div>
 
   <h3 id="p-status__every-experiment-and-its-number">Every experiment, and its number</h3>
@@ -1023,9 +1031,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <div class="steps">
     <div class="step"><span class="i">1</span><span class="t">Option B: the authors&rsquo; own cleaning &mdash; running</span>
       <p class="b">Their ICA preprocessing finished on all 22 people (job 88067, 16,560 trials, no errors). Their EEGNet on that data, scored four ways, is job 88171. The honest rows decide the branch below: at chance means the 75.8% is a scoring artifact and imagery is not solved on this data, and we choose the next direction from there; clearly above chance means their cleaning finds something ours misses, and we adopt it and return to Gao imagery.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Write up the scoring finding</span>
+    <div class="step"><span class="i">2</span><span class="t">Seeing &rarr; imagining, across days &mdash; running</span>
+      <p class="b">Job 88200. Train on the seeing window of one session, test on the imagining window of the other, both directions, alpha band power, 200-shuffle null, settings fixed before any result. Whether a decoder of seeing reads imagining says whether imagery reuses the visual signal.</p></div>
+    <div class="step"><span class="i">3</span><span class="t">Write up the scoring finding</span>
       <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Once B is in, that is a clean, citable methods result whichever way B goes.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">Our own recordings</span>
+    <div class="step"><span class="i">4</span><span class="t">Our own recordings</span>
       <p class="b">Designed around what works: a few simple, distinct shapes, many repeats, a seeing block before each imagining block, one session per day, and time-ordered splits from day one.</p></div>
   </div>
 
@@ -1574,12 +1584,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="ritem">
       <div class="rhead"><span class="rt">Shimizu &amp; Srinivasan (2022)</span><span class="who">Joao</span></div>
       <p class="rd">Our current dataset. Four subjects, 128 channels, 40 stimuli imagined once each for ten seconds, plus a separate perception task with 2,000 stimuli.</p>
-      <p class="rv"><b>Verdict</b>In use, and the source of the project's one positive result. Its limit is the hard one: 33 imagery events per person, not the 660 the file appears to hold.</p>
+      <p class="rv"><b>Verdict</b>Our first dataset, and where the faint alpha imagery signal was found. Its limit is the hard one: 33 imagery events per person, not the 660 the file appears to hold. Superseded as the main dataset by Gao et al. on 10 October.</p>
     </div>
     <div class="ritem">
       <div class="rhead"><span class="rt">Gao et al. (2026), visual imagery BCI</span><span class="who">Joao</span></div>
       <p class="rd">22 participants, 10 classes, 40 repetitions per class per session, two sessions, 32 channels. Published EEGNet baseline of 75.8% on three classes.</p>
-      <p class="rv"><b>Verdict</b>The one dataset worth adding. The only candidate that clears all four criteria, and roughly 800 real imagery events per person against our 33.</p>
+      <p class="rv"><b>Verdict</b>Our main dataset since 10 October: roughly 800 real imagery events per person against 33. Its published 75.8% does not survive honest scoring (Journal, 12 October); seeing decodes across days, and imagining does so only for shapes.</p>
     </div>
     <div class="ritem">
       <div class="rhead"><span class="rt">MindBigData "ImageNet of the Brain"</span><span class="who">Aditya</span></div>
