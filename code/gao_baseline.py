@@ -28,6 +28,16 @@ calibrated on session 1's levels then misreads session 2. The test session's sta
 come from its EEG alone, never its labels, and every class is equally represented in it,
 so this is unsupervised per-session recalibration, the standard remedy, not leakage.
 
+--split transfer (added 2026-10-12, before any transfer result was seen): train on the
+PERCEPTION window of one session, test on the IMAGERY window of the other, both directions,
+reported separately and as their mean. If a decoder of seeing reads imagining, imagery
+reuses the visual code, and perception data (far easier to collect) could train imagery
+decoders. Train and test are different trials on different days, so no trial's slow
+drift is shared between them. Features are standardised within each session AND window,
+always: imagery is recorded on a black screen and has more alpha than perception on every
+channel, an offset that has nothing to do with which picture it is. As in --align session,
+those statistics use no labels. The reverse (imagery -> perception) is reported too.
+
 Trials here are separate events, so the permutation null shuffles labels across training
 trials directly. That is the correct null for this dataset; it would not have been for
 Shimizu, where windows of one recording shared a label.
@@ -128,6 +138,37 @@ def within_session(trials, classes, band, fs, tmin, n_perm, rng):
     return out
 
 
+def zscore(F):
+    return (F - F.mean(0)) / (F.std(0) + 1e-8)
+
+
+def transfer(by_ses, classes, band, fs, tmin, n_perm, rng, kind="power"):
+    """--split transfer: train on one window of one session, test on another window of the
+    other session, both session orders. Returns accuracy per direction, their mean, and a
+    permutation p-value for the mean (training labels shuffled in both directions)."""
+    n = len(classes)
+    s1, s2 = sorted(by_ses)
+    F = {(s, w): zscore(features(by_ses[s], WINDOWS[w], band, fs, tmin, kind))
+         for s in (s1, s2) for w in WINDOWS}
+    y = {s: np.array([classes.index(t["class"]) for t in by_ses[s]]) for s in (s1, s2)}
+    out = {}
+    for src, dst in (("perception", "imagery"), ("imagery", "perception"),
+                     ("imagery", "imagery"), ("perception", "perception")):
+        pairs = [(s1, s2), (s2, s1)]
+
+        def run(labels):
+            return [score(F[(a, src)], labels[a], F[(b, dst)], y[b], n) for a, b in pairs]
+
+        accs = run(y)
+        acc = float(np.mean(accs))
+        null = [float(np.mean(run({s: rng.permutation(y[s]) for s in y}))) for _ in range(n_perm)]
+        pval = (np.sum(np.array(null) >= acc) + 1.0) / (len(null) + 1.0) if null else None
+        out["%s_to_%s" % (src, dst)] = {
+            "accuracy": acc, "x_chance": acc * n, "by_direction": accs,
+            "null_mean": float(np.mean(null)) if null else None, "p_value": pval}
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description="Gao et al. classical baseline")
     ap.add_argument("--data", default="../datasets/gao")
@@ -136,8 +177,9 @@ def main():
     ap.add_argument("--permute", type=int, default=200)
     ap.add_argument("--align", choices=["none", "session"], default="none",
                     help="session: standardise features within each session (no labels used)")
-    ap.add_argument("--split", choices=["cross", "within"], default="cross",
-                    help="cross: train session 1, test session 2. within: inside each session")
+    ap.add_argument("--split", choices=["cross", "within", "transfer"], default="cross",
+                    help="cross: train session 1, test session 2. within: inside each session. "
+                         "transfer: train on seeing, test on imagining, across sessions")
     ap.add_argument("--json", default=None)
     args = ap.parse_args()
 
@@ -175,6 +217,33 @@ def main():
     if len(sessions) < 2:
         print("sub-%02d has only session(s) %s; cross-session test not possible, skipping"
               % (args.subject, sessions))
+        return
+
+    if args.split == "transfer":
+        rng = np.random.default_rng(args.subject)
+        res = {"subject": args.subject, "band": band, "l2": L2, "split": "transfer", "tasks": {}}
+        print("sub-%02d | band %s | seeing -> imagining, across sessions | l2 %g fixed in advance"
+              % (args.subject, band, L2))
+        for task, classes in TASK_CLASSES.items():
+            by_ses = {s: [t for t in trials if t["task"] == task and t["session"] == s]
+                      for s in sessions[:2]}
+            missing = [c for c in classes
+                       if any(not any(t["class"] == c for t in tt) for tt in by_ses.values())]
+            if missing:
+                print("  %s skipped: %s absent from one session" % (task, ", ".join(missing)))
+                res["tasks"][task] = {"skipped": "absent from one session: " + ", ".join(missing)}
+                continue
+            r = transfer(by_ses, classes, band, fs, tmin, args.permute, rng)
+            r["chance"] = 1.0 / len(classes)
+            res["tasks"][task] = r
+            for k, v in r.items():
+                if isinstance(v, dict):
+                    print("  %s %-24s acc %.3f (%.2fx)  p %s" % (
+                        task, k, v["accuracy"], v["x_chance"],
+                        "%.4f" % v["p_value"] if v["p_value"] is not None else "-"))
+        if args.json:
+            with open(args.json, "w") as f:
+                json.dump(res, f, indent=2)
         return
     print("sub-%02d | band %s | train session %d, test session %d | l2 %g fixed in advance | align %s"
           % (args.subject, band, sessions[0], sessions[1], L2, args.align))

@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">12 Oct 2026<small>Published EEGNet scoring matches its scrambled-label null</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">12 Oct 2026<small>Option B cleaning done; network running</small></span></div>
     <div class="sc good"><span class="k">Signal in the data?</span><span class="v">Yes, significant<small>3 of 4 subjects; subject 2 borderline at 0.055</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>+4.3 SEM on unseen images</small></span></div>
     <div class="sc good"><span class="k">Imagery decoding</span><span class="v">3 of 4 subjects<small>band power into CLIP space, p &lt; 0.05</small></span></div>
@@ -1021,22 +1021,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">The Gao et al. 2026 dataset &mdash; next up</span>
-      <p class="b">Phase 1 answered on 5 October: the generator reaches the ceiling from true embeddings, and brain predictions on this dataset carry too little to show in the images. 22 participants with 40 repetitions per class is the change most likely to move that, and the only way to tell a general effect from a quirk of four recordings. First step: loader into our format, then the classical baseline and band-power encoder on it, then generator B, which is already built.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Which band? Alpha or broadband</span>
-      <p class="b">Broadband scores <b>6.00&times;</b> on subject 1 against alpha's 3.25&times;, yet the whole four-subject sweep was run on alpha. Broadband is also where the recording fingerprint lives: residual 1&ndash;8 Hz artifact, 30&ndash;50 Hz muscle, per-session impedance. The discriminating test is a band ablation with matched nulls &mdash; alpha, broadband, 1&ndash;8 Hz alone, 30&ndash;50 Hz alone. If the low and high bands carry it by themselves, broadband's lead is artifact and alpha is the honest number; if they do not, we have been conditioning on the wrong band. <b>This has to resolve first</b>, or the next GPU-day is spent on the wrong representation.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">A learned backbone that beats band power</span>
-      <p class="b">Every learned EEGNet variant trails fixed band power on 495 trials. Augmentation, cross-subject pretraining, or a pretrained EEG model might change that, but only a dataset with real repetitions makes it a fair contest. Lower priority now that band power works.</p></div>
-    <div class="step"><span class="i">4</span><span class="t">Does the large pipeline still earn its place?</span>
-      <p class="b">A 91k-parameter encoder beat an 85M one. The regularisation fixes from the improvement plan were never actually tested: <code>weight_decay</code> never reaches AdamW, the lower blocks are never frozen, and the checkpoint is chosen by last epoch rather than held-out retrieval. Two GPU-days, and the honest expectation is that it confirms the small model wins &mdash; worth spending to retire the question rather than leaving 85M parameters in the repository on an assumption.</p></div>
-    <div class="step"><span class="i">5</span><span class="t">Recover the four lost test reports</span>
-      <p class="b">The checkpoints survived the run collision and are identifiable by epoch. Cheap re-runs that turn four provisional validation numbers into real test numbers.</p></div>
-    <div class="step"><span class="i">6</span><span class="t">ICA artifact removal, as a fifth baseline condition</span>
-      <p class="b">Condition D tested discarding whole trials, not repairing them. ICA removes a blink and keeps the trial, which matters when there are only 363 of them. Minutes of CPU to settle.</p></div>
-    <div class="step"><span class="i">7</span><span class="t">Shrink the label space</span>
-      <p class="b">Gao et al.'s headline 75.8% is a <em>three-class</em> result. A working three-class imagery-to-image system is far more likely to function than 33 classes at 3&times; chance, and 75% on three categories is enough to steer a generator into the right region. Arguably the better plan rather than a fallback.</p></div>
-    <div class="step"><span class="i">8</span><span class="t">Our own recordings</span>
-      <p class="b">The long game, and the only path past the data ceiling. Hardware first, then the classical baseline on day one to check the protocol before collecting at volume.</p></div>
+    <div class="step"><span class="i">1</span><span class="t">Option B: the authors&rsquo; own cleaning &mdash; running</span>
+      <p class="b">Their ICA preprocessing finished on all 22 people (job 88067, 16,560 trials, no errors). Their EEGNet on that data, scored four ways, is job 88171. The honest rows decide the branch below: at chance means the 75.8% is a scoring artifact and imagery is not solved on this data, and we choose the next direction from there; clearly above chance means their cleaning finds something ours misses, and we adopt it and return to Gao imagery.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Write up the scoring finding</span>
+      <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Once B is in, that is a clean, citable methods result whichever way B goes.</p></div>
+    <div class="step"><span class="i">3</span><span class="t">Our own recordings</span>
+      <p class="b">Designed around what works: a few simple, distinct shapes, many repeats, a seeing block before each imagining block, one session per day, and time-ordered splits from day one.</p></div>
   </div>
 
   <div class="note">
@@ -1051,6 +1041,13 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">running</span></div>
+    <span class="when">12 OCT 2026 &middot; JOBS 88067, 88171</span>
+    <h3>Option B: the authors&rsquo; cleaning ran cleanly</h3>
+    <p><span class="lbl">Where B stands</span>The authors&rsquo; ICA cleaning ran on all 22 people with no errors and the same 16,560 trials as our own conversion, so it neither lost nor relabelled anything. Their network on that data is job 88171.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">scoring artifact</span><span class="tag res">method check</span></div>
