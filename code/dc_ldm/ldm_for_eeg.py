@@ -116,14 +116,85 @@ class cond_stage_model(nn.Module):
             return -(torch.logsumexp(logp + torch.log(pos.clamp_min(1e-12)), dim=1)).mean()
 
         return 0.5 * (sup_con(logits) + sup_con(logits.T))
-    
+
+
+class bandpower_cond_stage(nn.Module):
+    """Conditioning from band power, in place of the masked autoencoder.
+
+    head_backbone_diag found that fixed log-variance features mapped linearly into CLIP
+    space keep the imagery signal on three of four subjects, where every learned encoder
+    loses it. This loads that map (written by bp_clip_encoder.py) and presents it to the
+    diffusion model exactly as cond_stage_model does: forward returns (context, latent),
+    where latent is the 768-d CLIP prediction and context is that vector, through
+    dim_mapper, repeated across the token positions cross-attention expects.
+
+    Repeating one vector adds no learnable structure, so it cannot manufacture an effect
+    the encoder does not have. The features are computed here from the same tensor
+    eeg_ldm already feeds the encoder (band-passed, then resampled to 512); on subject 1
+    they match the encoder's own training features to correlation 1.00000, a mean shift
+    of 0.006 standardised units.
+    """
+
+    def __init__(self, ckpt_path, cond_dim=768, n_tokens=77, clip_tune=True, cls_tune=False,
+                 freeze_encoder=True):
+        super().__init__()
+        if cls_tune:
+            raise ValueError("bandpower_cond_stage has no classification head; use cls_tune=False")
+        blob = torch.load(ckpt_path, map_location='cpu')
+        if blob.get('kind') != 'bandpower_linear_clip':
+            raise ValueError("%s is not a bp_clip_encoder.py checkpoint" % ckpt_path)
+        w, b = blob['weight'].float(), blob['bias'].float()
+        self.band, self.subject = blob['band'], blob['subject']
+        self.register_buffer('feat_mu', torch.as_tensor(blob['feat_mu']).float())
+        self.register_buffer('feat_sd', torch.as_tensor(blob['feat_sd']).float())
+
+        self.proj = nn.Linear(w.shape[1], w.shape[0])
+        with torch.no_grad():
+            self.proj.weight.copy_(w)
+            self.proj.bias.copy_(b)
+        if freeze_encoder:
+            for p in self.proj.parameters():
+                p.requires_grad_(False)
+
+        self.n_tokens = n_tokens
+        self.fmri_seq_len = n_tokens
+        self.fmri_latent_dim = w.shape[0]
+        self.global_pool = True
+        self.mae = None                    # no transformer blocks to freeze
+
+        # A unit-norm 768-d vector has per-element scale near 1/sqrt(768), while the text
+        # encoder states SD 1.5 was trained on sit nearer 1 per element. Starting at
+        # sqrt(d) times the identity puts the context on roughly that scale, and keeps the
+        # encoder's geometry intact until training moves it.
+        d = w.shape[0]
+        self.dim_mapper = nn.Linear(d, cond_dim, bias=True)
+        with torch.no_grad():
+            self.dim_mapper.weight.zero_()
+            k = min(d, cond_dim)
+            self.dim_mapper.weight[:k, :k] = torch.eye(k) * (d ** 0.5)
+            self.dim_mapper.bias.zero_()
+
+        if clip_tune:
+            self.mapping = nn.Identity()   # the latent is already a CLIP-space prediction
+            self.logit_scale = nn.Parameter(torch.tensor(float(np.log(1 / 0.07))))
+
+    def forward(self, x):
+        # x: (batch, channels, time). Log variance per channel, as feat_bandpower.
+        x = x.float()
+        feats = torch.log(x.var(dim=-1, unbiased=False) + 1e-12)
+        latent = F.normalize(self.proj((feats - self.feat_mu) / self.feat_sd), dim=-1)
+        ctx = self.dim_mapper(latent).unsqueeze(1).expand(-1, self.n_tokens, -1).contiguous()
+        return ctx, latent
+
+    get_clip_loss = cond_stage_model.get_clip_loss
 
 
 class eLDM:
 
     def __init__(self, metafile, num_voxels, device=torch.device('cpu'),
                  pretrain_root='../pretrains/',
-                 logger=None, ddim_steps=250, global_pool=True, use_time_cond=False, clip_tune = True, cls_tune = False):
+                 logger=None, ddim_steps=250, global_pool=True, use_time_cond=False, clip_tune = True, cls_tune = False,
+                 cond_encoder=None):
         # self.ckp_path = os.path.join(pretrain_root, 'model.ckpt')
         self.ckp_path = os.path.join(pretrain_root, 'models/v1-5-pruned.ckpt')
         self.config_path = os.path.join(pretrain_root, 'models/config15.yaml') 
@@ -138,7 +209,12 @@ class eLDM:
        
         m, u = model.load_state_dict(pl_sd, strict=False)
         model.cond_stage_trainable = True
-        model.cond_stage_model = cond_stage_model(metafile, num_voxels, self.cond_dim, global_pool=global_pool, clip_tune = clip_tune,cls_tune = cls_tune)
+        if cond_encoder:
+            # generator A with the band-power encoder; see bandpower_cond_stage
+            model.cond_stage_model = bandpower_cond_stage(cond_encoder, self.cond_dim,
+                                                          clip_tune=clip_tune, cls_tune=cls_tune)
+        else:
+            model.cond_stage_model = cond_stage_model(metafile, num_voxels, self.cond_dim, global_pool=global_pool, clip_tune = clip_tune,cls_tune = cls_tune)
 
         model.ddim_steps = ddim_steps
         model.re_init_ema()
@@ -199,9 +275,11 @@ class eLDM:
         self.model.val_preview_every = int(getattr(config, 'val_preview_every', 0))
         self.model.cond_stage_model.clip_loss_type = getattr(config, 'clip_loss', 'cosine')
         n_freeze = int(getattr(config, 'freeze_encoder_blocks', 0))
-        enc = self.model.cond_stage_model.mae
+        enc = getattr(self.model.cond_stage_model, 'mae', None)
         frozen = set()
-        if n_freeze > 0:
+        if n_freeze > 0 and enc is None:
+            print('freeze_encoder_blocks ignored: this conditioning module has no encoder blocks')
+        elif n_freeze > 0:
             mods = [enc.patch_embed] + list(enc.blocks[:n_freeze])
             for m in mods:
                 for p in m.parameters():

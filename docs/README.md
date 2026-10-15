@@ -10,6 +10,7 @@ Everything else here is reference material.
 | File | What it is | Read it when |
 |---|---|---|
 | [journal.html](journal.html) | The main documentation: the signal, the data, the pipeline, results, the classical baseline, current status, a dated journal, and a glossary | You want to understand the project |
+| [workflow.html](workflow.html) | How to contribute, with diagrams: the three copies of the repo, the permission boundary, and what happens to a pull request | You are about to make your first change |
 | [DATA.md](DATA.md) | Where to get the data, what the raw files contain, how splits are built, and the traps in them | You are setting up, or touching the data pipeline |
 | [RUNBOOK.md](RUNBOOK.md) | Cluster operations: submitting jobs, monitoring them, recovering from the failures we have already hit | You are running something on the HPC |
 | [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) | The prioritised work queue, with the reasoning behind the ordering | You are deciding what to do next |

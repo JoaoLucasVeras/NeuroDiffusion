@@ -9,7 +9,7 @@
 ## How it was checked
 
 <!-- Be specific. "Ran it" is not checking. For example:
-     - ran `python code/classical_baseline.py --subject 1 --band 8 13` on the cluster, job 81619
+     - ran `python classical_baseline.py --subject 1 --band 8 13` from `code/` on the cluster, job 81619
      - numbers before / after, with the chance level stated
      - or: docs only, no code paths touched -->
 
