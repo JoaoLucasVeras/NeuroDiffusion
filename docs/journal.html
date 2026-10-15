@@ -379,7 +379,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <ul>
     <li><strong>Seeing works.</strong> EEG recorded while someone <em>looks at</em> a picture decodes on both datasets we use, and on the larger one it holds across days. The machine is wired correctly, and the image generator reaches near-perfect matches when given the true picture&rsquo;s description.</li>
     <li><strong>Imagining is faint.</strong> On our first dataset a simple method finds imagery at two to three times chance in three of four people, too weak to steer the generator. On the 22-person Gao dataset, imagery holds up across days only for simple shapes, at a small margin.</li>
-    <li><strong>Published imagery numbers need checking.</strong> The Gao paper&rsquo;s 75.8% comes mostly from how it was scored: the same scoring gives the same accuracy on scrambled labels. Honest measurement is the base everything else here builds on.</li>
+    <li><strong>Published imagery numbers need checking.</strong> We could not reproduce the Gao paper&rsquo;s 75.8% with our re-implementation of their pipeline, and their scoring method gives the same accuracy on scrambled labels. Honest measurement is the base everything else here builds on.</li>
   </ul>
 
   <h3 id="p-start__how-to-read-this">How to read this</h3>
@@ -966,7 +966,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <header class="chead">
     <span class="cnum">Chapter 8</span>
     <h2>Where we are, and what is next</h2>
-    <p class="oneline"><b>In one sentence:</b> seeing decodes reliably, imagining is faint, and honest measurement has shown that a published imagery result does not hold up.</p>
+    <p class="oneline"><b>In one sentence:</b> seeing decodes reliably, imagining is faint, and a published imagery result could not be reproduced under honest measurement.</p>
   </header>
 
 <p>The first dataset showed a faint imagery signal, and the full pipeline showed the image generator works but the signal is too weak to reach the images. We moved to the 22-person Gao dataset for more real repetitions, and to test whether its published 75.8% imagery accuracy holds under honest scoring.</p>
@@ -1024,7 +1024,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">11 Oct</td><td>87812 &middot; imagery</td><td>Gao, within session, shuffled and time-ordered</td><td class="n lo">0.92&ndash;1.10&times;</td><td>Paper not reproduced</td></tr>
       <tr><td class="n">11 Oct</td><td>87812 &middot; perception</td><td>Gao, within session, shuffled vs time-ordered</td><td class="n">16&ndash;19 vs 5&ndash;9 sessions sig.</td><td>Shuffled splits inflate</td></tr>
       <tr><td class="n">12 Oct</td><td>87908</td><td>Authors&rsquo; EEGNet, published scoring vs scrambled labels</td><td class="n lo">43% vs 43%</td><td>Scoring artifact</td></tr>
-      <tr><td class="n">14 Oct</td><td>88171</td><td>Option B: authors&rsquo; ICA cleaning + EEGNet, four ways</td><td class="n">pub 43% = null 44%; shapes honest-time 37.3%, p .002</td><td>75.8% not reproduced; shapes again</td></tr>
+      <tr><td class="n">14 Oct</td><td>88171</td><td>Option B: authors&rsquo; ICA cleaning + EEGNet, four ways</td><td class="n">pub 43% = null 44%; shapes honest-time 37.3%, p .002</td><td>75.8% not reproduced (re-implementation); shapes again</td></tr>
       <tr><td class="n">14 Oct</td><td>88200</td><td>Seeing &rarr; imagining, across days, alpha</td><td class="n lo">shapes p .019; others null</td><td>Weak transfer, shapes only</td></tr>
     </tbody>
   </table>
@@ -1070,7 +1070,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 
 <div class="entry">
-    <div class="tags"><span class="tag nul">75.8% does not reproduce</span><span class="tag res">shapes again</span></div>
+    <div class="tags"><span class="tag nul">75.8% not reproduced</span><span class="tag res">shapes again</span></div>
     <span class="when">14 OCT 2026 &middot; JOBS 88067, 88171</span>
     <h3>With the authors&rsquo; own cleaning, published scoring still equals its scrambled-label null</h3>
     <p><span class="lbl">What was run</span>Option B: their Preprocess.py (pyprep, ICA with ICLabel, 4&ndash;80 Hz) on the raw recordings of all 22 people, then their EEGNet, scored the same four ways as option A.</p>
@@ -1085,7 +1085,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     </table>
     </div>
     <p><span class="lbl">The reading</span>Their cleaning does not rescue the published number: the published scoring is again no higher than the same procedure on scrambled labels, on every task. Scored honestly, animals and objects are at chance. <b>Shapes</b> is above chance on the time-ordered split (37.3%, p .002 across 42 sessions, surviving correction for six tests), the third independent analysis to find shapes imagery and nothing else. Caveats: the time-ordered score is one split per session, and the two sessions of a person are not fully independent.</p>
-    <p><span class="lbl">What it settles</span>The paper&rsquo;s 75.8% is not reproduced by its own code and cleaning on its own data; we have not found what would produce it. The 12 GB raw download is no longer needed for this question.</p>
+    <p><span class="lbl">What it settles, and what it does not</span>The scoring finding stands: their method reports the same accuracy on scrambled labels. The 75.8% is not reproduced by <em>our re-implementation</em>: their network, training settings and cleaning functions, run from our own driver script, with 500 training epochs (the paper&rsquo;s figure; their script uses 1500), our own 5-fold splits, and corrected event labels for the objects task. Their script, run exactly as written on the animals task (which it labels correctly), is the remaining check, along with asking the authors.</p>
   </div>
 
 <div class="entry">
@@ -1618,7 +1618,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="ritem">
       <div class="rhead"><span class="rt">Gao et al. (2026), visual imagery BCI</span><span class="who">Joao</span></div>
       <p class="rd">22 participants, 10 classes, 40 repetitions per class per session, two sessions, 32 channels. Published EEGNet baseline of 75.8% on three classes.</p>
-      <p class="rv"><b>Verdict</b>Our main dataset since 10 October: roughly 800 real imagery events per person against 33. Its published 75.8% does not survive honest scoring (Journal, 12 October); seeing decodes across days, and imagining does so only for shapes.</p>
+      <p class="rv"><b>Verdict</b>Our main dataset since 10 October: roughly 800 real imagery events per person against 33. Its published 75.8% was not reproduced by our re-implementation, and its scoring method matches its scrambled-label null (Journal, 12&ndash;14 October); seeing decodes across days, and imagining does so only for shapes.</p>
     </div>
     <div class="ritem">
       <div class="rhead"><span class="rt">MindBigData "ImageNet of the Brain"</span><span class="who">Aditya</span></div>
