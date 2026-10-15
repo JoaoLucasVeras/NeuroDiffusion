@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">14 Oct 2026<small>Option B and transfer in: shapes is the only imagery signal</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">15 Oct 2026<small>Gao code study: their scoring inflates, but not to 75.8%</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (1.11&times;, p 0.0018)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
@@ -288,6 +288,9 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
         <a class="ch" href="#p-signal"><span class="nn">02</span><span class="nt">The signal</span></a>
         <ol class="subs">
           <li><a class="sub" href="#p-signal__frequency-is-how-you-pull-them-apart">Frequency is how you pull them apart</a></li>
+          <li><a class="sub" href="#p-signal__four-ways-to-read-a-wave">Four ways to read a wave</a></li>
+          <li><a class="sub" href="#p-signal__seeing-versus-imagining">Seeing versus imagining</a></li>
+          <li><a class="sub" href="#p-signal__how-a-model-learns-from-it">How a model learns from it</a></li>
         </ol>
       </li>
       <li data-ch="p-data">
@@ -448,6 +451,36 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p class="dd">A processing step that keeps a chosen range of frequencies and discards everything outside it.</p>
     <p class="ex"><b>Example</b>The bass and treble knobs on a stereo. Band-passing to 8&ndash;13 Hz is like turning everything down except one narrow slice of the spectrum. You hear less, but what remains is the part you care about.</p>
   </div>
+
+  <h3 id="p-signal__four-ways-to-read-a-wave">Four ways to read a wave</h3>
+  <p>To a computer, one trial is just a grid of numbers: one row per electrode, one column per sample. On the Gao data that is 32 rows by 1,000 columns, four seconds at 250 samples a second. The same grid can be read four ways, and each answers a different question.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Reading</th><th>The question it asks</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><b>Frequency</b></td><td>Which rhythms are present, and how strong?</td><td>Alpha power at each electrode: our main imagery feature</td></tr>
+      <tr><td><b>Location</b></td><td>Where on the head is it happening?</td><td>Back of the head sits over visual cortex; the front sits next to the eyes</td></tr>
+      <tr><td><b>Timing</b></td><td>When, relative to the cue, does it happen?</td><td>Seeing a picture produces a bump 100&ndash;300 ms after it appears</td></tr>
+      <tr><td><b>Relationships</b></td><td>Which electrodes rise and fall together?</td><td>What Riemannian methods read</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 id="p-signal__seeing-versus-imagining">Seeing versus imagining</h3>
+  <p>Seeing a picture triggers a response at the <b>same moment on every trial</b>, so averaging trials makes it stand out from the noise. Imagining has no picture to trigger it: each person starts, holds and fades the image at their own pace, so the response is weaker and smeared in time. There is no sharp moment to line up.</p>
+  <div class="def">
+    <p class="dt">Time-locked response</p>
+    <p class="dd">Brain activity that happens at a fixed delay after an event, the same on every repetition.</p>
+    <p class="ex"><b>Why it matters</b>Seeing is time-locked, which is why it decodes on every dataset we have tried. Imagining mostly is not, which is the main physical reason imagery decoding is hard. What remains readable is a slower change in rhythm, chiefly alpha at the back of the head.</p>
+  </div>
+
+  <h3 id="p-signal__how-a-model-learns-from-it">How a model learns from it</h3>
+  <p>There are two ways to turn the grid into a prediction.</p>
+  <ul>
+    <li><b>We choose the measurements, the model weighs them.</b> Each trial becomes a short list, say alpha power at 32 electrodes. A simple classifier learns one weight per number and adjusts the weights a little after every mistake on labelled training trials. This is our band-power baseline, and it holds up best when data is scarce.</li>
+    <li><b>The model chooses its own measurements.</b> EEGNet takes the raw grid. Its first layer learns which rhythms matter (frequency), its second which electrodes (location), its third which patterns over time (timing), and a last layer turns those into a score per class. More flexible, but with about 120 trials per session it can learn noise as easily as signal.</li>
+  </ul>
+  <p>Either way, the only test that counts is the same: settings fixed in advance, then predictions on trials the model has never seen, scored once.</p>
 
   <div class="note">
     <span class="hd">Carry this forward</span>
@@ -1040,7 +1073,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <div class="note">
     <span class="hd">If you want to help</span>
-    <p>The binding constraint is <b>data, not compute or cleverness</b>. The most valuable contributions are access to EEG hardware, participants willing to sit for repeated imagery sessions, or a dataset that has real repetitions of imagined content with posterior electrode coverage. The Resources tab lists what we have already checked and why most candidates do not fit.</p>
+    <p>The binding constraint is <b>data, not compute or cleverness</b>. On the Gao data, band power, waveform features, the authors&rsquo; EEGNet and their ICA cleaning all reach the same answer, so the method is not what holds imagery back; evaluation choices, by contrast, moved headline numbers by ten points from nothing. The most valuable contributions are access to EEG hardware, participants willing to sit for repeated imagery sessions, or a dataset that has real repetitions of imagined content with posterior electrode coverage. The Resources tab lists what we have already checked and why most candidates do not fit.</p>
   </div>
 </section>
 
@@ -1050,6 +1083,28 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">method check</span><span class="tag nul">code differs from paper</span></div>
+    <span class="when">15 OCT 2026 &middot; NO JOB</span>
+    <h3>What the Gao authors&rsquo; shared code actually does</h3>
+    <p><span class="lbl">What was read</span>The three scripts on figshare (Preprocess.py, EEGNet.py, Machine learning.py), the README, and the paper&rsquo;s Technical Validation section. The paper calls the scripts &ldquo;sample scripts&hellip; a basic classification example&rdquo;.</p>
+    <p><span class="lbl">How EEGNet.py scores</span>For one person and session it splits the trials into five shuffled groups. Each group is the test set in turn; the network trains for 1,500 epochs and is scored on that test group after <b>every</b> epoch; the group&rsquo;s result is its <b>highest</b> test score; the learning-rate scheduler and the saved model are also chosen by test score. The reported figure is the mean of the five best scores. There is no held-out test, no chance-level check and no scrambled-label control.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Detail</th><th>Paper</th><th>README</th><th>Code</th></tr></thead>
+      <tbody>
+        <tr><td>Split</td><td>one stratified 80/20</td><td>&mdash;</td><td>5-fold, shuffled</td></tr>
+        <tr><td>EEGNet epochs</td><td>500</td><td>&mdash;</td><td>1,500</td></tr>
+        <tr><td>KNN settings</td><td>fixed, 5 neighbours</td><td>&mdash;</td><td>best of 16, chosen on test</td></tr>
+        <tr><td>Filtering</td><td>&mdash;</td><td>1&ndash;30 Hz, 500 Hz, z-scored, .mat</td><td>1&ndash;100 then 4&ndash;80 Hz, 250 Hz, .npy</td></tr>
+        <tr><td>Scripts listed</td><td>&mdash;</td><td>CSP_KNN.py, Riemann.py</td><td>Riemann.py not shared</td></tr>
+        <tr><td>Objects classes</td><td>four objects</td><td>&mdash;</td><td>codes 1&ndash;3 only: chair dropped</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>The shared code inflates its own score, but not enough to explain the paper: the same scoring on the same cleaned data gave 43% with real labels and 43% with scrambled ones (jobs 87908, 88171), against the published 75.8%. The code names a data folder that is not shared (&ldquo;newset_del_ch&rdquo;), so the published numbers may come from a setup we do not have. The proposed check is their EEGNet.py run exactly as written on the animals task, with real and scrambled labels.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag res">shapes again</span><span class="tag nul">transfer weak</span></div>
