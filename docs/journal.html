@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">16 Oct 2026<small>Literature: honest imagery decoding is 1.1&ndash;1.7&times; chance</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">16 Oct 2026<small>Shapes signal is not the eyes, but it is diffuse and small</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (1.11&times;, p 0.0018)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
@@ -1060,15 +1060,18 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">12 Oct</td><td>87908</td><td>Authors&rsquo; EEGNet, published scoring vs scrambled labels</td><td class="n lo">43% vs 43%</td><td>Scoring artifact</td></tr>
       <tr><td class="n">14 Oct</td><td>88171</td><td>Option B: authors&rsquo; ICA cleaning + EEGNet, four ways</td><td class="n">pub 43% = null 44%; shapes honest-time 37.3%, p .002</td><td>75.8% not reproduced (re-implementation); shapes again</td></tr>
       <tr><td class="n">14 Oct</td><td>88200</td><td>Seeing &rarr; imagining, across days, alpha</td><td class="n lo">shapes p .019; others null</td><td>Weak transfer, shapes only</td></tr>
+      <tr><td class="n">16 Oct</td><td>90544</td><td>Shapes: brain or eyes? Regions, seconds, eye signals</td><td class="n">eye signals p .47; survives ICA, p .002</td><td>Not the eyes; diffuse</td></tr>
     </tbody>
   </table>
   </div>
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">Write up the scoring finding</span>
+    <div class="step"><span class="i">1</span><span class="t">The Gao script, exactly as written</span>
+      <p class="b">Their EEGNet.py unchanged (checked by checksum), animals task, all 22 people, real labels and scrambled labels, on CPU. Prepared and committed; waiting to be submitted.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Write up the scoring finding</span>
       <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Option B confirmed it with the authors&rsquo; own cleaning: a clean, citable methods result.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Our own recordings</span>
+    <div class="step"><span class="i">3</span><span class="t">Our own recordings</span>
       <p class="b">Designed around what works: a few simple, distinct shapes, many repeats, a seeing block before each imagining block, one session per day, and time-ordered splits from day one.</p></div>
   </div>
 
@@ -1084,6 +1087,28 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">not the eyes</span><span class="tag nul">diffuse</span></div>
+    <span class="when">16 OCT 2026 &middot; JOB 90544</span>
+    <h3>The imagined-shapes signal is not explained by eye movement, but it is spread across the head</h3>
+    <p><span class="lbl">What was run</span>Shapes only, alpha band power, train on one session and test on the other, both orders, 200-shuffle null, 20 people, settings fixed beforehand. By head region, by second, and from eye signals alone (horizontal F7&minus;F8 and vertical Fp under 4 Hz). Repeated on the authors&rsquo; ICA-cleaned data, from which eye components were removed.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Shapes, across days (chance 33%)</th><th class="n">Our stored trials</th><th class="n">Authors&rsquo; ICA-cleaned data</th></tr></thead>
+      <tbody>
+        <tr><td>All 32 channels (reference)</td><td class="n hi">36.5%, p 3&times;10<sup>&minus;5</sup></td><td class="n hi">35.7%, p 0.002</td></tr>
+        <tr><td>Back of head, 10 channels</td><td class="n hi">35.3%, p 0.0003</td><td class="n lo">34.1%, p 0.24</td></tr>
+        <tr><td>Front of head, 8 channels</td><td class="n lo">33.8%, p 0.18</td><td class="n hi">35.3%, p 0.004</td></tr>
+        <tr><td>Middle, 14 channels</td><td class="n hi">35.6%, p 0.0008</td><td class="n">35.5%, p 0.014</td></tr>
+        <tr><td>Eye signals alone</td><td class="n lo">34.3%, p 0.47</td><td class="n">not applicable</td></tr>
+        <tr><td>By second: 0&ndash;1 / 1&ndash;2 / 2&ndash;3 / 3&ndash;4 s</td><td class="n">p .015 / .35 / .003 / .045</td><td class="n">p .025 / .10 / .001 / .16</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>p is Fisher&rsquo;s combined p over 20 people. Eye signals alone decode nothing, and the shapes signal survives removal of the eye components, so slow eye movement does not explain it. It is not confined to visual cortex: on our trials it comes from the back and middle of the head, on the cleaned data from the front and middle, consistent with Kilmarx et al. 2024, who found imagery leaning on frontal electrodes. It is spread across the four seconds rather than locked to one moment. Still small: 1.07&ndash;1.10&times; chance.</p>
+    <p><span class="lbl">Caveat</span>The eye test covers slow movements under 4 Hz; eye effects in the alpha band itself are not excluded. Eye electrodes in our own recordings would settle it.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag res">literature</span></div>
