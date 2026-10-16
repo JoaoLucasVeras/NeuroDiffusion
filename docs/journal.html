@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">15 Oct 2026<small>Gao code study: their scoring inflates, but not to 75.8%</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">16 Oct 2026<small>Literature: honest imagery decoding is 1.1&ndash;1.7&times; chance</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (1.11&times;, p 0.0018)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
@@ -353,6 +353,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
           <li><a class="sub" href="#p-reading__datasets">Datasets</a></li>
           <li><a class="sub" href="#p-reading__papers-that-changed-what-we-do">Papers that changed what we do</a></li>
           <li><a class="sub" href="#p-reading__papers-on-artifact-removal">Papers on artifact removal</a></li>
+          <li><a class="sub" href="#p-reading__imagery-decoding-what-holds-up">Imagery decoding: what holds up</a></li>
         </ol>
       </li>
       <li data-ch="p-glossary">
@@ -1085,6 +1086,14 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </header>
 
 <div class="entry">
+    <div class="tags"><span class="tag res">literature</span></div>
+    <span class="when">15&ndash;16 OCT 2026 &middot; NO JOB</span>
+    <h3>The imagery literature splits by how it was tested</h3>
+    <p><span class="lbl">What was done</span>Followed citations in both directions from Gao et al. 2026 and the arrows paper (Alazrai et al. 2026), then read the evaluation of each imagery study.</p>
+    <p><span class="lbl">The reading</span>Honestly tested imagery decoding lands at 1.1&ndash;1.7&times; chance across labs, shapes included; every 75&ndash;99% claim comes with random folds over session- or block-structured recordings, or with selection on the test set. Several groups have published the same critique (block design, cue periods, cross-validation choices). Our 37% for imagined shapes sits in the honest range. Details and the full study table are in Resources, &ldquo;Imagery decoding: what holds up&rdquo;.</p>
+  </div>
+
+<div class="entry">
     <div class="tags"><span class="tag res">method check</span><span class="tag nul">code differs from paper</span></div>
     <span class="when">15 OCT 2026 &middot; NO JOB</span>
     <h3>What the Gao authors&rsquo; shared code actually does</h3>
@@ -1748,6 +1757,60 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-reading__papers-on-artifact-removal">Papers on artifact removal</h3>
   <p>Aditya's batch on ICA-based artifact removal: the foundational Jung et al. paper, the Jiang, Bian &amp; Tian review, an ICA template method for blinks, and an ICA denoising study on word imagination. <strong>Useful as background rather than as a next step.</strong> Our condition D found rejection neutral on this data, so this line is parked rather than dismissed; it becomes relevant again when we record our own sessions and control the noise ourselves.</p>
+
+  <h3 id="p-reading__imagery-decoding-what-holds-up">Imagery decoding: what holds up</h3>
+  <p>Built on 15&ndash;16 October by following citations in both directions from Gao et al. 2026 and Alazrai et al. 2026: every paper they cite, and every paper that cites them or the imagery studies they share. Each study&rsquo;s evaluation was then read in its methods section. The split is sharp: <strong>studies that test on separate sessions or later trials land at 1.1&ndash;1.7&times; chance; every 75&ndash;99% claim uses a design that lets the model recognise the recording rather than the imagery.</strong></p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Study</th><th>Imagined</th><th class="n">Reported</th><th class="n">Chance</th><th>How it was tested</th><th>Reading</th></tr></thead>
+    <tbody>
+      <tr><td>Alazrai et al. 2026</td><td>16 coloured arrows</td><td class="n">95%</td><td class="n">6%</td><td>each arrow recorded in its own session, then pooled into random folds</td><td class="lo">session leak</td></tr>
+      <tr><td>Alazrai et al. 2020</td><td>16 coloured arrows, 10 trials each</td><td class="n">92.7%</td><td class="n">6%</td><td>same design</td><td class="lo">session leak</td></tr>
+      <tr><td>Ullah 2021; Datta 2021; Hossain 2024</td><td>letters, words</td><td class="n">94&ndash;99%</td><td class="n">4&ndash;50%</td><td>random folds</td><td class="lo">likely inflated</td></tr>
+      <tr><td>Gao et al. 2026</td><td>3 animals</td><td class="n">75.8%</td><td class="n">33%</td><td>best test score over training epochs</td><td class="lo">not reproduced (Journal, 12&ndash;15 Oct)</td></tr>
+      <tr><td>Sinc-EEGNet, PLoS One 2022</td><td>40 categories</td><td class="n">above chance</td><td class="n">2.5%</td><td>same category shown in long blocks</td><td class="lo">block design</td></tr>
+      <tr><td>Kosmyna et al. 2018</td><td>flower vs hammer</td><td class="n">52%</td><td class="n">50%</td><td>chronological folds, 26 people</td><td class="hi">honest, at chance</td></tr>
+      <tr><td>Lee et al. 2022</td><td>3 categories</td><td class="n">46%</td><td class="n">33%</td><td>within subject</td><td>modest</td></tr>
+      <tr><td>Esfahani &amp; Sundararajan 2012</td><td>5 shapes</td><td class="n">45%</td><td class="n">20%</td><td>within subject</td><td>modest</td></tr>
+      <tr><td>Llorella et al. 2020</td><td>2 / 7 shapes</td><td class="n">70% / 35%</td><td class="n">50% / 14%</td><td>within subject</td><td>modest</td></tr>
+      <tr><td>Korik et al. 2024</td><td>5 3D shapes</td><td class="n">25&ndash;37%</td><td class="n">20%</td><td>tested on separate sessions, eye channels recorded</td><td class="hi">honest, modest</td></tr>
+      <tr><td>Kilmarx et al. 2022</td><td>face vs scene; 3-class live</td><td class="n">60%; 47%</td><td class="n">50%; 33%</td><td>offline and closed loop</td><td class="hi">honest, modest</td></tr>
+      <tr><td>Our Gao analysis</td><td>3 shapes</td><td class="n">37%</td><td class="n">33%</td><td>time-ordered and across days</td><td class="hi">same range</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="rsrc">
+    <div class="ritem">
+      <div class="rhead"><span class="rt"><a href="https://doi.org/10.1038/s41598-024-79309-y">Rybar, Poli &amp; Daly 2024: cue presentation overestimates semantic decoding</a></span><span class="who">Joao</span></div>
+      <p class="rd">Animals vs tools decoded at 71% while the cue was on screen, and not significantly during any mental task, visual imagery included, even with analyses adapted from earlier studies. Most earlier EEG semantic-decoding studies used data recorded while the cue was present.</p>
+      <p class="rv"><b>Useful</b>Yes, as a design rule. Decode only the imagery period, after the picture has gone. Our 0&ndash;4 s window on a black screen already does.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt"><a href="https://doi.org/10.3389/fnrgo.2025.1582724">Cross-validation choices and pBCI metrics, Frontiers in Neuroergonomics 2025</a></span><span class="who">Joao</span></div>
+      <p class="rd">On three EEG datasets and 74 people, random k-fold splits that ignore the block structure inflated accuracy by up to 30 points against block-respecting or pseudo-online evaluation. Relabelling half the blocks at random did not lower the k-fold scores.</p>
+      <p class="rv"><b>Useful</b>Yes, as independent evidence for time-ordered and cross-session splits, the ones we use.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt"><a href="https://doi.org/10.1016/j.bspc.2025.108783">The impacts of temporal autocorrelations on EEG decoding, BSPC 2025</a></span><span class="who">Joao</span></div>
+      <p class="rd">Slow drift makes neighbouring trials alike, so random splits score drift as if it were class information.</p>
+      <p class="rv"><b>Useful</b>Yes, background for the shuffled-versus-time-ordered gap we measured on Gao (job 87812).</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt"><a href="https://strathprints.strath.ac.uk/88615/1/Korik-etal-BCI-2024-Real-time-feedback-improves-imagined-3D-primitive-object-classification.pdf">Korik et al. 2024: real-time feedback and imagined 3D shapes</a></span><span class="who">Joao</span></div>
+      <p class="rd">Sphere, cone, pyramid, cylinder and cube imagined across 69 sessions, tested on held-out sessions, with eye channels recorded. Accuracy 25&ndash;37% against 20% chance, and real-time feedback improved it over sessions (p = 0.004).</p>
+      <p class="rv"><b>Useful</b>Yes. The most carefully evaluated imagery-of-shapes study we found, and the closest match to our shapes result.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt"><a href="https://microsoft.com/en-us/research/publication/evaluating-the-feasibility-of-visual-imagery-for-an-eeg-based-brain-computer-interface">Kilmarx et al. 2024: feasibility of visual imagery for an EEG BCI</a></span><span class="who">Joao</span></div>
+      <p class="rd">Imagery right after seeing the target is easier to classify than imagery recalled from long-term memory. Imagery relied more on frontal electrodes, perception on occipital ones.</p>
+      <p class="rv"><b>Useful</b>Yes. Frontal involvement is exactly what the brain-or-eyes check (job 90544) has to separate: memory and attention, or the eyes.</p>
+    </div>
+    <div class="ritem">
+      <div class="rhead"><span class="rt"><a href="https://mdpi-res.com/d_attachment/biosensors/biosensors-16-00383/article_deploy/biosensors-16-00383.pdf">Alazrai et al. 2026: visually imagined arrows, Biosensors</a></span><span class="who">Joao</span></div>
+      <p class="rd">Reports 95% for 16 imagined coloured arrows. Each arrow&rsquo;s trials were recorded within a single session, then all sessions were pooled and split into random folds; errors are spread almost perfectly evenly; no cross-session test, no shuffled-label control, no eye channels; data on request.</p>
+      <p class="rv"><b>Useful</b>As a design to avoid. Arrows are a reasonable target for our own recordings, but only randomised within every session and tested across sessions.</p>
+    </div>
+  </div>
 </section>
 
 <section class="chapter" id="p-glossary" hidden>
