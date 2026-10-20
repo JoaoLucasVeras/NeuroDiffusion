@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">16 Oct 2026<small>Shapes signal is not the eyes, but it is diffuse and small</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">19 Oct 2026<small>Gao exact script and enhancement round running</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (1.11&times;, p 0.0018)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
@@ -1067,11 +1067,13 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">The Gao script, exactly as written</span>
-      <p class="b">Their EEGNet.py unchanged (checked by checksum), animals task, all 22 people, real labels and scrambled labels, on CPU. Prepared and committed; waiting to be submitted.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Write up the scoring finding</span>
+    <div class="step"><span class="i">1</span><span class="t">The Gao script, exactly as written &mdash; running</span>
+      <p class="b">Job 92377. Their EEGNet.py unchanged, animals, all 22 people, real and scrambled labels, CPU.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Enhancement round on imagined shapes &mdash; running</span>
+      <p class="b">Job 92390. Targets fixed in advance: 45% three-way or 65% two-way, surviving correction for the methods tried. Passing builds the imagine-a-shape demo.</p></div>
+    <div class="step"><span class="i">3</span><span class="t">Write up the scoring finding</span>
       <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Option B confirmed it with the authors&rsquo; own cleaning: a clean, citable methods result.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">Our own recordings</span>
+    <div class="step"><span class="i">4</span><span class="t">Our own recordings</span>
       <p class="b">Designed around what works: a few simple, distinct shapes, many repeats, a seeing block before each imagining block, one session per day, and time-ordered splits from day one.</p></div>
   </div>
 
@@ -1087,6 +1089,15 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag res">running</span><span class="tag res">targets set in advance</span></div>
+    <span class="when">19 OCT 2026 &middot; JOBS 92377, 92390</span>
+    <h3>Two runs started, with their success criteria written down first</h3>
+    <p><span class="lbl">Job 92377</span>The Gao authors&rsquo; EEGNet.py, unchanged (checksum de7474eb&hellip;), on the animals task for all 22 people, with real and with scrambled labels, on CPU. It settles whether their own script reproduces 75.8%.</p>
+    <p><span class="lbl">Job 92390</span>The enhancement round on imagined shapes: alpha, multiband, Riemannian and per-second features across days; pooled days with a time-ordered test block; the same on each pair of shapes; and seeing-to-imagining transfer slice by slice, with the best slice pair paid for in its null.</p>
+    <p><span class="lbl">Decision rule, fixed before results</span>The round succeeds if a method&rsquo;s mean across people reaches <b>45%</b> for three shapes (chance 33%) or <b>65%</b> for two (chance 50%, mean over the three pairs), and its combined p-value survives correction for the number of methods tried (5 three-way, 3 two-way). Success: build the imagine-a-shape demo. Otherwise: shift effort to designing our own recordings.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag res">not the eyes</span><span class="tag nul">diffuse</span></div>
