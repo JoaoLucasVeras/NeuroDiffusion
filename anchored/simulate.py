@@ -52,7 +52,8 @@ def trial_eeg(rng, gains, scenario, change, anchor, strength):
     x = rng.normal(0, 1.0, (len(CHANNELS), n))
     f = rng.uniform(9, 11)
     alpha = np.sin(2 * np.pi * f * t + rng.uniform(0, 2 * np.pi))
-    amp = 2.0 * alpha_topography() * rng.uniform(0.8, 1.2)
+    # alpha strength varies a lot from trial to trial and channel to channel, as in real data
+    amp = 2.0 * alpha_topography() * rng.lognormal(0.0, 0.35) * rng.lognormal(0.0, 0.2, len(EEG))
     mod = np.ones((len(EEG), n))
     if scenario == "imagery":
         e = strength * (1.0 if anchor == "anchored" else 0.4)
@@ -76,7 +77,8 @@ def trial_eeg(rng, gains, scenario, change, anchor, strength):
 
 def simulate(scenario, participant, n_sessions=3):
     rng = np.random.default_rng(10_000 + participant)
-    strength = {"imagery": rng.uniform(0.15, 0.35), "eyes": rng.uniform(0.5, 1.0), "null": 0.0}[scenario]
+    # imagery effects are small and differ between people; eye drift is large when present
+    strength = {"imagery": rng.uniform(0.04, 0.14), "eyes": rng.uniform(0.5, 1.0), "null": 0.0}[scenario]
     data = []
     for s in range(1, n_sessions + 1):
         gains = rng.uniform(0.8, 1.2, len(EEG))

@@ -1128,6 +1128,18 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-anchored__what-is-built">What is built</h3>
   <p>Everything that can be done without hardware lives in <code>anchored/</code>: the protocol (the core of an ethics application), the trial-list builder, the stimulus program, a simulator that makes fake recordings with known effects, the analysis exactly as the protocol fixes it, and the shape editor that turns a decoded change into the &ldquo;watch it change&rdquo; output. No public dataset matches this design (searched 20 October), so the first real data has to be our own.</p>
+  <p><b>The analysis, tested on simulated recordings</b> (6 fake people per scenario, three sessions each, the protocol&rsquo;s exact analysis):</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Simulated scenario</th><th>What the analysis concluded</th><th>Right?</th></tr></thead>
+    <tbody>
+      <tr><td>Real imagery: a small alpha shift, stronger with the anchor, varying by person</td><td>left/right 71% anchored vs 56% unanchored; four changes 41%; H1, H2, H3 pass (H3 only just, p 0.016)</td><td class="hi">yes</td></tr>
+      <tr><td>Eyes do the work: the eyes drift toward the imagined side, no brain effect</td><td>brain channels at chance, eye channels 100%: result rejected</td><td class="hi">yes, the trap is caught</td></tr>
+      <tr><td>No signal</td><td>every gate fails</td><td class="hi">yes, no false discovery</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>With effects of this size, six people only just show that the anchor helps; the planned 12&ndash;20 gives room to spare.</p>
   <div class="note">
     <span class="hd">Waiting on</span>
     <p>Access to an EEG system with at least 32 channels and eye channels, and ethics approval to record people.</p>

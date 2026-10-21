@@ -118,7 +118,7 @@ def gates(results):
     eye_lr_p = col("left_right_anchored_eyes", "p_value")
     fw, fw_p = col("four_way_anchored_brain"), col("four_way_anchored_brain", "p_value")
     diff_lr = lr - col("left_right_unanchored_brain")
-    h3_p = float(stats.ttest_1samp(diff_lr, 0.0, alternative="greater").pvalue) if len(results) > 1 else 1.0
+    h3_p = float(stats.ttest_1samp(diff_lr, 0.0, alternative="greater").pvalue) if len(results) > 1 and diff_lr.std() > 0 else 1.0
     g = {
         "pilot": {"rule": "left/right >= 60% across days in >= 2 people, eyes-only at chance",
                   "pass": bool(((lr >= 0.60) & (lr_p < 0.05)).sum() >= 2 and fisher(eye_lr_p) >= 0.05)},
