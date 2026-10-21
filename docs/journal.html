@@ -263,9 +263,9 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">19 Oct 2026<small>Gao exact script and enhancement round running</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">20 Oct 2026<small>Exact Gao script: 43% = scrambled; enhancement misses target; sub-21 duplicated</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
-    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (1.11&times;, p 0.0018)</small></span></div>
+    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (35%, 1.05&times;)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
   </div>
 </header>
@@ -1060,6 +1060,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">12 Oct</td><td>87908</td><td>Authors&rsquo; EEGNet, published scoring vs scrambled labels</td><td class="n lo">43% vs 43%</td><td>Scoring artifact</td></tr>
       <tr><td class="n">14 Oct</td><td>88171</td><td>Option B: authors&rsquo; ICA cleaning + EEGNet, four ways</td><td class="n">pub 43% = null 44%; shapes honest-time 37.3%, p .002</td><td>75.8% not reproduced (re-implementation); shapes again</td></tr>
       <tr><td class="n">14 Oct</td><td>88200</td><td>Seeing &rarr; imagining, across days, alpha</td><td class="n lo">shapes p .019; others null</td><td>Weak transfer, shapes only</td></tr>
+      <tr><td class="n">20 Oct</td><td>92377</td><td>Authors&rsquo; EEGNet.py unchanged, real vs scrambled labels</td><td class="n lo">42.8% vs 41.7%</td><td>75.8% not reproduced</td></tr>
+      <tr><td class="n">20 Oct</td><td>92390</td><td>Enhancement round, shapes, 6 methods (sub-21 excluded)</td><td class="n lo">best 37.7% (target 45%)</td><td>Target missed</td></tr>
       <tr><td class="n">16 Oct</td><td>90544</td><td>Shapes: brain or eyes? Regions, seconds, eye signals</td><td class="n">eye signals p .47; survives ICA, p .002</td><td>Not the eyes; diffuse</td></tr>
     </tbody>
   </table>
@@ -1067,10 +1069,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">The Gao script, exactly as written &mdash; running</span>
-      <p class="b">Job 92377. Their EEGNet.py unchanged, animals, all 22 people, real and scrambled labels, CPU.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Enhancement round on imagined shapes &mdash; running</span>
-      <p class="b">Job 92390. Targets fixed in advance: 45% three-way or 65% two-way, surviving correction for the methods tried. Passing builds the imagine-a-shape demo.</p></div>
+    <div class="step"><span class="i">1</span><span class="t">Check every Gao recording for duplicates</span>
+      <p class="b">sub-21 has three identical recordings. A checksum of every file&rsquo;s data section across all 22 people, before anything more is built on this dataset.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Tell the authors</span>
+      <p class="b">The exact-script result and the sub-21 duplication, with the questions drafted on 15 October.</p></div>
     <div class="step"><span class="i">3</span><span class="t">Write up the scoring finding</span>
       <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Option B confirmed it with the authors&rsquo; own cleaning: a clean, citable methods result.</p></div>
     <div class="step"><span class="i">4</span><span class="t">Our own recordings</span>
@@ -1089,6 +1091,52 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">data fault</span><span class="tag res">correction</span></div>
+    <span class="when">20 OCT 2026 &middot; NO JOB</span>
+    <h3>A duplicated recording in the published Gao data, and what it changes</h3>
+    <p><span class="lbl">How it was found</span>In the enhancement round one person, sub-21, scored 100% on imagined shapes across days, which is not plausible. Their two shapes sessions turned out to be the same numbers.</p>
+    <p><span class="lbl">What the files show</span>In the published sub-21.zip, the EEG data of <code>ses-01 task-FVI</code>, <code>ses-02 task-FVI</code> and <code>ses-02 task-AVI</code> are byte-for-byte identical once the 8,704-byte header is skipped (data MD5 57b5f3c8&hellip;); only the recording timestamps in the headers differ. The two FVI event files are identical too. So for sub-21 a &ldquo;cross-day&rdquo; shapes test trains and tests on the same recording, and their second animals session holds shapes data under animal labels.</p>
+    <p><span class="lbl">What it changes</span>Our shapes results without sub-21: across days 35.0% (was 36.5%), p 0.0002; same day, time-ordered 37.1% (was 37.3%), p 0.005; seeing&rarr;imagining p 0.013 (was 0.019). Every conclusion stands, a little smaller: imagined shapes are decodable at about 1.05&times; chance across days. Whether other people&rsquo;s files are duplicated is not yet checked.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">target missed</span></div>
+    <span class="when">20 OCT 2026 &middot; JOB 92390</span>
+    <h3>No stronger decoder reaches the target on imagined shapes</h3>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Shapes, across days, 19 people (sub-21 excluded)</th><th class="n">Three-way (target 45%)</th><th class="n">Two-way, mean of pairs (target 65%)</th></tr></thead>
+      <tbody>
+        <tr><td>Alpha power (reference)</td><td class="n">35.0%, p 0.0003</td><td class="n">52.0%, p 4&times;10<sup>&minus;6</sup></td></tr>
+        <tr><td>Theta + alpha + beta</td><td class="n">35.1%, p 0.014</td><td class="n">51.9%, p 0.001</td></tr>
+        <tr><td>Riemannian</td><td class="n">34.6%, p 0.011</td><td class="n">51.0%, p 0.001</td></tr>
+        <tr><td>Per-second, three bands</td><td class="n lo">33.4%, p 0.58</td><td class="n">&mdash;</td></tr>
+        <tr><td>Both days pooled, time-ordered test</td><td class="n">37.7%, p 0.006</td><td class="n">&mdash;</td></tr>
+        <tr><td>Seeing&rarr;imagining by second (best of 16)</td><td class="n lo">35.1%, p 0.17</td><td class="n">&mdash;</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>Every method misses its pre-set target by a wide margin; the best three-way figure is 37.7% against 45%, the best two-way 52.0% against 65%. Stronger methods do not beat simple alpha power. Under the rule set before the run, effort now moves from decoding this dataset to designing our own recordings.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">75.8% not reproduced</span><span class="tag res">exact script</span></div>
+    <span class="when">20 OCT 2026 &middot; JOB 92377</span>
+    <h3>The authors&rsquo; own script, unchanged, gives 43%, and 42% with scrambled labels</h3>
+    <p><span class="lbl">What was run</span>Their EEGNet.py byte-for-byte (1,500 epochs, their 5-fold split and seed), on data cleaned by their own preprocessing functions, animals task, all 22 people, 41 recordings, once with real labels and once with labels shuffled within each recording.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Animals, within session (chance 33%)</th><th class="n">Real labels</th><th class="n">Scrambled labels</th><th class="n">Paper</th></tr></thead>
+      <tbody>
+        <tr><td>&ldquo;Average Accuracy&rdquo;, as the script prints it</td><td class="n">42.8%</td><td class="n lo">41.7%</td><td class="n">76.6% / 74.4%</td></tr>
+        <tr><td>&ldquo;Overall Best Accuracy&rdquo;</td><td class="n">52.4%</td><td class="n lo">49.6%</td><td class="n">&mdash;</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>Real and scrambled labels do not differ (paired p 0.12): the script&rsquo;s figure is produced by its scoring, not by the brain signal. No recording reaches the published number; the highest is 62.5%, on one fold&rsquo;s best epoch. The published 75.8% is not reproduced by the authors&rsquo; own shared code and data. The email to the authors can now go.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag res">running</span><span class="tag res">targets set in advance</span></div>
