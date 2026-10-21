@@ -1069,13 +1069,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">Check every Gao recording for duplicates</span>
-      <p class="b">sub-21 has three identical recordings. A checksum of every file&rsquo;s data section across all 22 people, before anything more is built on this dataset.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Tell the authors</span>
+    <div class="step"><span class="i">1</span><span class="t">Tell the authors</span>
       <p class="b">The exact-script result and the sub-21 duplication, with the questions drafted on 15 October.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">Write up the scoring finding</span>
+    <div class="step"><span class="i">2</span><span class="t">Write up the scoring finding</span>
       <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Option B confirmed it with the authors&rsquo; own cleaning: a clean, citable methods result.</p></div>
-    <div class="step"><span class="i">4</span><span class="t">Our own recordings</span>
+    <div class="step"><span class="i">3</span><span class="t">Our own recordings</span>
       <p class="b">Designed around what works: a few simple, distinct shapes, many repeats, a seeing block before each imagining block, one session per day, and time-ordered splits from day one.</p></div>
   </div>
 
@@ -1091,6 +1089,15 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">data fault</span><span class="tag res">scan complete</span></div>
+    <span class="when">20 OCT 2026 &middot; JOB 93110</span>
+    <h3>A second duplicated recording, and every other file is distinct</h3>
+    <p><span class="lbl">What was run</span>An MD5 of the data section of every EEG file and of every events file in all 22 published zips (code/gao_dup_scan.py).</p>
+    <p><span class="lbl">Result</span>Two duplicate groups, nothing else. <b>sub-21</b>: ses-01 FVI, ses-02 FVI and ses-02 AVI share identical EEG data (found earlier). <b>sub-20</b>: ses-01 OVI and ses-02 OVI are identical, data and events. Every other recording is unique.</p>
+    <p><span class="lbl">What it changes</span>Cross-session analyses exclude sub-21 (shapes, animals) and sub-20 (objects). Objects decoded at chance across days either way, so no conclusion moves; the shapes figures were already corrected to exclude sub-21.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag nul">data fault</span><span class="tag res">correction</span></div>
