@@ -260,7 +260,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 <header class="mast">
   <p class="eyebrow">NeuroDiffusion &middot; Project documentation</p>
   <h1>Turning imagined pictures back into pictures</h1>
-  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
+  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Twelve chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
     <div class="sc"><span class="k">Updated</span><span class="v">20 Oct 2026<small>Exact Gao script: 43% = scrambled; enhancement misses target; sub-21 duplicated</small></span></div>
@@ -344,11 +344,19 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
           <li><a class="sub" href="#p-status__the-queue-in-order">The queue, in order</a></li>
         </ol>
       </li>
+      <li data-ch="p-anchored">
+        <a class="ch" href="#p-anchored"><span class="nn">09</span><span class="nt">Anchored imagery</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-anchored__the-idea">The idea</a></li>
+          <li><a class="sub" href="#p-anchored__the-experiment">The experiment</a></li>
+          <li><a class="sub" href="#p-anchored__what-is-built">What is built</a></li>
+        </ol>
+      </li>
       <li data-ch="p-journal">
-        <a class="ch" href="#p-journal"><span class="nn">09</span><span class="nt">Journal</span></a>
+        <a class="ch" href="#p-journal"><span class="nn">10</span><span class="nt">Journal</span></a>
       </li>
       <li data-ch="p-reading">
-        <a class="ch" href="#p-reading"><span class="nn">10</span><span class="nt">Resources</span></a>
+        <a class="ch" href="#p-reading"><span class="nn">11</span><span class="nt">Resources</span></a>
         <ol class="subs">
           <li><a class="sub" href="#p-reading__datasets">Datasets</a></li>
           <li><a class="sub" href="#p-reading__papers-that-changed-what-we-do">Papers that changed what we do</a></li>
@@ -357,7 +365,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
         </ol>
       </li>
       <li data-ch="p-glossary">
-        <a class="ch" href="#p-glossary"><span class="nn">11</span><span class="nt">Glossary</span></a>
+        <a class="ch" href="#p-glossary"><span class="nn">12</span><span class="nt">Glossary</span></a>
       </li>
     </ol>
   </details>
@@ -387,7 +395,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </ul>
 
   <h3 id="p-start__how-to-read-this">How to read this</h3>
-  <p>The tabs run in order and build on each other. Chapters 02 to 04 are the setup: what the signal is, what data we started with, how the machine is put together. Chapter 05 explains how to read the numbers, and 06 and 07 are what happened on our first dataset. Chapter 08 is the current state and what is next, 09 is the dated journal, and the last two tabs are for looking things up rather than reading straight through.</p>
+  <p>The tabs run in order and build on each other. Chapters 02 to 04 are the setup: what the signal is, what data we started with, how the machine is put together. Chapter 05 explains how to read the numbers, and 06 and 07 are what happened on our first dataset. Chapter 08 is the current state and what is next, 09 is the new anchored-imagery direction, 10 is the dated journal, and the last two tabs are for looking things up rather than reading straight through.</p>
 
   <div class="note">
     <span class="hd">Who is doing this</span>
@@ -1083,9 +1091,52 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-journal" hidden>
+<section class="chapter" id="p-anchored" hidden>
   <header class="chead">
     <span class="cnum">Chapter 9</span>
+    <h2>Anchored imagery</h2>
+    <p class="oneline"><b>In one sentence:</b> instead of reading a whole imagined picture, show a picture and read the one change a person imagines applying to it.</p>
+  </header>
+
+  <h3 id="p-anchored__the-idea">The idea</h3>
+  <p>&ldquo;Imagine a dog&rdquo; mostly measures recall: the brain replays a dog it has seen. Imagination does more: it starts from something seen, holds it in memory, and changes it, or builds something new from remembered pieces. Started 20 October 2026, this subsection treats imagination as <b>seeing + memory + a change</b>, and decodes only the change.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Step</th><th>Task</th><th>What is decoded</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1. Recall</td><td>&ldquo;Imagine a square&rdquo;</td><td>which object</td><td>the main project: 35% vs 33% chance</td></tr>
+      <tr><td><b>2. Anchored change</b></td><td>see a square, imagine it move or stretch</td><td>which change</td><td><b>this chapter</b></td></tr>
+      <tr><td>3. Attribute building</td><td>longer legs, then a puffier tail</td><td>one attribute at a time</td><td>if step 2 works</td></tr>
+      <tr><td>4. Free construction</td><td>a new creature described in words</td><td>the whole combination</td><td>long term</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Why it should be easier: the anchor gives a strong, stable seeing signal; the change is one of a few options, timed by the cue; imagined left or right movement shifts attention to that side, which alpha lateralization, one of EEG&rsquo;s most reliable signals, can show; and the output is an edit of the picture on screen, which software does easily.</p>
+
+  <h3 id="p-anchored__the-experiment">The experiment</h3>
+  <p>Each 10-second trial: a fixation dot, a shape appears, a cue names a change (move left, move right, stretch, shrink), and the person imagines it for 4 seconds, with the shape either still on screen (<b>anchored</b>) or gone (<b>unanchored</b>, imagined from memory). Eight blocks of 40 shuffled trials per session, three sessions on different days, eye channels recorded, a seeing localiser where the change is actually shown, and catch questions. The decoder is always tested on a day it never saw.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Hypothesis, set in advance</th><th>Passes if</th></tr></thead>
+    <tbody>
+      <tr><td>H1: imagined left vs right can be read</td><td>above chance across days, group p &lt; 0.0167, and eye channels alone do not decode it</td></tr>
+      <tr><td>H2: all four changes can be read</td><td>&ge; 35% (chance 25%), group p &lt; 0.0167</td></tr>
+      <tr><td>H3: the anchor helps</td><td>anchored better than unanchored, p &lt; 0.0167</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 id="p-anchored__what-is-built">What is built</h3>
+  <p>Everything that can be done without hardware lives in <code>anchored/</code>: the protocol (the core of an ethics application), the trial-list builder, the stimulus program, a simulator that makes fake recordings with known effects, the analysis exactly as the protocol fixes it, and the shape editor that turns a decoded change into the &ldquo;watch it change&rdquo; output. No public dataset matches this design (searched 20 October), so the first real data has to be our own.</p>
+  <div class="note">
+    <span class="hd">Waiting on</span>
+    <p>Access to an EEG system with at least 32 channels and eye channels, and ethics approval to record people.</p>
+  </div>
+</section>
+
+<section class="chapter" id="p-journal" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 10</span>
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
@@ -1753,7 +1804,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 <section class="chapter" id="p-reading" hidden>
   <header class="chead">
-    <span class="cnum">Chapter 10</span>
+    <span class="cnum">Chapter 11</span>
     <h2>Resources: datasets and papers</h2>
     <p class="oneline"><b>What this is:</b> everything the team has proposed, with a verdict on each. Tagged by who found it. The full write-ups are in <code>RESOURCES.md</code> in the repository.</p>
   </header>
@@ -1906,7 +1957,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 <section class="chapter" id="p-glossary" hidden>
   <header class="chead">
-    <span class="cnum">Chapter 11</span>
+    <span class="cnum">Chapter 12</span>
     <h2>Glossary</h2>
     <p class="oneline"><b>What this is:</b> every technical term used in this documentation, in plain language, alphabetically.</p>
   </header>
@@ -1984,8 +2035,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 <script>
 (function(){
-  var ORDER = ['p-start','p-signal','p-data','p-pipeline','p-metrics','p-results','p-baseline','p-status','p-journal','p-reading','p-glossary'];
-  var LABEL = {'p-start':'The project','p-signal':'The signal','p-data':'The data','p-pipeline':'The pipeline','p-metrics':'Reading numbers','p-results':'Training results','p-baseline':'The classical baseline','p-status':'Where we are','p-journal':'Journal','p-reading':'Resources','p-glossary':'Glossary'};
+  var ORDER = ['p-start','p-signal','p-data','p-pipeline','p-metrics','p-results','p-baseline','p-status','p-anchored','p-journal','p-reading','p-glossary'];
+  var LABEL = {'p-start':'The project','p-signal':'The signal','p-data':'The data','p-pipeline':'The pipeline','p-metrics':'Reading numbers','p-results':'Training results','p-baseline':'The classical baseline','p-status':'Where we are','p-anchored':'Anchored imagery','p-journal':'Journal','p-reading':'Resources','p-glossary':'Glossary'};
   var bar = document.getElementById('bar');
   var top = document.getElementById('top');
   var rail = document.querySelector('.rail');
