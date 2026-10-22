@@ -23,10 +23,10 @@ Repository root on both: `$NEURODIFFUSION_ROOT`, which defaults to
 ## Stage 0 — build and validate the data (no GPU)
 
 ```bash
-python code/prepare_shimizu_data.py --datasets_dir datasets
-python code/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol subject --require_images
-python code/make_splits.py --dataset datasets/visual_5_95_std.pth      --protocol image --require_images
-python code/check_data.py  --dataset datasets/imagination_5_95_std.pth \
+python shared/data/prepare_shimizu_data.py --datasets_dir datasets
+python shared/data/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol subject --require_images
+python shared/data/make_splits.py --dataset datasets/visual_5_95_std.pth      --protocol image --require_images
+python shared/data/check_data.py  --dataset datasets/imagination_5_95_std.pth \
                            --splits  datasets/imagination_5_95_std_splits_subject_avail.pth
 ```
 
@@ -36,7 +36,7 @@ disagree with the integer labels, so a silent mis-pairing cannot reach training.
 Then, **on the login node only** (compute nodes are air-gapped):
 
 ```bash
-python code/precache_models.py
+python shared/generation/precache_models.py
 ```
 
 Four different classes are loaded from `openai/clip-vit-large-patch14` across the codebase
@@ -47,7 +47,7 @@ the compute nodes, anything not already cached raises at job startup.
 ## Stage 1 — masked EEG pre-training (needs NO stimulus images)
 
 ```bash
-sbatch train_mae.sh
+sbatch studies/1_dreamdiffusion/jobs/train_mae.sh
 ```
 
 **Why this works without the images.** Stage 1 trains a masked autoencoder on the EEG
@@ -56,7 +56,7 @@ the surrounding ones. The objective is EEG-to-EEG. The stimulus image is never a
 and never a target — it is only needed in Stage 2, where the EEG embedding has to be
 aligned to an image. `stageA1_eeg_pretrain.py` now passes `load_images=False`, so the
 dataset skips image IO entirely (which also removes a CLIP preprocess from every sample,
-making the epochs faster). The preflight in `train_mae.sh` runs with `--skip_image_check`
+making the epochs faster). The preflight in `studies/1_dreamdiffusion/jobs/train_mae.sh` runs with `--skip_image_check`
 for the same reason.
 
 So the encoder you get out of Stage 1 is complete and reusable — nothing about it will
@@ -73,7 +73,7 @@ so one fetch covers both experiments.
 ### Option A: download directly (no credentials)
 
 ```bash
-python code/download_stimuli.py
+python shared/data/download_stimuli.py
 ```
 
 image-net.org serves whole-synset tars at `/data/winter21_whole/` without login, and they
@@ -96,14 +96,14 @@ result of a full run: **1590 of 1926 files (82.6%)**, 5.73 GB transferred, ~58 m
 The visual experiment is unaffected. The imagination experiment loses 7 classes outright,
 because it has exactly one stimulus per class -- a missing image means a missing class.
 Chance goes from 2.5% (40-way) to 3.03% (33-way). The 7 files are listed in
-`imagination_missing.txt`; they are genuinely absent from winter21 (verified by a full
+`shared/data/imagination_missing.txt`; they are genuinely absent from winter21 (verified by a full
 re-read of those 7 tars), so only a real ILSVRC2012 copy will recover them.
 
 ### Option B: from an ImageNet copy you already have
 
 ```bash
-python code/fetch_stimuli.py --from_dir  /path/to/ImageNet/train           # extracted tree
-python code/fetch_stimuli.py --from_tars /path/to/ILSVRC2012_img_train.tar # tars
+python shared/data/fetch_stimuli.py --from_dir  /path/to/ImageNet/train           # extracted tree
+python shared/data/fetch_stimuli.py --from_tars /path/to/ILSVRC2012_img_train.tar # tars
 ```
 
 A real ILSVRC2012 copy has full coverage. If you have one (or the cluster does), prefer it.
@@ -114,9 +114,9 @@ Do **not** train with missing stimuli — a blank target is what invalidated the
 Instead, exclude those trials from the splits so every remaining trial is honest:
 
 ```bash
-python code/make_splits.py --dataset datasets/imagination_5_95_std.pth \
+python shared/data/make_splits.py --dataset datasets/imagination_5_95_std.pth \
     --protocol subject --require_images
-python code/make_splits.py --dataset datasets/visual_5_95_std.pth \
+python shared/data/make_splits.py --dataset datasets/visual_5_95_std.pth \
     --protocol image --require_images
 ```
 
@@ -128,9 +128,9 @@ coverage.
 Confirm before spending GPU time:
 
 ```bash
-python code/check_data.py --dataset datasets/imagination_5_95_std.pth \
+python shared/data/check_data.py --dataset datasets/imagination_5_95_std.pth \
     --splits datasets/imagination_5_95_std_splits_subject_avail.pth
-python code/check_data.py --dataset datasets/visual_5_95_std.pth \
+python shared/data/check_data.py --dataset datasets/visual_5_95_std.pth \
     --splits datasets/visual_5_95_std_splits_image_avail.pth
 ```
 
@@ -140,8 +140,8 @@ passes cleanly while the unfiltered one still fails.
 ## Stage 2 — LDM fine-tuning (both experiments, side by side)
 
 ```bash
-sbatch --export=ALL,EXPERIMENT=visual,PROTOCOL=image        hpc_submit_stage2.sh
-sbatch --export=ALL,EXPERIMENT=imagination,PROTOCOL=subject hpc_submit_stage2.sh
+sbatch --export=ALL,EXPERIMENT=visual,PROTOCOL=image        studies/1_dreamdiffusion/jobs/hpc_submit_stage2.sh
+sbatch --export=ALL,EXPERIMENT=imagination,PROTOCOL=subject studies/1_dreamdiffusion/jobs/hpc_submit_stage2.sh
 ```
 
 Each job preflights its data and aborts before allocating the GPU if anything is wrong.
@@ -163,13 +163,13 @@ Each writes `samples.npz` and runs `eval_report.py` on completion.
 Each Stage 2 job already produces its own report. To score an arbitrary checkpoint:
 
 ```bash
-sbatch hpc_submit_eval.sh /path/to/checkpoint.pth
+sbatch studies/1_dreamdiffusion/jobs/hpc_submit_eval.sh /path/to/checkpoint.pth
 ```
 
 Then put the two runs side by side:
 
 ```bash
-python code/compare_reports.py \
+python shared/evaluation/compare_reports.py \
     --reports results/generation/<visual_run>/report.json \
               results/generation/<imag_run>/report.json \
     --names visual imagination \
@@ -200,7 +200,7 @@ Both start from the same band-power encoder and write the same `samples.npz`, so
 windows only and saves the test predictions both generators read.
 
 ```sh
-sbatch jobs/s9_bp_clip.sh                    # -> results/s9_<jobid>/bp_clip_s{1..4}.pt
+sbatch studies/2_imagery_decoding/experiments/01_shimizu_signal/s9_bp_clip.sh                    # -> results/s9_<jobid>/bp_clip_s{1..4}.pt
 ```
 
 **2a. Generator A, DreamDiffusion.** Retrains Stable Diffusion's cross-attention to read
@@ -209,7 +209,7 @@ and subject must match the encoder's, or `eeg_ldm.py` stops the run.
 
 ```sh
 PROTOCOL=window EXTRA_ARGS="--subject 1 --band 8 13 --cond_encoder $HOME/NeuroDiffusion/results/s9_<jobid>/bp_clip_s1.pt" \
-    sbatch --gres=gpu:1 hpc_submit_stage2.sh
+    sbatch --gres=gpu:1 studies/1_dreamdiffusion/jobs/hpc_submit_stage2.sh
 ```
 
 **2b. Generator B, SD Image Variations.** A Stable Diffusion already trained to take CLIP
@@ -218,8 +218,8 @@ then a GPU job that generates and scores three arms per subject: `eeg` (the test
 `oracle` (true stimulus embeddings, the ceiling) and `mean` (no information, the floor).
 
 ```sh
-bash jobs/setup_imagevar.sh                  # once, on coe-hpc1, not through Slurm
-ENC_DIR=$HOME/NeuroDiffusion/results/s9_<jobid> sbatch jobs/s10_imagevar.sh
+bash cluster/setup_imagevar.sh                  # once, on coe-hpc1, not through Slurm
+ENC_DIR=$HOME/NeuroDiffusion/results/s9_<jobid> sbatch studies/2_imagery_decoding/experiments/01_shimizu_signal/s10_imagevar.sh
 ```
 
 **Which to use.** B first: nothing can overfit, and the oracle arm says how good the

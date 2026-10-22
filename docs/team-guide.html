@@ -198,7 +198,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
         <p class="sd">Scoring results against chance, and permutation tests that say whether a result is real or luck.</p>
         <p class="sc"><code>clip_metrics.py</code> <code>eval_metrics.py</code> &middot; <code>--permute</code> in the baseline scripts</p></div></li>
   </ol>
-  <p class="lanes-cap">All code paths are inside <code>code/</code>. Steps 1 to 4 and 6 run on a laptop. Step 5 and the large model in step 3 need the GPU cluster, so ask Joao first.</p>
+  <p class="lanes-cap">Shared code is in <code>shared/</code>; each study's own code is in <code>studies/</code>. Steps 1 to 4 and 6 run on a laptop. Step 5 and the large model in step 3 need the GPU cluster, so ask Joao first.</p>
 </section>
 
 <section>
@@ -238,7 +238,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <p class="b">Accept the GitHub invite first (check your email or <a href="https://github.com/JoaoLucasVeras/NeuroDiffusion/invitations">the invitations page</a>), or you won&rsquo;t be able to push. Then:</p>
 <pre><code>git clone https://github.com/JoaoLucasVeras/NeuroDiffusion.git
 cd NeuroDiffusion
-conda env create -f env.yaml
+conda env create -f cluster/env.yaml
 conda activate neurodiffusion</code></pre></div>
 
     <div class="step"><span class="i">02</span><span class="t">Pick a question and tell Joao</span>
@@ -256,7 +256,7 @@ git push -u origin yourname/your-topic</code></pre></div>
     <div class="step"><span class="i">04</span><span class="t">Build it</span>
       <ul>
         <li><b>New data:</b> check the datasets we already reviewed, then judge a new one against the four checks below. Put downloads in <code>research/yourname/data/</code>, which Git ignores.</li>
-        <li><b>New method or pipeline:</b> on your own branch you can change anything, including files in <code>code/</code>. Or write a fresh script in your folder that imports the pieces you want to keep.</li>
+        <li><b>New method or pipeline:</b> on your own branch you can change anything, including files in <code>shared/</code> and <code>studies/</code>. Or write a fresh script in your folder that imports the pieces you want to keep.</li>
       </ul></div>
 
     <div class="step"><span class="i">05</span><span class="t">Compare it to what we have</span>

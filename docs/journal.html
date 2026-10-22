@@ -260,12 +260,12 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 <header class="mast">
   <p class="eyebrow">NeuroDiffusion &middot; Project documentation</p>
   <h1>Turning imagined pictures back into pictures</h1>
-  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Eleven chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
+  <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Twelve chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">19 Oct 2026<small>Gao exact script and enhancement round running</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">22 Oct 2026<small>Repository reorganised into studies and experiments; anchored study designed</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
-    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (1.11&times;, p 0.0018)</small></span></div>
+    <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (35%, 1.05&times;)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
   </div>
 </header>
@@ -344,11 +344,19 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
           <li><a class="sub" href="#p-status__the-queue-in-order">The queue, in order</a></li>
         </ol>
       </li>
+      <li data-ch="p-anchored">
+        <a class="ch" href="#p-anchored"><span class="nn">09</span><span class="nt">Anchored imagery</span></a>
+        <ol class="subs">
+          <li><a class="sub" href="#p-anchored__the-idea">The idea</a></li>
+          <li><a class="sub" href="#p-anchored__the-experiment">The experiment</a></li>
+          <li><a class="sub" href="#p-anchored__what-is-built">What is built</a></li>
+        </ol>
+      </li>
       <li data-ch="p-journal">
-        <a class="ch" href="#p-journal"><span class="nn">09</span><span class="nt">Journal</span></a>
+        <a class="ch" href="#p-journal"><span class="nn">10</span><span class="nt">Journal</span></a>
       </li>
       <li data-ch="p-reading">
-        <a class="ch" href="#p-reading"><span class="nn">10</span><span class="nt">Resources</span></a>
+        <a class="ch" href="#p-reading"><span class="nn">11</span><span class="nt">Resources</span></a>
         <ol class="subs">
           <li><a class="sub" href="#p-reading__datasets">Datasets</a></li>
           <li><a class="sub" href="#p-reading__papers-that-changed-what-we-do">Papers that changed what we do</a></li>
@@ -357,7 +365,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
         </ol>
       </li>
       <li data-ch="p-glossary">
-        <a class="ch" href="#p-glossary"><span class="nn">11</span><span class="nt">Glossary</span></a>
+        <a class="ch" href="#p-glossary"><span class="nn">12</span><span class="nt">Glossary</span></a>
       </li>
     </ol>
   </details>
@@ -387,7 +395,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </ul>
 
   <h3 id="p-start__how-to-read-this">How to read this</h3>
-  <p>The tabs run in order and build on each other. Chapters 02 to 04 are the setup: what the signal is, what data we started with, how the machine is put together. Chapter 05 explains how to read the numbers, and 06 and 07 are what happened on our first dataset. Chapter 08 is the current state and what is next, 09 is the dated journal, and the last two tabs are for looking things up rather than reading straight through.</p>
+  <p>The tabs run in order and build on each other. Chapters 02 to 04 are the setup: what the signal is, what data we started with, how the machine is put together. Chapter 05 explains how to read the numbers, and 06 and 07 are what happened on our first dataset. Chapter 08 is the current state and what is next, 09 is the new anchored-imagery direction, 10 is the dated journal, and the last two tabs are for looking things up rather than reading straight through.</p>
 
   <div class="note">
     <span class="hd">Who is doing this</span>
@@ -1060,6 +1068,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">12 Oct</td><td>87908</td><td>Authors&rsquo; EEGNet, published scoring vs scrambled labels</td><td class="n lo">43% vs 43%</td><td>Scoring artifact</td></tr>
       <tr><td class="n">14 Oct</td><td>88171</td><td>Option B: authors&rsquo; ICA cleaning + EEGNet, four ways</td><td class="n">pub 43% = null 44%; shapes honest-time 37.3%, p .002</td><td>75.8% not reproduced (re-implementation); shapes again</td></tr>
       <tr><td class="n">14 Oct</td><td>88200</td><td>Seeing &rarr; imagining, across days, alpha</td><td class="n lo">shapes p .019; others null</td><td>Weak transfer, shapes only</td></tr>
+      <tr><td class="n">20 Oct</td><td>92377</td><td>Authors&rsquo; EEGNet.py unchanged, real vs scrambled labels</td><td class="n lo">42.8% vs 41.7%</td><td>75.8% not reproduced</td></tr>
+      <tr><td class="n">20 Oct</td><td>92390</td><td>Enhancement round, shapes, 6 methods (sub-21 excluded)</td><td class="n lo">best 37.7% (target 45%)</td><td>Target missed</td></tr>
       <tr><td class="n">16 Oct</td><td>90544</td><td>Shapes: brain or eyes? Regions, seconds, eye signals</td><td class="n">eye signals p .47; survives ICA, p .002</td><td>Not the eyes; diffuse</td></tr>
     </tbody>
   </table>
@@ -1067,13 +1077,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
   <h3 id="p-status__the-queue-in-order">The queue, in order</h3>
   <div class="steps">
-    <div class="step"><span class="i">1</span><span class="t">The Gao script, exactly as written &mdash; running</span>
-      <p class="b">Job 92377. Their EEGNet.py unchanged, animals, all 22 people, real and scrambled labels, CPU.</p></div>
-    <div class="step"><span class="i">2</span><span class="t">Enhancement round on imagined shapes &mdash; running</span>
-      <p class="b">Job 92390. Targets fixed in advance: 45% three-way or 65% two-way, surviving correction for the methods tried. Passing builds the imagine-a-shape demo.</p></div>
-    <div class="step"><span class="i">3</span><span class="t">Write up the scoring finding</span>
+    <div class="step"><span class="i">1</span><span class="t">Tell the authors</span>
+      <p class="b">The exact-script result and the sub-21 duplication, with the questions drafted on 15 October.</p></div>
+    <div class="step"><span class="i">2</span><span class="t">Write up the scoring finding</span>
       <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Option B confirmed it with the authors&rsquo; own cleaning: a clean, citable methods result.</p></div>
-    <div class="step"><span class="i">4</span><span class="t">Our own recordings</span>
+    <div class="step"><span class="i">3</span><span class="t">Our own recordings</span>
       <p class="b">Designed around what works: a few simple, distinct shapes, many repeats, a seeing block before each imagining block, one session per day, and time-ordered splits from day one.</p></div>
   </div>
 
@@ -1083,12 +1091,131 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </div>
 </section>
 
-<section class="chapter" id="p-journal" hidden>
+<section class="chapter" id="p-anchored" hidden>
   <header class="chead">
     <span class="cnum">Chapter 9</span>
+    <h2>Anchored imagery</h2>
+    <p class="oneline"><b>In one sentence:</b> instead of reading a whole imagined picture, show a picture and read the one change a person imagines applying to it.</p>
+  </header>
+
+  <h3 id="p-anchored__the-idea">The idea</h3>
+  <p>&ldquo;Imagine a dog&rdquo; mostly measures recall: the brain replays a dog it has seen. Imagination does more: it starts from something seen, holds it in memory, and changes it, or builds something new from remembered pieces. Started 20 October 2026, this subsection treats imagination as <b>seeing + memory + a change</b>, and decodes only the change.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Step</th><th>Task</th><th>What is decoded</th><th>Status</th></tr></thead>
+    <tbody>
+      <tr><td>1. Recall</td><td>&ldquo;Imagine a square&rdquo;</td><td>which object</td><td>the main project: 35% vs 33% chance</td></tr>
+      <tr><td><b>2. Anchored change</b></td><td>see a square, imagine it move or stretch</td><td>which change</td><td><b>this chapter</b></td></tr>
+      <tr><td>3. Attribute building</td><td>longer legs, then a puffier tail</td><td>one attribute at a time</td><td>if step 2 works</td></tr>
+      <tr><td>4. Free construction</td><td>a new creature described in words</td><td>the whole combination</td><td>long term</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>Why it should be easier: the anchor gives a strong, stable seeing signal; the change is one of a few options, timed by the cue; imagined left or right movement shifts attention to that side, which alpha lateralization, one of EEG&rsquo;s most reliable signals, can show; and the output is an edit of the picture on screen, which software does easily.</p>
+
+  <h3 id="p-anchored__the-experiment">The experiment</h3>
+  <p>Each 10-second trial: a fixation dot, a shape appears, a cue names a change (move left, move right, stretch, shrink), and the person imagines it for 4 seconds, with the shape either still on screen (<b>anchored</b>) or gone (<b>unanchored</b>, imagined from memory). Eight blocks of 40 shuffled trials per session, three sessions on different days, eye channels recorded, a seeing localiser where the change is actually shown, and catch questions. The decoder is always tested on a day it never saw.</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Hypothesis, set in advance</th><th>Passes if</th></tr></thead>
+    <tbody>
+      <tr><td>H1: imagined left vs right can be read</td><td>above chance across days, group p &lt; 0.0167, and eye channels alone do not decode it</td></tr>
+      <tr><td>H2: all four changes can be read</td><td>&ge; 35% (chance 25%), group p &lt; 0.0167</td></tr>
+      <tr><td>H3: the anchor helps</td><td>anchored better than unanchored, p &lt; 0.0167</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <h3 id="p-anchored__what-is-built">What is built</h3>
+  <p>Everything that can be done without hardware lives in <code>studies/3_anchored_imagery/</code>: the protocol (the core of an ethics application), the trial-list builder, the stimulus program, a simulator that makes fake recordings with known effects, the analysis exactly as the protocol fixes it, and the shape editor that turns a decoded change into the &ldquo;watch it change&rdquo; output. No public dataset matches this design (searched 20 October), so the first real data has to be our own.</p>
+  <p><b>The analysis, tested on simulated recordings</b> (6 fake people per scenario, three sessions each, the protocol&rsquo;s exact analysis):</p>
+  <div class="tbl">
+  <table>
+    <thead><tr><th>Simulated scenario</th><th>What the analysis concluded</th><th>Right?</th></tr></thead>
+    <tbody>
+      <tr><td>Real imagery: a small alpha shift, stronger with the anchor, varying by person</td><td>left/right 71% anchored vs 56% unanchored; four changes 41%; H1, H2, H3 pass (H3 only just, p 0.016)</td><td class="hi">yes</td></tr>
+      <tr><td>Eyes do the work: the eyes drift toward the imagined side, no brain effect</td><td>brain channels at chance, eye channels 100%: result rejected</td><td class="hi">yes, the trap is caught</td></tr>
+      <tr><td>No signal</td><td>every gate fails</td><td class="hi">yes, no false discovery</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p>With effects of this size, six people only just show that the anchor helps; the planned 12&ndash;20 gives room to spare.</p>
+  <div class="note">
+    <span class="hd">Waiting on</span>
+    <p>Access to an EEG system with at least 32 channels and eye channels, and ethics approval to record people.</p>
+  </div>
+</section>
+
+<section class="chapter" id="p-journal" hidden>
+  <header class="chead">
+    <span class="cnum">Chapter 10</span>
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag dec">decision</span></div>
+    <span class="when">22 OCT 2026 &middot; NO JOB</span>
+    <h3>The repository is reorganised into studies and experiments</h3>
+    <p><span class="lbl">Why</span>With teammates starting their own experiments, one flat <code>code/</code> folder of 40 scripts was hard to find a way into. The work is now grouped the way it was done.</p>
+    <p><span class="lbl">The two terms</span>A <b>study</b> is one research question with its own approach; an <b>experiment</b> is one test inside a study, with one result. A new test of an existing question is a new experiment; a new question is a new study.</p>
+    <p><span class="lbl">The layout</span><code>studies/1_dreamdiffusion</code> (the original model, finished, unchanged), <code>studies/2_imagery_decoding</code> (the main study, six numbered experiments, each with its scripts, job scripts and a README stating the result), <code>studies/3_anchored_imagery</code>. Code more than one study uses is in <code>shared/</code>; one-time cluster setup is in <code>cluster/</code>. Every script runs from the repository root and finds the data itself. No results change; job scripts keep their names, so the job numbers in this journal still match.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">data fault</span><span class="tag res">scan complete</span></div>
+    <span class="when">20 OCT 2026 &middot; JOB 93110</span>
+    <h3>A second duplicated recording, and every other file is distinct</h3>
+    <p><span class="lbl">What was run</span>An MD5 of the data section of every EEG file and of every events file in all 22 published zips (studies/2_imagery_decoding/experiments/06_duplicate_scan/gao_dup_scan.py).</p>
+    <p><span class="lbl">Result</span>Two duplicate groups, nothing else. <b>sub-21</b>: ses-01 FVI, ses-02 FVI and ses-02 AVI share identical EEG data (found earlier). <b>sub-20</b>: ses-01 OVI and ses-02 OVI are identical, data and events. Every other recording is unique.</p>
+    <p><span class="lbl">What it changes</span>Cross-session analyses exclude sub-21 (shapes, animals) and sub-20 (objects). Objects decoded at chance across days either way, so no conclusion moves; the shapes figures were already corrected to exclude sub-21.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">data fault</span><span class="tag res">correction</span></div>
+    <span class="when">20 OCT 2026 &middot; NO JOB</span>
+    <h3>A duplicated recording in the published Gao data, and what it changes</h3>
+    <p><span class="lbl">How it was found</span>In the enhancement round one person, sub-21, scored 100% on imagined shapes across days, which is not plausible. Their two shapes sessions turned out to be the same numbers.</p>
+    <p><span class="lbl">What the files show</span>In the published sub-21.zip, the EEG data of <code>ses-01 task-FVI</code>, <code>ses-02 task-FVI</code> and <code>ses-02 task-AVI</code> are byte-for-byte identical once the 8,704-byte header is skipped (data MD5 57b5f3c8&hellip;); only the recording timestamps in the headers differ. The two FVI event files are identical too. So for sub-21 a &ldquo;cross-day&rdquo; shapes test trains and tests on the same recording, and their second animals session holds shapes data under animal labels.</p>
+    <p><span class="lbl">What it changes</span>Our shapes results without sub-21: across days 35.0% (was 36.5%), p 0.0002; same day, time-ordered 37.1% (was 37.3%), p 0.005; seeing&rarr;imagining p 0.013 (was 0.019). Every conclusion stands, a little smaller: imagined shapes are decodable at about 1.05&times; chance across days. Whether other people&rsquo;s files are duplicated is not yet checked.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">target missed</span></div>
+    <span class="when">20 OCT 2026 &middot; JOB 92390</span>
+    <h3>No stronger decoder reaches the target on imagined shapes</h3>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Shapes, across days, 19 people (sub-21 excluded)</th><th class="n">Three-way (target 45%)</th><th class="n">Two-way, mean of pairs (target 65%)</th></tr></thead>
+      <tbody>
+        <tr><td>Alpha power (reference)</td><td class="n">35.0%, p 0.0003</td><td class="n">52.0%, p 4&times;10<sup>&minus;6</sup></td></tr>
+        <tr><td>Theta + alpha + beta</td><td class="n">35.1%, p 0.014</td><td class="n">51.9%, p 0.001</td></tr>
+        <tr><td>Riemannian</td><td class="n">34.6%, p 0.011</td><td class="n">51.0%, p 0.001</td></tr>
+        <tr><td>Per-second, three bands</td><td class="n lo">33.4%, p 0.58</td><td class="n">&mdash;</td></tr>
+        <tr><td>Both days pooled, time-ordered test</td><td class="n">37.7%, p 0.006</td><td class="n">&mdash;</td></tr>
+        <tr><td>Seeing&rarr;imagining by second (best of 16)</td><td class="n lo">35.1%, p 0.17</td><td class="n">&mdash;</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>Every method misses its pre-set target by a wide margin; the best three-way figure is 37.7% against 45%, the best two-way 52.0% against 65%. Stronger methods do not beat simple alpha power. Under the rule set before the run, effort now moves from decoding this dataset to designing our own recordings.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">75.8% not reproduced</span><span class="tag res">exact script</span></div>
+    <span class="when">20 OCT 2026 &middot; JOB 92377</span>
+    <h3>The authors&rsquo; own script, unchanged, gives 43%, and 42% with scrambled labels</h3>
+    <p><span class="lbl">What was run</span>Their EEGNet.py byte-for-byte (1,500 epochs, their 5-fold split and seed), on data cleaned by their own preprocessing functions, animals task, all 22 people, 41 recordings, once with real labels and once with labels shuffled within each recording.</p>
+    <div class="tbl">
+    <table>
+      <thead><tr><th>Animals, within session (chance 33%)</th><th class="n">Real labels</th><th class="n">Scrambled labels</th><th class="n">Paper</th></tr></thead>
+      <tbody>
+        <tr><td>&ldquo;Average Accuracy&rdquo;, as the script prints it</td><td class="n">42.8%</td><td class="n lo">41.7%</td><td class="n">76.6% / 74.4%</td></tr>
+        <tr><td>&ldquo;Overall Best Accuracy&rdquo;</td><td class="n">52.4%</td><td class="n lo">49.6%</td><td class="n">&mdash;</td></tr>
+      </tbody>
+    </table>
+    </div>
+    <p><span class="lbl">The reading</span>Real and scrambled labels do not differ (paired p 0.12): the script&rsquo;s figure is produced by its scoring, not by the brain signal. No recording reaches the published number; the highest is 62.5%, on one fold&rsquo;s best epoch. The published 75.8% is not reproduced by the authors&rsquo; own shared code and data. The email to the authors can now go.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag res">running</span><span class="tag res">targets set in advance</span></div>
@@ -1651,7 +1778,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="tags"><span class="tag fix">tooling</span></div>
     <span class="when">24 SEP 2026</span>
     <h3>Built the baseline itself</h3>
-    <p><code>code/classical_baseline.py</code>: band power plus logistic regression, Riemannian tangent space, and EEGNet, all written directly against numpy and torch because the cluster environment has no scikit-learn, no pyriemann and no mne. The <code>.mat</code> files turned out to carry no channel names, so posterior electrodes cannot be picked by label; the script instead ranks channel indices by how well they separate the classes.</p>
+    <p><code>shared/decoding/classical_baseline.py</code>: band power plus logistic regression, Riemannian tangent space, and EEGNet, all written directly against numpy and torch because the cluster environment has no scikit-learn, no pyriemann and no mne. The <code>.mat</code> files turned out to carry no channel names, so posterior electrodes cannot be picked by label; the script instead ranks channel indices by how well they separate the classes.</p>
   </div>
 
   <div class="entry">
@@ -1698,7 +1825,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 <section class="chapter" id="p-reading" hidden>
   <header class="chead">
-    <span class="cnum">Chapter 10</span>
+    <span class="cnum">Chapter 11</span>
     <h2>Resources: datasets and papers</h2>
     <p class="oneline"><b>What this is:</b> everything the team has proposed, with a verdict on each. Tagged by who found it. The full write-ups are in <code>RESOURCES.md</code> in the repository.</p>
   </header>
@@ -1851,7 +1978,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 <section class="chapter" id="p-glossary" hidden>
   <header class="chead">
-    <span class="cnum">Chapter 11</span>
+    <span class="cnum">Chapter 12</span>
     <h2>Glossary</h2>
     <p class="oneline"><b>What this is:</b> every technical term used in this documentation, in plain language, alphabetically.</p>
   </header>
@@ -1920,7 +2047,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 </div>
 
 <footer>
-  <p>NeuroDiffusion &middot; living documentation, updated as work happens. Source at <code>docs/journal.html</code> in the project repository, alongside the improvement plan, signal-quality notes, resource evaluations and code. Deep-model per-subject figures are best-validation and provisional. Results from the SJSU COE HPC cluster.</p>
+  <p>NeuroDiffusion &middot; living documentation, updated as work happens. Source at <code>docs/journal.html</code> in the project repository, alongside the resource evaluations, the archived September planning notes, and the code (organised by study). Deep-model per-subject figures are best-validation and provisional. Results from the SJSU COE HPC cluster.</p>
 </footer>
 
 </div>
@@ -1929,8 +2056,8 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 
 <script>
 (function(){
-  var ORDER = ['p-start','p-signal','p-data','p-pipeline','p-metrics','p-results','p-baseline','p-status','p-journal','p-reading','p-glossary'];
-  var LABEL = {'p-start':'The project','p-signal':'The signal','p-data':'The data','p-pipeline':'The pipeline','p-metrics':'Reading numbers','p-results':'Training results','p-baseline':'The classical baseline','p-status':'Where we are','p-journal':'Journal','p-reading':'Resources','p-glossary':'Glossary'};
+  var ORDER = ['p-start','p-signal','p-data','p-pipeline','p-metrics','p-results','p-baseline','p-status','p-anchored','p-journal','p-reading','p-glossary'];
+  var LABEL = {'p-start':'The project','p-signal':'The signal','p-data':'The data','p-pipeline':'The pipeline','p-metrics':'Reading numbers','p-results':'Training results','p-baseline':'The classical baseline','p-status':'Where we are','p-anchored':'Anchored imagery','p-journal':'Journal','p-reading':'Resources','p-glossary':'Glossary'};
   var bar = document.getElementById('bar');
   var top = document.getElementById('top');
   var rail = document.querySelector('.rail');
