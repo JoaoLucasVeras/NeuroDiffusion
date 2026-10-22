@@ -8,7 +8,7 @@ datasets/Imagination Experiment/*.mat
 datasets/Visual Experiment/*.mat
 datasets/*.pth
 datasets/mne_data/*.npy
-# Stimulus images: ~3.6k JPEGs / 412 MB. Rebuild with code/download_stimuli.py.
+# Stimulus images: ~3.6k JPEGs / 412 MB. Rebuild with shared/data/download_stimuli.py.
 datasets/imageNet_images/
 
 # Scratch
@@ -17,7 +17,7 @@ datasets/imageNet_images/
 # Results and Logs
 results/*
 exps/*
-code/logs/
+logs/
 
 # Python environment / Cache
 __pycache__/
@@ -60,3 +60,4 @@ research/**/*.zip
 datasets/gao/
 datasets/gao_raw/
 datasets/gao_ica/
+private/

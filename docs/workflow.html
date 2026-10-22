@@ -191,9 +191,9 @@ cd NeuroDiffusion</code></pre>
     <div class="step">
       <span class="i">2</span><span class="t">Set up the environment and data</span>
       <p class="b">The data is not in the repository and never will be. <code>docs/DATA.md</code> has the OSF link and the four commands that build the tensors.</p>
-<pre><code>conda env create -f env.yaml
+<pre><code>conda env create -f cluster/env.yaml
 conda activate neurodiffusion
-python code/check_data.py   # exits non-zero if anything is wrong</code></pre>
+python shared/data/check_data.py   # exits non-zero if anything is wrong</code></pre>
     </div>
 
     <div class="step">
@@ -206,7 +206,7 @@ git checkout -b yourname/my-topic origin/main</code></pre>
     <div class="step">
       <span class="i">4</span><span class="t">Work, and check it against something</span>
       <p class="b">The classical baseline is the cheap instrument: five CPU-minutes, and it tells you whether a change helped before anyone spends a GPU-day.</p>
-<pre><code>python code/classical_baseline.py --subject 1 --band 8 13 --permute 200</code></pre>
+<pre><code>python shared/decoding/classical_baseline.py --subject 1 --band 8 13 --permute 200</code></pre>
     </div>
 
     <div class="step">
@@ -308,8 +308,8 @@ export NEURODIFFUSION_PYTHON=$HOME/.conda/envs/neurodiffusion/bin/python</code><
 
   <ul>
     <li><b>The queue</b> in the project documentation, "Where we are" &mdash; highest priority first, with the reasoning</li>
-    <li><b><code>docs/IMPROVEMENT_PLAN.md</code></b> &mdash; the same work, with why it is ordered that way</li>
-    <li><b><code>docs/PINBOARD.md</code></b> &mdash; parked ideas, each with the specific thing that would unpark it</li>
+    <li><b><code>docs/archive/IMPROVEMENT_PLAN.md</code></b> &mdash; the same work, with why it is ordered that way</li>
+    <li><b><code>docs/archive/PINBOARD.md</code></b> &mdash; parked ideas, each with the specific thing that would unpark it</li>
   </ul>
 
   <div class="note good">

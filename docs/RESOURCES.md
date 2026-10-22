@@ -11,8 +11,8 @@ has to re-derive it and so the reasoning can be challenged if it is wrong.
 Each entry is tagged with who surfaced it, so credit and follow-up questions land
 in the right place.
 
-Companions: [SIGNAL_QUALITY_RESEARCH.md](SIGNAL_QUALITY_RESEARCH.md) (the evidence
-on where the imagery signal lives) and [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md)
+Companions: [SIGNAL_QUALITY_RESEARCH.md](archive/SIGNAL_QUALITY_RESEARCH.md) (the evidence
+on where the imagery signal lives) and [IMPROVEMENT_PLAN.md](archive/IMPROVEMENT_PLAN.md)
 (the engineering backlog).
 
 ---
@@ -53,7 +53,7 @@ Argues that an empirical p-value must be computed as (hits + 1) / (permutations 
 naive count of zero asserts an impossible p = 0 when you have only sampled a few hundred of an
 astronomically large number of possible label permutations.
 
-**Useful: yes, and applied.** This is the formula used in `code/classical_baseline.py`. It is why
+**Useful: yes, and applied.** This is the formula used in `shared/decoding/classical_baseline.py`. It is why
 our best p-value is 0.005 rather than 0 with 200 permutations.
 
 **Müller-Putz GR, Scherer R, Brunner C, Leeb R, Pfurtscheller G (2008).** *Better than random?

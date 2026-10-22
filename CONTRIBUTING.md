@@ -5,6 +5,9 @@ freely. You cannot push to `main`: that needs a reviewed pull request.
 
 ---
 
+> **New to the code?** [`docs/CODEBASE.md`](docs/CODEBASE.md) maps every script, the data
+> format, and where your experiment plugs in.
+>
 > **Prefer a picture?** [`docs/workflow.html`](docs/workflow.html) shows the same thing as
 > diagrams: where the permission boundary sits, and what happens to a pull request after
 > you open it.
@@ -16,7 +19,7 @@ Accept the collaborator invitation, then clone the repository directly.
 ```bash
 git clone https://github.com/JoaoLucasVeras/NeuroDiffusion.git
 cd NeuroDiffusion
-conda env create -f env.yaml
+conda env create -f cluster/env.yaml
 conda activate neurodiffusion
 ```
 
@@ -24,7 +27,7 @@ The data is not in the repository and never will be. [`docs/DATA.md`](docs/DATA.
 OSF link and the four commands that build the tensors and splits. Finish with:
 
 ```bash
-python code/check_data.py     # exits non-zero if anything is wrong
+python shared/data/check_data.py     # exits non-zero if anything is wrong
 ```
 
 Run that before submitting any job. It exists because a missing stimulus file once silently
@@ -73,8 +76,8 @@ The **classical baseline** is the cheap instrument. Five CPU-minutes, and it tel
 whether a preprocessing or representation change helped before anyone spends a GPU-day:
 
 ```bash
-cd code      # the experiment scripts find the data relative to code/
-python classical_baseline.py --subject 1 --band 8 13 --permute 200
+# run from the repository root; every script finds datasets/ itself
+python shared/decoding/classical_baseline.py --subject 1 --band 8 13 --permute 200
 ```
 
 Most changes worth making can be evaluated this way first.
@@ -99,7 +102,7 @@ The `.gitignore` covers these, but to be explicit:
 
 - Datasets, in any form (`datasets/*.pth`, `.mat` files, stimulus images)
 - Model weights and checkpoints (`pretrains/models/`)
-- Run outputs and logs (`results/`, `exps/`, `code/logs/`)
+- Run outputs and logs (`results/`, `exps/`, `logs/`)
 - Credentials, tokens, or SSH keys, ever
 
 Large files are the one mistake that is genuinely painful to undo, since removing them

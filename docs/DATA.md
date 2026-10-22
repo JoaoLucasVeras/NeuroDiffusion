@@ -1,6 +1,6 @@
 # Data pipeline
 
-Everything in this document is checkable with `python code/check_data.py`. Run it before
+Everything in this document is checkable with `python shared/data/check_data.py`. Run it before
 submitting any job.
 
 ## Getting the data
@@ -26,7 +26,7 @@ datasets/
 the images. Fetch them with:
 
 ```sh
-python code/download_stimuli.py
+python shared/data/download_stimuli.py
 ```
 
 This pulls the whole-synset archives from image-net.org, which are served without
@@ -34,15 +34,15 @@ credentials and keep the original filenames the dataset refers to. Roughly 3,600
 about 412 MB, landing in `datasets/imageNet_images/`.
 
 **3. Stable Diffusion weights**, for the generative stage only. The classical baselines
-in `code/classical_baseline.py` need nothing beyond the EEG, so you can reproduce the
+in `shared/decoding/classical_baseline.py` need nothing beyond the EEG, so you can reproduce the
 signal-detection results without this step.
 
 **4. Build the tensors and splits**, then verify:
 
 ```sh
-python code/prepare_shimizu_data.py
-python code/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol window --require_images
-python code/check_data.py          # exits non-zero if anything is wrong
+python shared/data/prepare_shimizu_data.py
+python shared/data/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol window --require_images
+python shared/data/check_data.py          # exits non-zero if anything is wrong
 ```
 
 Run `check_data.py` before submitting any job. It exists because a silent failure once
@@ -110,10 +110,10 @@ appeared in training**. That file has been removed.
 ## Rebuilding from scratch
 
 ```bash
-python code/prepare_shimizu_data.py --datasets_dir datasets
-python code/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol subject
-python code/make_splits.py --dataset datasets/visual_5_95_std.pth      --protocol image
-python code/check_data.py  --dataset datasets/imagination_5_95_std.pth \
+python shared/data/prepare_shimizu_data.py --datasets_dir datasets
+python shared/data/make_splits.py --dataset datasets/imagination_5_95_std.pth --protocol subject
+python shared/data/make_splits.py --dataset datasets/visual_5_95_std.pth      --protocol image
+python shared/data/check_data.py  --dataset datasets/imagination_5_95_std.pth \
                            --splits  datasets/imagination_5_95_std_splits_subject.pth
 ```
 
@@ -134,7 +134,7 @@ pre-training) is self-supervised and runs fine without them.
 an ImageNet tree you already have:
 
 ```bash
-python code/check_data.py --dataset datasets/imagination_5_95_std.pth \
+python shared/data/check_data.py --dataset datasets/imagination_5_95_std.pth \
     --import_from /path/to/ImageNet/train
 ```
 

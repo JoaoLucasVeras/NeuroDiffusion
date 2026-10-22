@@ -10,13 +10,12 @@ Everything else here is reference material.
 | File | What it is | Read it when |
 |---|---|---|
 | [journal.html](journal.html) | The main documentation: the signal, the data, the pipeline, results, the classical baseline, current status, a dated journal, and a glossary | You want to understand the project |
+| [CODEBASE.md](CODEBASE.md) | A map of the code: studies and experiments, the shared toolbox, the data format, where a new experiment plugs in, and the rules every result follows | You are starting your own experiment |
 | [workflow.html](workflow.html) | How to contribute, with diagrams: the three copies of the repo, the permission boundary, and what happens to a pull request | You are about to make your first change |
 | [DATA.md](DATA.md) | Where to get the data, what the raw files contain, how splits are built, and the traps in them | You are setting up, or touching the data pipeline |
 | [RUNBOOK.md](RUNBOOK.md) | Cluster operations: submitting jobs, monitoring them, recovering from the failures we have already hit | You are running something on the HPC |
-| [IMPROVEMENT_PLAN.md](IMPROVEMENT_PLAN.md) | The prioritised work queue, with the reasoning behind the ordering | You are deciding what to do next |
 | [RESOURCES.md](RESOURCES.md) | Every dataset and paper the team has proposed, each with a verdict and who found it | You are evaluating a new dataset or paper |
-| [SIGNAL_QUALITY_RESEARCH.md](SIGNAL_QUALITY_RESEARCH.md) | Where the imagery signal lives, verified protocol details, and what actually improves signal quality | You are working on preprocessing or representation |
-| [PINBOARD.md](PINBOARD.md) | Ideas that are parked rather than rejected, each with what would unpark it | You have an idea and want to know if it was already considered |
+| [archive/](archive/) | September planning notes from the first dataset: the old work queue, parked ideas, and signal-quality research. Superseded by the journal, kept for the record | You want to know what was planned early on |
 
 ## Conventions
 
