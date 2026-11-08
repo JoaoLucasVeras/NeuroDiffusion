@@ -13,10 +13,10 @@ original DreamDiffusion codebase with our changes, and it still runs: generator 
 
 | | |
 |---|---|
-| **Seeing decodes** | Generated images beat a shuffled-pairing control by **4.3 standard errors** on a stimulus-disjoint split, on images and a subject the model never saw. The pipeline is wired correctly end to end. |
+| **Seeing decodes** | Generated images beat a shuffled-pairing control by **4.3 standard errors** on a stimulus-disjoint split: the test images were never in training, but the four people all were. The pipeline is wired correctly end to end. |
 | **Imagination does not** | The same pipeline on imagery EEG sits at chance (+0.5 SEM). A measured null with working controls, not a crash. |
 | **Imagery signal exists** | Classical methods find it in the alpha band at roughly **3× chance** (later corrected to 3 of 4 subjects significant). |
-| **A known trap** | Broadband EEG scores about twice as well as alpha within a subject, and that advantage vanishes entirely across subjects. It is electrode drift acting as a per-recording fingerprint, not neural content. |
+| **A known trap** | Broadband EEG scores about twice as well as alpha within a subject, and that advantage vanishes entirely across subjects. It behaves like a per-recording fingerprint rather than neural content (first described as electrode drift, corrected on 27 September: drift below 1 Hz was already filtered out). |
 
 The binding constraint was data: each person imagined each picture exactly once, giving
 **33 imagery events per person**. Study 2 starts by asking where the signal was lost.
@@ -25,7 +25,7 @@ The binding constraint was data: each person imagined each picture exactly once,
 
 | Path | What |
 |---|---|
-| `stageA1_eeg_pretrain.py` | Stage 1: masked EEG pre-training (self-supervised encoder, 85M parameters) |
+| `stageA1_eeg_pretrain.py` | Stage 1: masked EEG pre-training (self-supervised transformer encoder, 24 blocks; later Stage 2 runs froze 18 of them, leaving about 85M trainable parameters) |
 | `eeg_ldm.py` | Stage 2: fine-tunes Stable Diffusion 1.5 on EEG conditioning |
 | `gen_eval_eeg.py` | Generates images from a trained checkpoint |
 | `config.py`, `dataset.py` | Settings and data loading |

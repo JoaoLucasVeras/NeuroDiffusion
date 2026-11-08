@@ -33,7 +33,7 @@ and **experiments** (one test with one result, inside a study). See
 |---|---|---|
 | `shared/` | The toolbox every study imports: data converters, decoders, generators, evaluation. See [shared/README.md](../shared/README.md) | **Current, reuse it** |
 | `shared/third_party/` | The Gao authors' own scripts, byte for byte (CC BY 4.0) | **Do not edit**: kept unchanged on purpose |
-| `studies/1_dreamdiffusion/` | The original DreamDiffusion model and its jobs (85M-parameter encoder + Stable Diffusion 1.5) | Finished, kept as it was. Do not edit unless your experiment is about this model |
+| `studies/1_dreamdiffusion/` | The original DreamDiffusion model and its jobs (transformer EEG encoder + Stable Diffusion 1.5) | Finished, kept as it was. Do not edit unless your experiment is about this model |
 | `studies/2_imagery_decoding/` | The main study: 6 numbered experiments, each folder with its scripts, job scripts and a README | Current |
 | `studies/3_anchored_imagery/` | Protocol, stimulus program, simulator and analysis for the anchored-imagery study | Current, no hardware yet |
 | `cluster/` | One-time setup: environments, downloads, data conversion | Run once |

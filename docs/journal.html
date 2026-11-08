@@ -263,7 +263,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Twelve chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">22 Oct 2026<small>Repository reorganised into studies and experiments; anchored study designed</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">9 Nov 2026<small>Seeing result corrected: held-out images, not a held-out person</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (35%, 1.05&times;)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
@@ -835,7 +835,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <h3 id="p-results__result-1-seeing-a-picture-works">Result 1 &mdash; seeing a picture works</h3>
   <div class="note good">
     <p>Model <b>0.5848</b>, shuffled control 0.5484, random-input control 0.4761. The gap over the shuffled control is <b>+4.3 SEM</b>.</p>
-    <p>It names the right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint: the 173 test images never appeared in training, on a person the model had not seen.</p>
+    <p>It names the right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint: the 173 test images never appeared in training. The people did: all four were in the training set, and most of the 200 scored test trials came from one of them (corrected 9 November 2026).</p>
     <p><b>This is the load-bearing result of the project.</b> It says the machine is wired correctly end to end, so every later failure is about the difficulty of imagination rather than a broken pipeline.</p>
   </div>
 
@@ -1152,6 +1152,15 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <h2>Journal, newest first</h2>
     <p class="oneline"><b>What this is:</b> the dated record. Each entry says what we did, what it showed, and what it changed. Numbers are kept as measured, including the ones that got worse.</p>
   </header>
+
+<div class="entry">
+    <div class="tags"><span class="tag fix">correction</span></div>
+    <span class="when">9 NOV 2026 &middot; NO JOB</span>
+    <h3>The seeing result was not tested on a new person</h3>
+    <p><span class="lbl">What was wrong</span>Since September this page described the 4.3-standard-error seeing result (2 September) as tested &ldquo;on images and a person the model never saw&rdquo;. The split's own audit says otherwise: <code>subjects: train [1, 2, 3, 4] | test [1, 2, 3, 4]</code>. The 173 test images were never in training, but all four people were, and of the 200 scored test trials 173 came from subject 1 and 27 from subject 2. Only the imagery run held out a person (subject 4), and it was at chance.</p>
+    <p><span class="lbl">Also corrected</span>The study 1 README called the Stage 1 encoder an 85M-parameter model. The 84.6M figure is the trainable count logged in later Stage 2 runs, after 18 of 24 encoder blocks were frozen on 21 September; the 2 September seeing run predates that.</p>
+    <p><span class="lbl">What it changes</span>The seeing result stands as stated: generated images beat a shuffled control by 4.3 standard errors on images held out of training. It is not evidence of generalising to a new person.</p>
+  </div>
 
 <div class="entry">
     <div class="tags"><span class="tag dec">decision</span></div>
@@ -1810,7 +1819,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <div class="entry">
     <div class="tags"><span class="tag res">result</span></div>
     <span class="when">2 SEP 2026</span>
-    <h3>Perception works, on images and a person the model never saw</h3>
+    <h3>Perception works, on images the model never saw</h3>
     <p>Model 0.5848 against a shuffled control of 0.5484 and a random-input control of 0.4761: <b>+4.3 standard errors</b>. Right category 9.5% of the time out of 40 options against 2.5% chance, and 25.2% out of 10. Stimulus-disjoint, on 173 images that never appeared in training.</p>
     <p><span class="lbl">Why it matters</span>The load-bearing result of the project. It says the machine is wired correctly end to end.</p>
   </div>
