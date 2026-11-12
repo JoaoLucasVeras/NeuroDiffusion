@@ -1,0 +1,2 @@
+# Job scripts run on the Linux cluster: always store and check them out with Linux line endings.
+*.sh text eol=lf
