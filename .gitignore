@@ -7,6 +7,7 @@ pretrains/models/*.bin
 datasets/Imagination Experiment/*.mat
 datasets/Visual Experiment/*.mat
 datasets/*.pth
+datasets/*.pt
 datasets/mne_data/*.npy
 # Stimulus images: ~3.6k JPEGs / 412 MB. Rebuild with shared/data/download_stimuli.py.
 datasets/imageNet_images/

@@ -3,9 +3,10 @@
 **Question.** Does a training-derived, low-dimensional visual target improve
 EEG retrieval of previously unseen imagined objects?
 
-**Status:** implementation and local synthetic validation; scientific results **not run**.
-**Cluster job numbers:** **pending lead approval**. Do not submit or execute on the
-cluster until the project lead approves. The adjacent job also requires an explicit
+**Status:** complete; 1,000-permutation result is a **null**, with no supported
+benefit from additional target-rank truncation.
+**Cluster job numbers:** smoke **113015**, full **113017**, both completed.
+Any further submission requires separate approval. The adjacent job also requires an explicit
 `APPROVED_BY_PROJECT_LEAD=1` environment setting. This is a guard against accidental
 execution, not a mechanism for requesting or verifying approval.
 
@@ -107,22 +108,26 @@ python studies/2_imagery_decoding/experiments/07_low_dimensional_clip/low_dimens
 
 After the project lead approves, from `coe-hpc3` in the repository root:
 
-1. Replace `REPLACE_WITH_NSF_QUEUE` in the job script with the NSF queue's name
-   (`sinfo -s`). Until then `sbatch` refuses the job without using any resources.
+1. Queue `nsfq` was confirmed for this personal-account run. The script enforces
+   `aditya-individual-branch` and loads the validated shared Python/PyTorch modules.
 2. Point `DATASET` and `CACHE` at the shared copies if they are not in your own checkout.
-3. Run a short trial first, check its log and runtime, then the full run:
+3. Run the smoke job first; obtain separate approval before submitting the full run:
 
 ```bash
 mkdir -p logs
-sbatch --export=ALL,APPROVED_BY_PROJECT_LEAD=1,PERMUTE=25 studies/2_imagery_decoding/experiments/07_low_dimensional_clip/s19_low_dimensional_clip.sh
+sbatch --export=ALL,APPROVED_BY_PROJECT_LEAD=1 studies/2_imagery_decoding/experiments/07_low_dimensional_clip/s19_hpc_smoke.sh
 sbatch --export=ALL,APPROVED_BY_PROJECT_LEAD=1 studies/2_imagery_decoding/experiments/07_low_dimensional_clip/s19_low_dimensional_clip.sh
 ```
 
 Add `DATASET=<path>,CACHE=<path>` to `--export` when using shared copies.
 
 The job is one CPU process for all subjects to keep the permutations synchronized.
-The 12-hour walltime is a provisional budget; actual cluster runtime is unmeasured.
-The runner never submits jobs. CPU numerical thread limits are set in the job script.
+The full-run proposal now requests 4 GB RAM and a one-hour limit, based on smoke
+job 113015's approximately 1.1 GB peak RAM and 52-second runner time for 25 permutations.
+Expected full compute time is approximately 25–35 minutes, plus unknown queue wait.
+The site allocated/billed two logical CPUs for the smoke job despite requesting one;
+allow at most two billed CPU-hours for the one-hour full-job limit. Scientific code
+uses one thread and no GPU. The runner never submits jobs.
 
 The output directory must be new. Under ignored `results/`, save:
 
@@ -139,6 +144,34 @@ The output directory must be new. Under ignored `results/`, save:
 
 ## Result and record
 
+### Personal-account HPC smoke test (completed 2026-11-11)
+
+`s19_hpc_smoke.sh` is a separate one-task, CPU-only test for Aditya's checkout.
+It uses `nsfq`, one CPU, 16 GB RAM, zero requested GPUs, and a 30-minute limit
+(requested maximum 0.5 CPU-hours; site allocation was two logical CPUs). It loads the existing site modules
+`python3/3.12.12` and `ml/torch/2.6`, with Python at
+`/app/rl9.x/ml/torch/2.6/bin/python`. Read-only inspection confirmed NumPy 2.3.5,
+SciPy 1.16.3 and PyTorch 2.6.0+cu126 package directories. Imports and node compatibility
+were successfully tested in batch job 113015 on g29; no login-node analysis was performed.
+Although the shared PyTorch build includes CUDA support, this job requests no GPU,
+hides CUDA devices and executes the NumPy/ridge pipeline on one CPU thread.
+
+The script enforces `aditya-individual-branch`, uses the uploaded personal inputs,
+and runs only 25 permutations. Prepare `logs/` before submission. After approval
+of the upload and this exact submission, submit **from coe-hpc3**, inside the
+personal checkout:
+
+```bash
+sbatch --export=ALL,APPROVED_BY_PROJECT_LEAD=1 studies/2_imagery_decoding/experiments/07_low_dimensional_clip/s19_hpc_smoke.sh
+```
+
+No full run is launched by this script. Record the returned job ID in the research
+log and use its measured runtime and memory to prepare the next resource request.
+Queue wait is unknown for future jobs. Completed smoke job **113015** ran in 58
+seconds (52 seconds in the runner), exited 0:0 and used 1,117,304 KB maximum RSS
+(about 1.1 GB). No GPU was allocated. The small summary, manifest and log were
+downloaded to ignored `results/s19_hpc_smoke_113015/`.
+
 Local validation on 2026-11-10: **15 synthetic tests passed**, including full CLI
 artifacts, training/test isolation for both arms and the follow-up gate. Python
 parsing and Git Bash shell syntax checks passed. These checks do not measure the
@@ -146,10 +179,18 @@ scientific hypothesis. Details and package versions are in the research log.
 
 | Item | Status |
 |---|---|
-| Real-data retrieval and paired difference | **not run** |
+| Real-data retrieval and paired difference | Full run: full 52.2475%, reduced 52.2980%, paired delta +0.0505 percentage points |
 | Chance | Pairwise 50%; top-1 depends on fold candidate count |
-| Permutation p-value | **not run** |
-| Cluster job numbers | **pending lead approval** |
+| Permutation p-value | 1,000 permutations: delta p .477522, reduced-above-chance p .122877 |
+| Cluster job numbers | Smoke **113015** and full **113017**, both completed (CPU only) |
+| Full-run resources | 25 min 56 s elapsed; approximately 1.1 GB peak RSS; no GPU |
+| Follow-up gate | **FAIL**; only 2/4 participants improve and neither permutation requirement passes |
+
+Conclusion: additional PCA target-rank truncation did not improve retrieval under
+this fixed protocol. This result does not refute the single-neuron VTC finding.
+Do not proceed to generation or shared perception/imagery training based on it.
+Downloaded reports are in ignored `results/s19_hpc_full_113017/`; full checkpoint
+and predictions remain in the personal HPC checkout at `results/s19_113017/`.
 
 Research record: `research/aditya/FINDINGS.md`; append-only activity history:
 `research/aditya/LOG.md`. No real EEG or model weights are committed.
