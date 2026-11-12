@@ -98,3 +98,25 @@ Scientific runs and local software checks must be labeled separately.
   `clip_stimulus_emb.pt` files, or the project lead's provision of those assets.
   The runner supports arbitrary local paths. No cluster connection, data transfer,
   download, job submission or remote execution was performed.
+
+## 2026-11-11 — Review changes by the project lead (Joao), before any real-data run
+
+Made directly on this branch after review, so the experiment can run on the cluster.
+No real data has been run; the protocol change below is fixed before any result.
+
+- **Gate:** the follow-up gate now also requires the reduced arm's group pairwise
+  accuracy to beat chance under the same training-label null (p ≤ .05), reported as
+  `reduced_above_chance_p`; the paired-delta part is kept as `delta_gate`. Without it,
+  two chance-level arms could pass on noise. `decision_gate` itself is unchanged.
+- **Loading:** `load_trusted` falls back when PyTorch has no `weights_only` argument
+  (before 1.13); the cluster's main environment pins 1.12.1.
+- **Job script:** partition set to the placeholder `REPLACE_WITH_NSF_QUEUE` (advisor rule:
+  NSF queue only; `sbatch` rejects the placeholder without using resources); `DATASET`,
+  `CACHE` and `PERMUTE` can be set at submission, for shared data paths and a short
+  trial run (`PERMUTE=25`).
+- **README:** the gate change, how to run, and a note that the full-CLIP arm's ridge
+  predictions already lie within the roughly 25-dimensional span of each fold's training
+  images, so the comparison is a reduced-rank truncation rather than 768 against 2–16.
+- **Tests:** two added (above-chance p; loader fallback). Local result recorded below.
+- **Local check:** 17 tests passed (Python 3.11, NumPy 1.26.4, PyTorch 2.9.0 CPU), shell
+  syntax check passed, runner parses as Python 3.8. Scientific results remain **not run**.

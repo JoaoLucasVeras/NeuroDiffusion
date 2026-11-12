@@ -111,6 +111,25 @@ def test_followup_requires_complete_null_and_three_improvements():
     assert not m.decision_gate(obs, [0] * 1000, 1000)[2]
 
 
+def test_gate_also_requires_reduced_arm_above_chance():
+    obs = {"group_metrics": {"reduced": {"pairwise": 0.60}}}
+    assert m.above_chance_p(obs, []) is None
+    assert m.above_chance_p(obs, [0.5] * 999) == 1 / 1000
+    assert m.above_chance_p(obs, [0.7] * 999) == 1.0
+
+
+def test_loader_falls_back_on_pytorch_without_weights_only(tmp_path, monkeypatch):
+    real_load = m.torch.load
+    def old_load(path, map_location=None, **kwargs):
+        if "weights_only" in kwargs:
+            raise TypeError("load() got an unexpected keyword argument 'weights_only'")
+        return real_load(path, map_location=map_location, weights_only=False)
+    path = tmp_path / "x.pt"
+    m.torch.save({"a": 1}, path)
+    monkeypatch.setattr(m.torch, "load", old_load)
+    assert m.load_trusted(path) == {"a": 1}
+
+
 def test_nested_permutations_are_synchronized_and_reproducible():
     x, y = synthetic(n=20)
     manifest = m.make_manifest([str(i) for i in range(len(x))])

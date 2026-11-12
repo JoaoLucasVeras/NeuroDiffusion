@@ -32,6 +32,14 @@ def as_numpy(x):
     return x.detach().cpu().numpy() if torch.is_tensor(x) else np.asarray(x)
 
 
+def load_trusted(path):
+    """torch.load for trusted repository files, on PyTorch with or without weights_only."""
+    try:
+        return torch.load(path, map_location="cpu", weights_only=False)
+    except TypeError:  # PyTorch < 1.13 has no weights_only argument
+        return torch.load(path, map_location="cpu")
+
+
 def load_events(dataset_path, cache_path, allow_missing_embeddings=False):
     """Read trusted repository .pth and {stems, emb} cache; never embed/download.
 
@@ -41,8 +49,8 @@ def load_events(dataset_path, cache_path, allow_missing_embeddings=False):
     for p in (dataset_path, cache_path):
         if not Path(p).is_file():
             raise ValueError("Missing local asset: %s. No download was attempted." % p)
-    data = torch.load(dataset_path, map_location="cpu", weights_only=False)
-    cache = torch.load(cache_path, map_location="cpu", weights_only=False)
+    data = load_trusted(dataset_path)
+    cache = load_trusted(cache_path)
     stems = cache.get("stems", [])
     if not stems or len(set(stems)) != len(stems):
         raise ValueError("Embedding cache needs unique nonempty stems and emb.")
@@ -304,6 +312,18 @@ def decision_gate(observed, null, permutation_count):
     return pvalue, improvements, passed
 
 
+def above_chance_p(observed, null_reduced):
+    """One-sided permutation p that the reduced arm's group pairwise accuracy beats chance.
+
+    The paired-delta gate alone can pass when both arms sit at chance; this requires the
+    reduced arm itself to beat the same training-label null. None without permutations.
+    """
+    if not null_reduced:
+        return None
+    obs = observed["group_metrics"]["reduced"]["pairwise"]
+    return float((1 + np.sum(np.array(null_reduced) >= obs)) / (1 + len(null_reduced)))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--dataset", type=Path, default=paths.DATASETS / "imagination_5_95_std.pth")
@@ -343,18 +363,21 @@ def main():
                                         "reduced_pairwise": above_chance_null})
             print("permutations %d/%d" % (p + 1, args.permute), flush=True)
     # Exploratory paired-label-null gate, not a population-level superiority test.
-    pvalue, improvements, gate = decision_gate(observed, null, args.permute)
+    pvalue, improvements, delta_gate = decision_gate(observed, null, args.permute)
+    p_above = above_chance_p(observed, above_chance_null)
+    gate = bool(delta_gate and p_above is not None and p_above <= 0.05)
     save("summary.json", {**meta, "subjects": {s: {k: v for k, v in r.items() if k != "folds"}
                                              for s, r in observed["subjects"].items()},
                           "group_metrics": observed["group_metrics"],
                           "mean_delta": observed["mean_delta"], "paired_training_label_null_p": pvalue,
                           "null_deltas": null, "null_reduced_pairwise": above_chance_null,
-                          "participants_improved": improvements, "follow_up_gate": gate,
+                          "participants_improved": improvements, "reduced_above_chance_p": p_above,
+                          "delta_gate": delta_gate, "follow_up_gate": gate,
                           "limitations": ["Four participants; one imagery event per class per person.",
                                            "Permutation tests break EEG-target association; they do not establish population-level model superiority.",
                                            "One image per class: held-out image identity is also held-out class identity."]})
-    print("Saved %s; mean pairwise delta %+.4f; permutation p %s; follow-up gate %s"
-          % (args.output, observed["mean_delta"], pvalue, gate))
+    print("Saved %s; mean pairwise delta %+.4f; permutation p %s; reduced above chance p %s; "
+          "follow-up gate %s" % (args.output, observed["mean_delta"], pvalue, p_above, gate))
 
 
 if __name__ == "__main__":

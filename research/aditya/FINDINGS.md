@@ -65,6 +65,7 @@ not establish population-level model superiority, especially with only four peop
 
 Have the project lead review the fixed protocol, cache coverage, job resources and
 run commands before any cluster execution. A follow-up requires positive mean gain,
-paired-null p ≤ .05 with at least 1,000 permutations and directional improvement in
-at least three participants. Even a passing gate requires review; it triggers no
+paired-null p ≤ .05 with at least 1,000 permutations, directional improvement in
+at least three participants, and the reduced arm above chance (p ≤ .05, added in review
+on 2026-11-11). Even a passing gate requires review; it triggers no
 automatic perception/imagery training or image generation.

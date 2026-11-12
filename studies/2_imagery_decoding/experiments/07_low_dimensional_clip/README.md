@@ -23,6 +23,13 @@ have available images. An unseen stimulus is also an unseen class. Windows do no
 constitute independent trials. Older per-subject encoder results used early/late
 windows of the same event and are not directly comparable to this protocol.
 
+**What "full" means here.** Ridge predictions are linear combinations of the training
+targets, so with about 26 training images per fold the full-CLIP arm already predicts
+within the span of those images: at most about 25 dimensions, not 768. The comparison
+is therefore top 2–16 principal directions of the training images versus all of them,
+a reduced-rank truncation. That is still a fair test of the hypothesis; read results
+in that light.
+
 ## Fixed protocol
 
 - Reuse `shared/decoding/classical_baseline.py` for 8–13 Hz filtering and log band
@@ -67,7 +74,10 @@ windows of the same event and are not directly comparable to this protocol.
   the small set of shared stimuli limit inference. Do not treat windows or folds
   as additional people or independent replication.
 - Follow-up gate: positive primary difference, paired-null p ≤ .05, at least three
-  people with positive differences, and at least 1,000 permutations. A zero/short
+  people with positive differences, at least 1,000 permutations, **and** the reduced
+  arm's group pairwise accuracy above chance under the same training-label null
+  (p ≤ .05; added 2026-11-11 in review, before any real-data run, so two chance-level
+  arms cannot pass on noise alone). A zero/short
   permutation run cannot pass. Passing warrants lead review of a subsequent
   perception-plus-imagery experiment, not automatic implementation or generation.
 
@@ -95,12 +105,20 @@ python studies/2_imagery_decoding/experiments/07_low_dimensional_clip/low_dimens
   --output results/s19_reviewed_run --seed 2022 --permute 1000
 ```
 
-After explicit approval, the lead can prepare `logs/` and submit the adjacent CPU job:
+After the project lead approves, from `coe-hpc3` in the repository root:
+
+1. Replace `REPLACE_WITH_NSF_QUEUE` in the job script with the NSF queue's name
+   (`sinfo -s`). Until then `sbatch` refuses the job without using any resources.
+2. Point `DATASET` and `CACHE` at the shared copies if they are not in your own checkout.
+3. Run a short trial first, check its log and runtime, then the full run:
 
 ```bash
 mkdir -p logs
+sbatch --export=ALL,APPROVED_BY_PROJECT_LEAD=1,PERMUTE=25 studies/2_imagery_decoding/experiments/07_low_dimensional_clip/s19_low_dimensional_clip.sh
 sbatch --export=ALL,APPROVED_BY_PROJECT_LEAD=1 studies/2_imagery_decoding/experiments/07_low_dimensional_clip/s19_low_dimensional_clip.sh
 ```
+
+Add `DATASET=<path>,CACHE=<path>` to `--export` when using shared copies.
 
 The job is one CPU process for all subjects to keep the permutations synchronized.
 The 12-hour walltime is a provisional budget; actual cluster runtime is unmeasured.
