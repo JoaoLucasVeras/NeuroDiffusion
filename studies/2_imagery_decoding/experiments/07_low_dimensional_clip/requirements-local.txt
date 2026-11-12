@@ -1,0 +1,6 @@
+# Versions used for local synthetic validation, Python 3.13 on Windows.
+# These are not instructions to modify the cluster environment.
+numpy==2.5.4
+scipy==1.18.1
+torch==2.15.0
+pytest==9.2.0

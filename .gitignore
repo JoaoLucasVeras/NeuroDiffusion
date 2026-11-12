@@ -35,6 +35,7 @@ analysis/visualizations/
 
 # Local environments and generated reports
 .conda/
+.venv-vtc/
 analysis/research_report_render/
 *.docx
 
