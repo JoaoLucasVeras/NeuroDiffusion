@@ -139,7 +139,8 @@ Four traps, each of which has already cost this project real time:
 Cluster work happens on `hpc-dev`. If you need code of yours running there, say so in the
 pull request and it will be merged forward — the cluster does not see your branch.
 
-More detail in [`docs/RUNBOOK.md`](docs/RUNBOOK.md).
+More detail in [`docs/RUNBOOK.md`](docs/RUNBOOK.md). To let an AI coding agent use the cluster
+through your account, follow [`docs/HPC_AGENT_ACCESS.md`](docs/HPC_AGENT_ACCESS.md).
 
 ## Documentation
 

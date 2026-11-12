@@ -14,6 +14,7 @@ Everything else here is reference material.
 | [workflow.html](workflow.html) | How to contribute, with diagrams: the three copies of the repo, the permission boundary, and what happens to a pull request | You are about to make your first change |
 | [DATA.md](DATA.md) | Where to get the data, what the raw files contain, how splits are built, and the traps in them | You are setting up, or touching the data pipeline |
 | [RUNBOOK.md](RUNBOOK.md) | Cluster operations: submitting jobs, monitoring them, recovering from the failures we have already hit | You are running something on the HPC |
+| [HPC_AGENT_ACCESS.md](HPC_AGENT_ACCESS.md) | How to give an AI coding agent (Codex, Claude Code) access to the cluster through your own account, and the rules it must follow | You want your agent to check or submit cluster jobs |
 | [RESOURCES.md](RESOURCES.md) | Every dataset and paper the team has proposed, each with a verdict and who found it | You are evaluating a new dataset or paper |
 | [archive/](archive/) | September planning notes from the first dataset: the old work queue, parked ideas, and signal-quality research. Superseded by the journal, kept for the record | You want to know what was planned early on |
 
