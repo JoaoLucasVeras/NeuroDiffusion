@@ -496,3 +496,16 @@ No real data has been run; the protocol change below is fixed before any result.
   no cluster connection or run, and no new experiment started. The unrelated
   untracked file was left untouched. Next action: open the personal-branch PR
   against main for Joao's review; do not merge it automatically.
+
+## 2026-11-12 - Opened findings PR 17
+
+- Pushed documentation commit `c517412` to the personal branch and opened
+  [PR 17](https://github.com/JoaoLucasVeras/NeuroDiffusion/pull/17) from
+  `aditya-individual-branch` to `main`, including methods, controls, exact results,
+  validation and the retained legacy branch-name exception to the PR template.
+- GitHub confirmed the PR is **open**, not merged. No auto-merge enabled and no
+  new HPC work performed. An empty-array handling issue in the initial API check
+  was corrected before creation; exactly one PR was created.
+- Next action: Joao reviews/merges the PR so the main documentation page receives
+  the findings. Agree on a distinct follow-up question before implementing or
+  submitting another experiment.
