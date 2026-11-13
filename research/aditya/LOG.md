@@ -472,3 +472,27 @@ No real data has been run; the protocol change below is fixed before any result.
 - Next step is Joao's review of the null and a separate diagnostic proposal,
   rather than automatic perception/imagery training or image generation. No new
   HPC job is requested or submitted as part of publication.
+
+## 2026-11-12 - Prepared the findings PR and main-page summary
+
+- User requested the immediate publication step after Joao reviewed the work and
+  invited a PR. Work remains on `aditya-individual-branch`; no push to main.
+- Fetched origin and merged its two newer main commits without conflicts,
+  preserving the team's GitHub Pages setup and 12 November Gao dataset update.
+- Added the completed Experiment 07 result to the main documentation's status,
+  experiment ledger and dated journal. Added the experiment to Study 2's index
+  and updated the root README's experiment count and current-status summary.
+- Reported full/reduced outer-test pairwise accuracy, chance, sample size, paired
+  and above-chance permutation results, controls, job numbers and limitations.
+  Explicitly distinguished successful execution from successful EEG decoding;
+  this null neither establishes intrinsically faint imagery nor disproves VTC.
+- Validation: reran the existing local suite with
+  `.venv-vtc/Scripts/python.exe -m pytest studies/2_imagery_decoding/experiments/07_low_dimensional_clip/test_low_dimensional_clip.py -q -p no:cacheprovider`:
+  **17 passed in 49.61 seconds**. HTML parsing, unique IDs, newest-first journal
+  chronology and existence of linked review files passed. `git diff --check`
+  passed. An initial inline HTML-check command hit PowerShell quoting errors;
+  rerunning the check through standard input succeeded without changing files.
+- No scientific code or settings changed, no data or generated artifacts added,
+  no cluster connection or run, and no new experiment started. The unrelated
+  untracked file was left untouched. Next action: open the personal-branch PR
+  against main for Joao's review; do not merge it automatically.

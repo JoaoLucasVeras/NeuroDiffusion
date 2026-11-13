@@ -22,6 +22,7 @@ code, and no stronger decoder lifted the signal. That is why
 | 04 | [shapes_eye_check](experiments/04_shapes_eye_check/) | Is the shapes signal brain or eye movement? | Not slow eye movement; spread across the head |
 | 05 | [shapes_enhance](experiments/05_shapes_enhance/) | Can six stronger decoders lift it? | No: best 37.7% three-way, targets (45%) missed |
 | 06 | [duplicate_scan](experiments/06_duplicate_scan/) | Are any published recordings duplicated? | Yes: sub-21 shapes/animals, sub-20 objects. Excluded everywhere |
+| 07 | [low_dimensional_clip](experiments/07_low_dimensional_clip/) | Does reducing CLIP target rank improve unseen-object imagery retrieval? | Full/reduced pairwise 52.2475% / 52.2980%, chance 50%; 4 people, 33 images each (132 events), outer test folds. Paired p .477522 (1,000 training-label permutations); no supported gain |
 
 Shared code these experiments import: [`classical_baseline.py`](../../shared/decoding/classical_baseline.py)
 (features, logistic regression, EEGNet) and [`gao_baseline.py`](../../shared/decoding/gao_baseline.py)

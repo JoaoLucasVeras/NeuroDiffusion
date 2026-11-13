@@ -10,7 +10,7 @@ Developed by the AI/ML Club at San Jose State University, this project represent
 NeuroDiffusion/
 ├── studies/        the research, one folder per study, each with its own README
 │   ├── 1_dreamdiffusion/      DreamDiffusion on imagined EEG (finished)
-│   ├── 2_imagery_decoding/    can imagined pictures be read honestly? (main study, 6 experiments)
+│   ├── 2_imagery_decoding/    can imagined pictures be read honestly? (main study, 7 experiments)
 │   └── 3_anchored_imagery/    decoding an imagined change to a seen shape (designed, needs hardware)
 ├── shared/         the toolbox every study imports: data, decoding, generation, evaluation
 ├── cluster/        one-time setup on the SJSU HPC: environments, downloads, data conversion
@@ -24,7 +24,7 @@ either.
 
 ## Current status
 
-Updated 22 October 2026. Full detail, with methods and controls, is in the
+Updated 11 November 2026. Full detail, with methods and controls, is in the
 [project documentation](docs/journal.html).
 
 | | |
@@ -32,6 +32,7 @@ Updated 22 October 2026. Full detail, with methods and controls, is in the
 | **Seeing decodes** | Generated images from EEG recorded while *looking* beat a shuffled control by 4.3 standard errors ([study 1](studies/1_dreamdiffusion/)). |
 | **Imagining is faint** | On a 22-person dataset, only imagined *shapes* decode, at about 1.05 to 1.1 times chance, across days ([study 2](studies/2_imagery_decoding/)). Stronger decoders did not lift it. |
 | **A published claim did not hold** | The dataset's paper reports 75.8% for imagined animals; the authors' own script gives 42.8% with real labels and 41.7% with scrambled ones. |
+| **Smaller CLIP targets did not help** | On 132 imagery events (4 people, 33 images each), outer-test pairwise retrieval was 52.2475% full vs 52.2980% reduced, against 50% chance; paired permutation p .477522 ([Experiment 07](studies/2_imagery_decoding/experiments/07_low_dimensional_clip/)). This is a protocol-specific null, not a limit on all imagery decoding. |
 | **Next** | A new kind of recording, where people imagine a *change* to a shape they just saw ([study 3](studies/3_anchored_imagery/)). Designed and simulated; waiting on EEG hardware and ethics approval. |
 
 ## Documentation
