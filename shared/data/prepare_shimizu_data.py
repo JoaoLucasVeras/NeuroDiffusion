@@ -163,22 +163,22 @@ def main():
 
     if args.experiment in ("imagination", "both"):
         print("=== Imagination Experiment ===")
-        paths = sorted(
+        mat_paths = sorted(
             os.path.join(args.datasets_dir, "Imagination Experiment", f)
             for f in os.listdir(os.path.join(args.datasets_dir, "Imagination Experiment"))
             if f.endswith(".mat")
         )
-        convert(paths, os.path.join(args.datasets_dir, "imagination_5_95_std.pth"),
+        convert(mat_paths, os.path.join(args.datasets_dir, "imagination_5_95_std.pth"),
                 expect_window_label=True, imagenet_dir=imagenet_dir)
 
     if args.experiment in ("visual", "both"):
         print("\n=== Visual Experiment ===")
-        paths = sorted(
+        mat_paths = sorted(
             os.path.join(args.datasets_dir, "Visual Experiment", f)
             for f in os.listdir(os.path.join(args.datasets_dir, "Visual Experiment"))
             if f.endswith(".mat")
         )
-        convert(paths, os.path.join(args.datasets_dir, "visual_5_95_std.pth"),
+        convert(mat_paths, os.path.join(args.datasets_dir, "visual_5_95_std.pth"),
                 expect_window_label=False, imagenet_dir=imagenet_dir)
 
 

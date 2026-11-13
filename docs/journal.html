@@ -1032,6 +1032,11 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        Animals and objects have not decoded from imagery in any honest test.</p>
   </div>
 
+  <div class="note warn">
+    <span class="hd">11 November update: reducing the visual target did not help</span>
+    <p>Study 2, Experiment 07 tested unseen imagined objects with alpha-power features and ridge regression. Across four people and 33 matched images per person (132 imagery events), full/reduced CLIP targets scored <b>52.2475% / 52.2980% pairwise retrieval</b> against 50% chance. The +0.0505 percentage-point difference was not supported by 1,000 training-label permutations (paired p .477522); the reduced arm did not pass its above-chance test (p .122877). This rules out a supported gain from this particular rank-reduction approach, not imagery decoding in general. No image-generation follow-up is justified by this result.</p>
+  </div>
+
   <h3 id="p-status__every-experiment-and-its-number">Every experiment, and its number</h3>
   <p>Deep-model figures are best-validation rather than test, and are provisional.</p>
   <div class="tbl">
@@ -1076,6 +1081,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">20 Oct</td><td>92377</td><td>Authors&rsquo; EEGNet.py unchanged, real vs scrambled labels</td><td class="n lo">42.8% vs 41.7%</td><td>75.8% not reproduced</td></tr>
       <tr><td class="n">20 Oct</td><td>92390</td><td>Enhancement round, shapes, 6 methods (sub-21 excluded)</td><td class="n lo">best 37.7% (target 45%)</td><td>Target missed</td></tr>
       <tr><td class="n">16 Oct</td><td>90544</td><td>Shapes: brain or eyes? Regions, seconds, eye signals</td><td class="n">eye signals p .47; survives ICA, p .002</td><td>Not the eyes; diffuse</td></tr>
+      <tr><td class="n">11 Nov</td><td>113017 (smoke 113015)</td><td>Exp. 07: unseen-stimulus CLIP retrieval; 4 people, 33 images each, 132 events; outer test folds</td><td class="n lo">52.2475 / 52.2980%; chance 50%</td><td>Full / reduced targets; paired p .477522, 1,000 permutations; no supported gain</td></tr>
     </tbody>
   </table>
   </div>
@@ -1165,6 +1171,17 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p><span class="lbl">What changed</span>The figshare record moved to version 4 on 28 October. Comparing file checksums with version 3, which all our Gao analyses used, only five of 44 files changed: the README and the archives for sub-08, sub-13, sub-20 and sub-21. Those are exactly the four people where we had found problems: duplicated recordings in sub-20 and sub-21 (20 October) and one faulty run each in sub-08 and sub-13 (10 October).</p>
     <p><span class="lbl">What it means</span>Our results stand as stated for version 3, with those recordings excluded. We have not yet checked whether version 4 removes the duplicates; that needs a re-download of the four archives and a re-run of the duplicate scan. Anyone downloading the data now gets version 4, so check with the team before using those four people.</p>
     <p><span class="lbl">On the reproduction</span>Our 75.8% checks ran the authors&rsquo; shared script, which differs from the method their paper describes (one stratified 80/20 split, 500 epochs, 5&ndash;30 Hz filtering with ICA); the paper does not say how its final accuracy was chosen. A run that follows the paper as written has not been done, and we have not yet contacted the authors. Until then, &ldquo;not reproduced&rdquo; on this page means: not reproduced with their shared code on the public data.</p>
+  </div>
+
+<div class="entry">
+    <div class="tags"><span class="tag nul">null result</span></div>
+    <span class="when">11 NOV 2026 &middot; JOBS 113015, 113017</span>
+    <h3>Experiment 07: a smaller visual target did not improve imagery retrieval</h3>
+    <p><span class="lbl">Question and protocol</span>Does reducing the visual target help predict previously unseen imagined objects? VTC single-neuron findings motivated the question, but scalp EEG and CLIP PCA are not a replication of those measurements. We averaged alpha-power window features into one vector per imagery event, then compared full 768-dimensional CLIP targets with training-derived PCA targets (2, 4, 8 or 16 dimensions) using the same ridge estimator and regularization grid. Five whole-stimulus outer folds were shared across four participants; four inner folds selected settings, with scaling and PCA fitted only on training data. All 33 matched stimuli were tested once per person: <b>132 events</b>, not 2,640 independent windows.</p>
+    <p><span class="lbl">Held-out result</span>Participant-averaged full/reduced pairwise retrieval was <b>52.2475% / 52.2980%</b>, with <b>50% chance</b>. The improvement was +0.0505 percentage points (one-sided paired training-label permutation p <b>.477522</b>); reduced-arm above-chance p was <b>.122877</b>. All 1,000 synchronized training-label permutations repeated model selection. Only 2 of 4 participants improved, so the pre-set follow-up gate failed. Full/reduced top-1 retrieval was 18.1818% / 16.6667%, against a fold-weighted chance of 15.1515%.</p>
+    <p><span class="lbl">Controls and execution</span>The mean-target control scored 50% pairwise; true-target PCA projection scored 73.2071%, an oracle diagnostic using the actual target image, not EEG decoding. CPU smoke job 113015 and full job 113017 completed successfully with no GPU allocation; the full run took 25 min 56 s and about 1.1 GB peak RAM. Local validation included 17 synthetic tests and complete-event input checks.</p>
+    <p><span class="lbl">What it changes</span>Close this test as a null for alpha-power/ridge/CLIP-PCA on four people with one event per image. It does not establish that imagery is intrinsically too faint, disprove the VTC finding, or distinguish inadequate features from inadequate data. Full-target ridge already predicts within the training-image span; this tests further rank truncation. Preserve the fixed protocol, do not retune on these test folds, and discuss a distinct follow-up before further cluster work or generation.</p>
+    <p><span class="lbl">Review files</span><a href="https://github.com/JoaoLucasVeras/NeuroDiffusion/tree/main/studies/2_imagery_decoding/experiments/07_low_dimensional_clip">Experiment README, runner, tests and CPU jobs</a>; <a href="https://github.com/JoaoLucasVeras/NeuroDiffusion/blob/main/research/aditya/FINDINGS.md">findings</a>; <a href="https://github.com/JoaoLucasVeras/NeuroDiffusion/blob/main/research/aditya/LOG.md">append-only research log</a>. Data, cached embeddings and generated artifacts are not committed.</p>
   </div>
 
 <div class="entry">
