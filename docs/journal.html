@@ -1,3 +1,7 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
 <title>NeuroDiffusion Documentation</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -261,9 +265,10 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <p class="eyebrow">NeuroDiffusion &middot; Project documentation</p>
   <h1>Turning imagined pictures back into pictures</h1>
   <p class="lede">A complete, honest walk-through of what we are building, what we have found, and what is still broken. Twelve chapters, written to be read in order, assuming no background in EEG or machine learning. Every technical term is defined where it first appears.</p>
+  <p class="lede" style="font-size:.95rem;color:var(--muted)"><b>Student research project, work in progress.</b> Results are provisional and are corrected here, with dates, when they change. Run by the SJSU AI/ML Club.</p>
 
   <div class="statusgrid">
-    <div class="sc"><span class="k">Updated</span><span class="v">9 Nov 2026<small>Seeing result corrected: held-out images, not a held-out person</small></span></div>
+    <div class="sc"><span class="k">Updated</span><span class="v">12 Nov 2026<small>Gao dataset version 4 replaces the files we flagged</small></span></div>
     <div class="sc good"><span class="k">Seeing a picture</span><span class="v">Decodes<small>both datasets; across days on Gao</small></span></div>
     <div class="sc warn"><span class="k">Imagining a picture</span><span class="v">Faint<small>across days only for shapes (35%, 1.05&times;)</small></span></div>
     <div class="sc warn"><span class="k">Images from imagination</span><span class="v">Not yet<small>generator works; signal too faint to steer it</small></span></div>
@@ -391,7 +396,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   <ul>
     <li><strong>Seeing works.</strong> EEG recorded while someone <em>looks at</em> a picture decodes on both datasets we use, and on the larger one it holds across days. The machine is wired correctly, and the image generator reaches near-perfect matches when given the true picture&rsquo;s description.</li>
     <li><strong>Imagining is faint.</strong> On our first dataset a simple method finds imagery at two to three times chance in three of four people, too weak to steer the generator. On the 22-person Gao dataset, imagery holds up across days only for simple shapes, at a small margin.</li>
-    <li><strong>Published imagery numbers need checking.</strong> We could not reproduce the Gao paper&rsquo;s 75.8% with our re-implementation of their pipeline, and their scoring method gives the same accuracy on scrambled labels. Honest measurement is the base everything else here builds on.</li>
+    <li><strong>Published imagery numbers need checking.</strong> We could not reproduce the Gao paper&rsquo;s 75.8% with our re-implementation of their pipeline, and the scoring in their shared script gives the same accuracy on scrambled labels. Honest measurement is the base everything else here builds on.</li>
   </ul>
 
   <h3 id="p-start__how-to-read-this">How to read this</h3>
@@ -1020,7 +1025,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <p><b>Faint:</b> imagery in alpha band power, 2&ndash;3&times; chance in 3 of 4 people on the first
        dataset; on Gao, across days, only for shapes (1.11&times;, p 0.0018).</p>
     <p><b>Settled negative:</b> imagery from the first dataset does not survive into generated
-       images; imagery does not transfer between people; the Gao paper&rsquo;s published scoring
+       images; imagery does not transfer between people; the scoring in the Gao authors&rsquo; shared script
        matches its own scrambled-label null, with our cleaning and with theirs.</p>
     <p><b>Shapes, three times:</b> across days (job 87790), within a session with the authors&rsquo;
        cleaning on a time-ordered split (88171, 37.3%), and faintly from a decoder of seeing (88200).
@@ -1065,7 +1070,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td class="n">10 Oct</td><td>87790 &middot; figures</td><td>Gao, cross-session, session-aligned band power</td><td class="n hi">1.11&times;, p 0.0018</td><td><b>First cross-day imagery</b></td></tr>
       <tr><td class="n">11 Oct</td><td>87812 &middot; imagery</td><td>Gao, within session, shuffled and time-ordered</td><td class="n lo">0.92&ndash;1.10&times;</td><td>Paper not reproduced</td></tr>
       <tr><td class="n">11 Oct</td><td>87812 &middot; perception</td><td>Gao, within session, shuffled vs time-ordered</td><td class="n">16&ndash;19 vs 5&ndash;9 sessions sig.</td><td>Shuffled splits inflate</td></tr>
-      <tr><td class="n">12 Oct</td><td>87908</td><td>Authors&rsquo; EEGNet, published scoring vs scrambled labels</td><td class="n lo">43% vs 43%</td><td>Scoring artifact</td></tr>
+      <tr><td class="n">12 Oct</td><td>87908</td><td>Authors&rsquo; EEGNet, their script&rsquo;s scoring vs scrambled labels</td><td class="n lo">43% vs 43%</td><td>Scoring artifact</td></tr>
       <tr><td class="n">14 Oct</td><td>88171</td><td>Option B: authors&rsquo; ICA cleaning + EEGNet, four ways</td><td class="n">pub 43% = null 44%; shapes honest-time 37.3%, p .002</td><td>75.8% not reproduced (re-implementation); shapes again</td></tr>
       <tr><td class="n">14 Oct</td><td>88200</td><td>Seeing &rarr; imagining, across days, alpha</td><td class="n lo">shapes p .019; others null</td><td>Weak transfer, shapes only</td></tr>
       <tr><td class="n">20 Oct</td><td>92377</td><td>Authors&rsquo; EEGNet.py unchanged, real vs scrambled labels</td><td class="n lo">42.8% vs 41.7%</td><td>75.8% not reproduced</td></tr>
@@ -1080,7 +1085,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="step"><span class="i">1</span><span class="t">Tell the authors</span>
       <p class="b">The exact-script result and the sub-21 duplication, with the questions drafted on 15 October.</p></div>
     <div class="step"><span class="i">2</span><span class="t">Write up the scoring finding</span>
-      <p class="b">The published Gao scoring reports the same accuracy on scrambled labels. Option B confirmed it with the authors&rsquo; own cleaning: a clean, citable methods result.</p></div>
+      <p class="b">The scoring in the Gao authors&rsquo; shared script reports the same accuracy on scrambled labels. Option B confirmed it with the authors&rsquo; own cleaning: a clean, citable methods result.</p></div>
     <div class="step"><span class="i">3</span><span class="t">Our own recordings</span>
       <p class="b">Designed around what works: a few simple, distinct shapes, many repeats, a seeing block before each imagining block, one session per day, and time-ordered splits from day one.</p></div>
   </div>
@@ -1154,6 +1159,15 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
   </header>
 
 <div class="entry">
+    <div class="tags"><span class="tag fix">data</span><span class="tag res">dataset update</span></div>
+    <span class="when">12 NOV 2026 &middot; NO JOB</span>
+    <h3>The Gao dataset's authors replaced the files we had flagged</h3>
+    <p><span class="lbl">What changed</span>The figshare record moved to version 4 on 28 October. Comparing file checksums with version 3, which all our Gao analyses used, only five of 44 files changed: the README and the archives for sub-08, sub-13, sub-20 and sub-21. Those are exactly the four people where we had found problems: duplicated recordings in sub-20 and sub-21 (20 October) and one faulty run each in sub-08 and sub-13 (10 October).</p>
+    <p><span class="lbl">What it means</span>Our results stand as stated for version 3, with those recordings excluded. We have not yet checked whether version 4 removes the duplicates; that needs a re-download of the four archives and a re-run of the duplicate scan. Anyone downloading the data now gets version 4, so check with the team before using those four people.</p>
+    <p><span class="lbl">On the reproduction</span>Our 75.8% checks ran the authors&rsquo; shared script, which differs from the method their paper describes (one stratified 80/20 split, 500 epochs, 5&ndash;30 Hz filtering with ICA); the paper does not say how its final accuracy was chosen. A run that follows the paper as written has not been done, and we have not yet contacted the authors. Until then, &ldquo;not reproduced&rdquo; on this page means: not reproduced with their shared code on the public data.</p>
+  </div>
+
+<div class="entry">
     <div class="tags"><span class="tag fix">correction</span></div>
     <span class="when">9 NOV 2026 &middot; NO JOB</span>
     <h3>The seeing result was not tested on a new person</h3>
@@ -1176,7 +1190,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <span class="when">20 OCT 2026 &middot; JOB 93110</span>
     <h3>A second duplicated recording, and every other file is distinct</h3>
     <p><span class="lbl">What was run</span>An MD5 of the data section of every EEG file and of every events file in all 22 published zips (studies/2_imagery_decoding/experiments/06_duplicate_scan/gao_dup_scan.py).</p>
-    <p><span class="lbl">Result</span>Two duplicate groups, nothing else. <b>sub-21</b>: ses-01 FVI, ses-02 FVI and ses-02 AVI share identical EEG data (found earlier). <b>sub-20</b>: ses-01 OVI and ses-02 OVI are identical, data and events. Every other recording is unique.</p>
+    <p><span class="lbl">Result</span>Two duplicate groups, nothing else. <b>sub-21</b>: ses-01 FVI, ses-02 FVI and ses-02 AVI share identical EEG data (found earlier). <b>sub-20</b>: ses-01 OVI and ses-02 OVI are identical, data and events. Every other recording is unique. (The authors replaced these archives in version 4 on 28 October; see 12 November.)</p>
     <p><span class="lbl">What it changes</span>Cross-session analyses exclude sub-21 (shapes, animals) and sub-20 (objects). Objects decoded at chance across days either way, so no conclusion moves; the shapes figures were already corrected to exclude sub-21.</p>
   </div>
 
@@ -1308,7 +1322,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
 <div class="entry">
     <div class="tags"><span class="tag nul">75.8% not reproduced</span><span class="tag res">shapes again</span></div>
     <span class="when">14 OCT 2026 &middot; JOBS 88067, 88171</span>
-    <h3>With the authors&rsquo; own cleaning, published scoring still equals its scrambled-label null</h3>
+    <h3>With the authors&rsquo; own cleaning, their script&rsquo;s scoring still equals its scrambled-label null</h3>
     <p><span class="lbl">What was run</span>Option B: their Preprocess.py (pyprep, ICA with ICLabel, 4&ndash;80 Hz) on the raw recordings of all 22 people, then their EEGNet, scored the same four ways as option A.</p>
     <div class="tbl">
     <table>
@@ -1320,7 +1334,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       </tbody>
     </table>
     </div>
-    <p><span class="lbl">The reading</span>Their cleaning does not rescue the published number: the published scoring is again no higher than the same procedure on scrambled labels, on every task. Scored honestly, animals and objects are at chance. <b>Shapes</b> is above chance on the time-ordered split (37.3%, p .002 across 42 sessions, surviving correction for six tests), the third independent analysis to find shapes imagery and nothing else. Caveats: the time-ordered score is one split per session, and the two sessions of a person are not fully independent.</p>
+    <p><span class="lbl">The reading</span>Their cleaning does not rescue the published number: their script&rsquo;s scoring is again no higher than the same procedure on scrambled labels, on every task. Scored honestly, animals and objects are at chance. <b>Shapes</b> is above chance on the time-ordered split (37.3%, p .002 across 42 sessions, surviving correction for six tests), the third independent analysis to find shapes imagery and nothing else. Caveats: the time-ordered score is one split per session, and the two sessions of a person are not fully independent.</p>
     <p><span class="lbl">What it settles, and what it does not</span>The scoring finding stands: their method reports the same accuracy on scrambled labels. The 75.8% is not reproduced by <em>our re-implementation</em>: their network, training settings and cleaning functions, run from our own driver script, with 500 training epochs (the paper&rsquo;s figure; their script uses 1500), our own 5-fold splits, and corrected event labels for the objects task. Their script, run exactly as written on the animals task (which it labels correctly), is the remaining check, along with asking the authors.</p>
   </div>
 
@@ -1345,7 +1359,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       </tbody>
     </table>
     </div>
-    <p><span class="lbl">The reading</span><b>On this data the published scoring is
+    <p><span class="lbl">The reading</span><b>On this data the shared script&rsquo;s scoring is
        indistinguishable from its own scrambled-label null</b>: about 1.3&times; chance either way.
        Scored honestly, the network sits at chance on every task, shuffled or time-ordered. So the
        scoring procedure alone adds roughly ten percentage points, from nothing.</p>
@@ -1474,7 +1488,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
        parieto-occipital coverage, two sessions on separate days (sub-09 and sub-10 have one),
        <b>40 imagery trials per stimulus per session</b> against our one. Ten stimuli in three tasks
        recorded as separate runs: animals (dog, bird, fish), figures (circle, pentagram, square),
-       objects (scissor, watch, cup, chair). Version 3 of the record relicensed it <b>CC BY 4.0</b>,
+       objects (scissor, watch, cup, chair). Version 3 of the record relicensed it <b>CC BY 4.0</b> (version 4, 28 October 2026, replaced four subjects&rsquo; archives),
        which permits commercial use with credit; our notes had said non-commercial.</p>
     <p><span class="lbl">When the person is imagining</span>The paper does not say where the event
        marker sits in the trial, and that decides whether the authors&rsquo; 4 s epochs are
@@ -1854,7 +1868,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
     <div class="ritem">
       <div class="rhead"><span class="rt">Gao et al. (2026), visual imagery BCI</span><span class="who">Joao</span></div>
       <p class="rd">22 participants, 10 classes, 40 repetitions per class per session, two sessions, 32 channels. Published EEGNet baseline of 75.8% on three classes.</p>
-      <p class="rv"><b>Verdict</b>Our main dataset since 10 October: roughly 800 real imagery events per person against 33. Its published 75.8% was not reproduced by our re-implementation, and its scoring method matches its scrambled-label null (Journal, 12&ndash;14 October); seeing decodes across days, and imagining does so only for shapes.</p>
+      <p class="rv"><b>Verdict</b>Our main dataset since 10 October: roughly 800 real imagery events per person against 33. Its published 75.8% was not reproduced by our re-implementation, and the scoring in the authors&rsquo; shared script matches its scrambled-label null (Journal, 12&ndash;14 October); seeing decodes across days, and imagining does so only for shapes.</p>
     </div>
     <div class="ritem">
       <div class="rhead"><span class="rt">MindBigData "ImageNet of the Brain"</span><span class="who">Aditya</span></div>
@@ -1939,7 +1953,7 @@ footer p{font-family:Archivo,sans-serif;font-size:.78rem;color:var(--muted);marg
       <tr><td>Alazrai et al. 2026</td><td>16 coloured arrows</td><td class="n">95%</td><td class="n">6%</td><td>each arrow recorded in its own session, then pooled into random folds</td><td class="lo">session leak</td></tr>
       <tr><td>Alazrai et al. 2020</td><td>16 coloured arrows, 10 trials each</td><td class="n">92.7%</td><td class="n">6%</td><td>same design</td><td class="lo">session leak</td></tr>
       <tr><td>Ullah 2021; Datta 2021; Hossain 2024</td><td>letters, words</td><td class="n">94&ndash;99%</td><td class="n">4&ndash;50%</td><td>random folds</td><td class="lo">likely inflated</td></tr>
-      <tr><td>Gao et al. 2026</td><td>3 animals</td><td class="n">75.8%</td><td class="n">33%</td><td>best test score over training epochs</td><td class="lo">not reproduced (Journal, 12&ndash;15 Oct)</td></tr>
+      <tr><td>Gao et al. 2026</td><td>3 animals</td><td class="n">75.8%</td><td class="n">33%</td><td>shared script: best test score over training epochs (paper does not say)</td><td class="lo">not reproduced (Journal, 12&ndash;15 Oct)</td></tr>
       <tr><td>Sinc-EEGNet, PLoS One 2022</td><td>40 categories</td><td class="n">above chance</td><td class="n">2.5%</td><td>same category shown in long blocks</td><td class="lo">block design</td></tr>
       <tr><td>Kosmyna et al. 2018</td><td>flower vs hammer</td><td class="n">52%</td><td class="n">50%</td><td>chronological folds, 26 people</td><td class="hi">honest, at chance</td></tr>
       <tr><td>Lee et al. 2022</td><td>3 categories</td><td class="n">46%</td><td class="n">33%</td><td>within subject</td><td>modest</td></tr>
