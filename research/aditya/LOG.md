@@ -1035,3 +1035,15 @@ No real data has been run; the protocol change below is fixed before any result.
 - Next action is committing/pushing this closeout only to the personal branch and
   refreshing the existing PR description so it covers both completed experiments.
   No automatic merge, new experiment, model run or HPC action is part of this work.
+
+## 2026-11-15 - Published the Experiment 08 closeout on the personal branch
+
+- Committed the 13-file closeout as `39f6a0f` and pushed it to
+  `origin/aditya-individual-branch`; local and remote branch tips matched.
+- Updated existing [PR 17](https://github.com/JoaoLucasVeras/NeuroDiffusion/pull/17)
+  to cover both Experiments 07 and 08, with their distinct metrics, sample sizes,
+  controls, limitations and validation. GitHub confirmed it is open, not merged,
+  and contains the published commit. No new PR or automatic merge was created.
+- Project-page updates are on the branch; the main site's publication depends
+  on a later merge. No dataset, model artifact, unrelated untracked file or new
+  experiment was included. No scientific or HPC work started during closeout.
