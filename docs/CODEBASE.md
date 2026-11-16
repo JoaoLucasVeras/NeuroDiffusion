@@ -163,9 +163,12 @@ squeue -u <you>                      # your jobs
 - **Template:** copy `05_shapes_enhance/s17_gao_enhance.sh` (CPU, one task per person) or
   `03_gao_reproduction/s13_gao_eegnet.sh` (GPU). Job scripts `cd` to the repository root
   and call the script by its path. Keep the job script next to the experiment it runs.
-- **Prefer CPU** (`--partition=cpuqs`). Most of our analyses do not need a GPU.
-- **GPU:** one GPU per job, at most 2–3 at once, and never the A100/H100 nodes unless needed.
-  `--exclude=cs002` (a faulty GPU).
+- **Pick the queue by what the job needs.** CPU only: `--partition=cpuqs` (up to 5 days).
+  Most of our analyses do not need a GPU. Needs a GPU: `--partition=nsfq` (up to 24 hours;
+  `nsfqm` for up to 14 days). Older GPU job scripts say `gpuqs`; change that to `nsfq`.
+- **GPU:** one GPU per job (`--gres=gpu:1`), and **at most 1–2 GPU machines for the whole
+  team at once**, as our advisor asked. Post in the team chat before a GPU job starts.
+  Every `nsfq` machine has one H100, so don't request a GPU type.
 - Outputs go to `results/<job>_<id>/`, logs to `logs/`. The shared home drive is nearly
   full: delete what you do not need.
 - More in [RUNBOOK.md](RUNBOOK.md).
