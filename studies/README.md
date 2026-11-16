@@ -16,7 +16,7 @@ that study. A new question, or a new way of collecting data, is a new study.
 | Study | Question | Status |
 |---|---|---|
 | [1_dreamdiffusion](1_dreamdiffusion/) | Can the DreamDiffusion model, built for *seeing*, generate images from *imagined* EEG? | Finished. Generation worked on seeing, imagination stayed at chance. Kept unchanged |
-| [2_imagery_decoding](2_imagery_decoding/) | Can imagined pictures be read from EEG at all, when tested honestly? | Main study, 6 experiments. Only imagined *shapes* decode, at about 1.05 to 1.1 times chance |
+| [2_imagery_decoding](2_imagery_decoding/) | Can imagined pictures be read from EEG at all, when tested honestly? | Main study, 8 experiments. Historical shapes signal is small; newer target-rank and four-attempt averaging tests found no supported gain |
 | [3_anchored_imagery](3_anchored_imagery/) | Can we decode an imagined *change* to a shape the person just saw? | Designed and simulated. Waiting on EEG hardware and ethics approval |
 
 ## Starting a new study or experiment

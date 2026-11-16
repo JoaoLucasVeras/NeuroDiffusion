@@ -509,3 +509,529 @@ No real data has been run; the protocol change below is fixed before any result.
 - Next action: Joao reviews/merges the PR so the main documentation page receives
   the findings. Agree on a distinct follow-up question before implementing or
   submitting another experiment.
+
+## 2026-11-14 - Reviewed four papers for possible follow-up experiments
+
+- Compared the papers' methods and evaluation with Experiment 07, the Gao
+  baseline, the stronger-decoder tests and the anchored-imagery protocol.
+  This was a literature/code review, not a new scientific run.
+- SGDM (https://arxiv.org/html/2604.22649v1): useful distinction between semantic
+  and structural predictions, but its tangram protocol records viewing, not
+  eyes-closed imagery. Image-level holdouts do not establish unseen-person
+  generalization. No project code/checkpoint release was verified from its text.
+- GAN-titled baseline (https://arxiv.org/html/2609.22282v1): its main evidence is
+  THINGS perception retrieval with repeated-trial averaging, not faithful pixel
+  reconstruction. Its single shuffled-pair scoring control is not a training-label
+  permutation test. The linked implementation could not be inspected successfully.
+- ATM (https://arxiv.org/html/2403.07721 and the official NeurIPS proceedings
+  entry): reusable encoder/alignment components, not a plug-in imagery solution.
+  The conference PDF exceeded the browser size limit; used the authors' full-text
+  arXiv version and released code, without assuming identical versions. The
+  develop launcher uses 63 channels, 250 samples and ViT-H/14 by default. Its
+  training entry point uses condition-stratified within-person validation,
+  random validation for joint/LOSO modes, and documents a test-loss fallback when
+  validation is disabled. Reuse needs explicit grouped validation and no fallback.
+  Source: https://github.com/dongyangli-del/EEG_Image_decode/tree/develop .
+- PMC11534409 is a narrative review of psychiatric EEG biomarkers, not an
+  image-generation method or evidence for visual-content decoding.
+  Source: https://pmc.ncbi.nlm.nih.gov/articles/PMC11534409/ .
+- Most promising cheap proposal: measure the effect of averaging independent
+  imagery events on cross-day Gao shapes decoding at fixed repetition budgets,
+  retaining the existing simple decoder. Class-conditioned bundling is an
+  instructed-repeat/offline protocol, not blind grouping or unseen-object retrieval.
+  Do not treat overlapping bundles or different regrouping seeds as independent
+  samples. Shimizu windows cannot substitute for independent repeated events.
+- Other proposals: separately test structural targets before any ControlNet
+  integration; audit/pilot ATM on THINGS only if a reusable large-data perception
+  encoder is an explicit goal. Neither proposal is evidence of imagery transfer.
+- No experiment was implemented, no data downloaded, no cluster contacted and
+  no GitHub content changed. Notes remain local on the personal branch. Any
+  numerical follow-up needs a fixed protocol, versioned/audited data and fresh
+  execution approval. Reusing previously inspected data makes this a follow-up,
+  not an untouched independent confirmation.
+
+## 2026-11-14 - Independent-repetition feasibility audit
+
+- User requested proceeding with the feasibility audit. Stayed on
+  `aditya-individual-branch`; preserved the earlier uncommitted literature notes
+  and unrelated untracked file. No cluster connection, download or submission.
+- Code-level finding: `shared/data/prepare_gao_data.py` documents 40 events per
+  class/session and stores subject, session, task, trial ordinal, class/image,
+  sampling rate and epoch boundaries. It verifies source event codes against BDF
+  triggers. A usable trial key is (subject, session, task, trial), NOT trial alone.
+  Trial ordinals are assigned before exclusions, so gaps must be preserved.
+- Provenance limitation: converted trials do not retain source filename, raw
+  event latency or archive checksums. Their IDs allow deterministic disjoint
+  grouping but do not prove non-overlapping raw time intervals, correct source
+  version, or independence from recording drift. Source records are needed for
+  that part of the audit; duplicate IDs and repeated EEG content must be checked.
+- Novelty within inspected code: Gao baseline and enhancement scripts score
+  individual test events, not fixed bundles of 2/4/8 events. Existing pooling in
+  `classical_baseline.score` and `eval_report.py` groups Shimizu windows by image;
+  that is not independent Gao repetition averaging. No equivalent Gao budget
+  experiment was found in the checked-in code/docs searched.
+- Important exclusion mismatch: experiment 06's README says exclusions are in
+  each script's EXCLUDE set, but the inspected Gao baseline and enhancement
+  entry points contain no such subject/task guard. Historical corrected results
+  may have excluded people during aggregation or a separate run; that mechanism
+  is not established here. New code must explicitly reject sub-21 FVI for v3
+  rather than assuming the imported loader enforces it. Sub-09/sub-10 lack the
+  second session. Expected eligible count is at most 19 of 22, subject to audit.
+- Version hazard: the converter's source string says v3, but `cluster/fetch_gao.sh`
+  queries the unversioned latest record and only size-checks cached downloads.
+  That string is not proof of source version. The 12 November project journal
+  reports v4 replacement files, including sub-21. Do not mix versions, trust the
+  label alone, or restore excluded participants without checksum/duplicate audit.
+  Direct Figshare metadata retrieval was unavailable through the web tool during
+  this audit; no current release state was independently verified.
+- Local asset inventory: datasets contains only the Shimizu MAT folder, converted
+  imagination tensor and CLIP cache. There is no local Gao dataset directory and
+  no local Gao numerical result directory. Actual per-class counts, trial quality,
+  duplicate recordings and the data-level eligibility manifest remain unverified.
+- Ran an ephemeral Python metadata-only check using the existing isolated local
+  interpreter. With synthetic 40-event/class inputs in each of two sessions,
+  budgets 1/2/4/8 yield 120/60/30/15 decisions per session (40/20/10/5 per class).
+  Every budget uses 120 distinct event IDs once, every bundle stays inside one
+  session/class, and no partial bundle occurs. Assertions passed. This verifies
+  arithmetic and grouping feasibility ONLY, not real EEG counts or performance.
+- Protocol corrections before implementation: use four attempts as the sole
+  primary budget, compare both arms on identical retained source events, weight
+  participants equally after averaging directions, and do not count directions
+  or regroupings as independent people. Keep the same decoder/settings, choose
+  one pooling operation in advance, and repeat both arms under paired training-
+  label shuffles. Any session-wide label-free normalization is transductive
+  calibration, not online performance; preserve and disclose it in both arms.
+- Class-based test grouping is an instructed-repeat/offline analysis. Existing
+  trials re-present the picture before each imagery event; this is not proof of
+  four consecutive uncued mental attempts, unseen-object retrieval, or successful
+  image generation. Four 4-second imagery epochs imply at least 16 seconds of
+  imagery evidence, plus cues, picture presentation and breaks; actual latency
+  cannot be claimed without source timing.
+- Decision: CONDITIONAL GO for drafting an experiment, NOT cleared for a real-
+  data run. Next requirement is the location of the existing audited Gao assets
+  and their provenance. Verify data-level feasibility before freezing success
+  criteria or writing/submitting a cluster job. No classifier or scientific
+  analysis was run, no code changed, and no GitHub content was modified.
+
+## 2026-11-14 - Attempted read-only HPC data inventory
+
+- User authorized checking their own HPC account for existing Gao assets. Tried
+  the previously configured SSH host with strict host-key checking, batch-mode
+  authentication and a bounded filename search limited to the account's home.
+  The planned search prunes SSH, Git, package-cache and environment directories.
+- Connection failed before authentication: `coe-hpc1.sjsu.edu` could not be
+  resolved. No remote command ran, so the presence or absence of Gao data on
+  the account remains unknown. Did not retry in a loop or bypass host checking.
+- A local VPN-agent process is running, but this does not establish an active
+  campus VPN session. Adapter inspection was denied in the local sandbox;
+  sandboxed existence checks for SSH files were also denied and do not show that
+  the key is missing. No private key contents were requested or displayed.
+- The previously supplied access-guide path in Downloads was unavailable.
+  Used only the existing read-only connection settings; no setup was changed.
+- Next action: restore campus/VPN DNS connectivity, then repeat the authorized
+  read-only inventory. No data transfer, environment changes, cluster analysis,
+  submission, cancellation, commit or push occurred.
+
+## 2026-11-14 - Completed read-only HPC filename inventory after VPN reconnect
+
+- User confirmed VPN connectivity and authorized retry. SSH succeeded with the
+  existing dedicated key and strict host-key verification. The personal remote
+  checkout remains on `aditya-individual-branch`; nothing was fetched or changed.
+- The personal checkout's datasets directory contains only
+  `imagination_5_95_std.pth` and `clip_stimulus_emb.pt`: the Experiment 07 Shimizu
+  inputs. No Gao dataset directory or Gao-related conversion/result logs were
+  found in the inspected checkout locations.
+- Bounded searches of the account's home (maximum depth six, no traversal of
+  symlink targets, excluding credentials/package-cache/environment directories)
+  found Gao source scripts but no `gao_sub-*.pt`, `sub-*.zip`, FVI-named source
+  files or Figshare-record-named assets. This is not a cluster-wide absence claim;
+  other accounts, shared storage and deeper/unmatched paths were not searched.
+- One inventory command stopped before its file checks because the remote Git
+  predates `git branch --show-current`; reran with the compatible read-only
+  `git symbolic-ref --short HEAD`, then completed the checks successfully.
+- Outcome: no Gao data located within the authorized inspected locations.
+  Next requirement is a shared dataset path with permission to read it and source
+  provenance, or a separately approved download/conversion workflow. No transfer,
+  numerical analysis, job, remote edit, commit or GitHub change occurred.
+
+## 2026-11-14 - Started local Gao version 4 download
+
+- User requested downloading the dataset locally. The official Figshare API
+  reports version 4, CC BY 4.0, 44 files totaling approximately 12.038 GB,
+  including 22 subject archives. Local disk check found approximately 227 GB free.
+- Added `research/aditya/download_gao.py`, a standard-library downloader pinned
+  to the version-4 metadata endpoint. Destination is the ignored
+  `datasets/gao_raw/figshare_v4/` directory. Saved the full source manifest before
+  archive transfers. The script checks size and official MD5, records SHA-256,
+  preserves incomplete files as .part, and never overwrites mismatching files.
+- Command: `.venv-vtc/Scripts/python.exe -u research/aditya/download_gao.py`.
+  Two concurrent transfers; downloaded source scripts are stored, never executed.
+  Syntax and Git whitespace checks passed; destination ignore rule verified.
+- Initial requests were slow to transfer bytes. A diagnostic HEAD request
+  redirected to storage and returned 403, but a one-byte GET succeeded with 206;
+  the actual downloader then verified both sub-01.zip and sub-02.zip (1.142 GB).
+  HEAD failure was not evidence that GET downloads were blocked.
+- This starts a new versioned local dataset, not an exact copy of the project's
+  historical version-3 inputs. Updated participants require fresh provenance,
+  event-code and duplicate checks before analysis; do not infer that v4 fixes
+  every documented issue or reuse the converter's hardcoded v3 string as proof.
+- Download completion and verification will be recorded separately. No extraction,
+  conversion, model fitting, cluster connection, job or GitHub update performed.
+
+## 2026-11-14 - Local Gao version 4 download completed
+
+- User requested a completion check. Downloader exited successfully and its final
+  report confirms `complete: true`, 44 verified source files, zero errors, and
+  approximately 12.038 GB downloaded, including all 22 subject ZIP archives.
+- Every source file passed byte-size and official Figshare MD5 checks; SHA-256
+  values are also recorded. Source metadata and the verification report remain
+  under ignored `datasets/gao_raw/figshare_v4/`. No partial files remain.
+- No extraction, conversion, downloaded-code execution, model fitting, cluster
+  action, commit or push occurred. Next step is an archive/event/duplicate audit,
+  focused first on FVI and version-4 replacements, before preparing EEG inputs.
+
+## 2026-11-14 - Audited version-4 archives, events and shapes triggers locally
+
+- User requested the archive/event/duplicate audit. No full extraction, conversion,
+  fitting, HPC connection, job, commit or push. Work stays on the personal branch.
+- Reused experiment 06's `gao_dup_scan.py` to stream BDF payload hashes (excluding
+  headers) and event-file hashes directly from the 22 ZIPs. Its results are stored
+  in ignored `results/gao_v4_audit/duplicates.json`; final outcome recorded below.
+- Added `research/aditya/audit_gao_archives.py` for all event TSVs and BDF headers,
+  plus streaming Status-channel verification on FVI runs. Exact command:
+  `.venv-vtc/Scripts/python.exe -u research/aditya/audit_gao_archives.py --raw datasets/gao_raw/figshare_v4 --out results/gao_v4_audit/events.json`.
+- Event/header audit completed in 68.05 seconds: 125 runs across all tasks, no
+  parser errors or recorded structural issues, and no type/numeric-code label
+  disagreements in the inspected metadata. This is not a signal-quality audit.
+- All 42 FVI runs contain 120 events (40 per shape), totaling 5,040 events. All
+  have unique within-run trial IDs, increasing/non-overlapping 4-second intervals,
+  4-second declared durations, and fit the converter's full -7 to +5 second bounds.
+  Minimum marker separation is 17.09 seconds. All share one 33-channel layout
+  (32 EEG plus Status) at 1,000 Hz. TSV onset equals latency/fs exactly.
+- Verified FVI event codes against raw BDF Status transitions in all 42 runs;
+  every run matches within one sample, inside the converter's two-sample tolerance.
+  This verifies trigger correspondence, not whether the imagery window is free
+  of perceptual carryover or timing differences across participants.
+- Confirmed 20 participants have two FVI sessions; sub-09 and sub-10 have one.
+  This gives at most 4,800 cross-session-candidate events before cohort/quality
+  decisions. Version-4 duplicate results must be considered before using sub-21.
+- Ran metadata-only grouping assertions on actual events: chronological same-code
+  groups of four use all 120 distinct trials exactly once within each run, yielding
+  30 decisions/run (10 per shape). Saved membership/timing for all 1,260 bundles
+  under ignored `results/gao_v4_audit/four_attempt_grouping.json`. The 42-run
+  inventory includes the two single-session participants; it is not a final cohort.
+- Important latency correction: from the first event marker to four seconds after
+  the fourth, those retrospective groups span median 158.1955 seconds, minimum
+  55.316 and maximum 820.279, including intervening other-class trials. Do not
+  advertise this as a 16-second online decoder or use labels to group unknown
+  incoming trials. A future repeated-intention protocol would need new validation.
+- Synthetic in-memory BDF checks passed for header/channel layout, record order,
+  low-16-bit Status decoding (ignoring upper-byte flags), and truncated-payload
+  rejection. Git whitespace checks passed. No downloaded Python code was executed.
+
+- Full duplicate scan completed successfully: **125 BDF data sections and 125
+  event files hashed; zero duplicate groups**. Independently checked the saved
+  report's row counts and empty duplicate list. The previously flagged whole-
+  recording copies are therefore not byte-identical in the downloaded version 4.
+  This does not establish absence of partial duplication, artifact contamination
+  or other data problems, nor does it alter historical version-3 findings.
+- Outcome: structural/event-level feasibility is established for a shapes
+  repetition analysis, with 20 paired-session candidates in v4 (19 if retaining
+  the historical sub-21 exclusion). Freeze the cohort decision before fitting;
+  do not mix a new-cohort result with historical figures as if directly comparable.
+  Next step is a short repetition protocol and version-aware FVI preparation,
+  preserving source hashes, event IDs and timings. No scientific accuracy or
+  repetition benefit has been measured by this audit.
+
+## 2026-11-14 - Defined Experiment 08 and started local shapes preparation
+
+- User asked to keep moving and explain the data. Confirmed the actual FVI star
+  stimulus is a five-pointed outlined star (dataset name: pentagram); the other
+  two classes are circle and square. This is three known stimuli repeated over
+  trials, not a large collection of distinct natural images or new-object decoding.
+- Added Study 2 experiment `08_repetition_budget` with a prospective protocol.
+  Primary cohort: 20 v4 paired-session participants, including audited v4 sub-21;
+  sensitivity summary excludes sub-21. No accuracy-based cohort selection.
+- Fixed the comparison to mean class-probability pooling of four events versus
+  individual-event correctness on the same held-out events, using the same fitted
+  shared alpha-power/logistic-regression decoder. Both session directions, equal
+  participant weighting, seed 2022, fixed estimator settings, 1,000 paired
+  training-label shuffles and participant bootstrap uncertainty are specified.
+  Statistical and 45%-accuracy practical criteria are kept separate; 2/8-attempt
+  budgets are descriptive and cannot rescue the primary outcome.
+- Explicitly documented class-informed offline grouping, full-test-session
+  transductive normalization, observed acquisition latency, prior use of these
+  datasets, and potential perceptual carryover. A 16-second or online decoding
+  claim is not supported. Scientific results are **not run**, job numbers **none**.
+- Added an experiment-specific preparer importing `convert_run` from the existing
+  shared converter rather than copying its EEG implementation. It uses one
+  temporary FVI run at a time, preserves original event IDs/onsets/sample indices
+  and source hashes, writes v4 provenance instead of the shared CLI's hardcoded
+  v3 string, and refuses to overwrite converted subjects. No downloaded code runs.
+- Five preparation tests passed in 20.85 seconds: original IDs/timings, label
+  disagreement, duplicate source IDs, wrong-version rejection and no-overwrite.
+  Root-level CLI help and Git whitespace checks passed.
+- Started `.venv-vtc/Scripts/python.exe -u studies/2_imagery_decoding/experiments/08_repetition_budget/prepare_shapes.py --raw datasets/gao_raw/figshare_v4 --out datasets/gao/v4_fvi`.
+  First converted participant independently checked: 240 unique finite epochs,
+  32x3000 samples, 250 Hz, -7 to +5 seconds, 40 events/class/session and preserved
+  raw event timing. Full-cohort completion will be recorded separately.
+- Bundled dataset_description.json says CC0 while the official v4 manifest and
+  README say CC BY 4.0. Preserved these source documents and noted the inconsistency;
+  no data redistribution or new permissions claim is made.
+- No scientific fitting, cluster use, GitHub edits, commit or push. Experiment 07
+  and its findings remain unchanged; the new experiment is indexed in Study 2.
+
+## 2026-11-14 - Completed local FVI preparation and corrected session terminology
+
+- All 20 paired-session participants converted successfully into ignored
+  `datasets/gao/v4_fvi/`: 4,800 events across 20 files, 1,844,897,900 bytes total.
+  Independently reloaded every output and checked cohort membership, v4 provenance,
+  unique source-event IDs, 40 events per shape/session, raw onset/sample agreement,
+  finite EEG and the expected 32x3000 shape at 250 Hz. All checks passed.
+- SHA-256 of each complete prepared EEG epoch found **zero exact duplicate epoch
+  groups** among 4,800 events. This extends the whole-record duplicate audit but
+  does not exclude near-duplicates, artifacts, confounds or inadequate imagery.
+  Saved the input-validation summary in `results/gao_v4_audit/prepared_fvi.json`.
+- Timing terminology correction before any fitting: 19/20 paired FVI participants
+  have matching BDF header dates between sessions; only sub-21 differs. These can
+  be export dates, so they establish neither same-day nor different-day acquisition.
+  The inspected sub-01 EEG sidecars contain no acquisition-date field. Changed
+  the new protocol/index to **cross-session**, not verified cross-day. Actual
+  acquisition days and cap replacement need independent protocol confirmation.
+  Historical project claims are not silently rewritten on this evidence alone.
+- Protocol SHA-256 at input-validation time:
+  `861f119e353838d3a22f984408b1849cca1fea420d65f4750c8a6c072aeb4c10`.
+- All raw archives are retained; only temporary single-run extraction copies were
+  automatically cleaned up. Converted data remain outside Git. No scientific
+  accuracy, permutation result or benefit from averaging has been measured.
+- Next step is implementing and synthetically testing the repetition evaluator
+  against the written protocol. No cluster job, GitHub edit, commit or push.
+
+## 2026-11-14 - Implemented and validated the repetition evaluator
+
+- User requested the next implementation step. Added `repetition_budget.py` and
+  evaluator tests under Experiment 08. It imports shared Gao alpha-power extraction
+  and logistic regression; no shared scientific code or Experiment 07 was changed.
+- Implemented chronological disjoint 1/2/4/8-event groups, paired single/four-event
+  evaluation with one fit per direction, deterministic class ties, both session
+  directions, equal participant weighting, mean-probability pooling and constant
+  controls. Test labels supply offline grouping/scoring only; they never train
+  the source-session estimator or determine settings.
+- Implemented 1,000-default training-label permutations, participant bootstrap
+  intervals, separate statistical/practical gates and the predefined no-sub21
+  sensitivity. Subset, low-permutation and noncanonical-seed runs cannot advance
+  the primary gate. No scientific instance of these procedures was executed.
+- Outputs preserve pre-fit membership/provenance, input/code/protocol hashes,
+  seed/arguments/library versions, features/scaling, observed probabilities and
+  compact per-person null results. Resume checks code, protocol, data, settings,
+  library versions and cohort, and restarts after the last complete permutation.
+  Fitted weights are not exposed by the shared estimator; documented that this
+  format saves predictions and reproducibility inputs, not reusable model weights.
+- Default invocation requires an explicit mode. `--validate-only` does not call
+  feature extraction or an estimator; scientific execution requires `--run`.
+  Existing output directories are refused except for explicit compatible resume.
+- Final suite command:
+  `.venv-vtc/Scripts/python.exe -m pytest studies/2_imagery_decoding/experiments/08_repetition_budget -q -p no:cacheprovider`.
+  **24 passed in 8.43 seconds**, including the five preparation tests. Evaluator
+  tests cover known signal, pure noise, shuffled training labels, metric arithmetic,
+  balanced constant control/ties, grouping/order/counts, one fit per direction,
+  source-fit isolation from target EEG/labels, deterministic paired shuffles,
+  checkpoint consistency and interrupted synthetic-run resume equivalence.
+- Synthetic end-to-end orchestration tests assert membership manifest creation
+  precedes fitting and that changed fingerprints reject resume before another fit.
+  Validation-mode tests make feature extraction and fitting raise if called.
+- Root CLI help and Git whitespace checks passed. Ran real-input validation only:
+  `.venv-vtc/Scripts/python.exe -u studies/2_imagery_decoding/experiments/08_repetition_budget/repetition_budget.py --validate-only --data datasets/gao/v4_fvi --out results/exp08_validation_20261114_final`.
+  All **20 participants / 4,800 events passed**. Saved exact event/group membership
+  before any scientific fit. The final-cohort median four-event span is **158.183
+  seconds**, not 16 seconds. Output explicitly records scientific_models_fitted=0.
+- An earlier validation-only snapshot is retained at
+  `results/exp08_validation_20261114/`; the final snapshot adds library versions
+  to the resume signature. Both fitted zero scientific models. Generated reports
+  and datasets are ignored by Git. No scientific accuracies or p-values exist yet.
+- Updated the experiment README with explicit CLI modes, artifacts, resume rules
+  and synthetic test command; updated the Study 2 index. No cluster access/job,
+  GitHub modification, commit or push. Next step is a separately requested small
+  scientific smoke run before considering the full permutation workload.
+
+## 2026-11-14 - Completed the first real-data repetition smoke run locally
+
+- User requested proceeding. Ran exactly a two-participant, five-permutation
+  CPU diagnostic, not the full cohort or full inference workload:
+  `.venv-vtc/Scripts/python.exe -u studies/2_imagery_decoding/experiments/08_repetition_budget/repetition_budget.py --run --data datasets/gao/v4_fvi --out results/exp08_local_smoke_20261114 --subjects 1 2 --seed 2022 --permute 5`.
+- Both input files validated, both session directions fitted, and all five
+  training-label permutations completed. Runner exited zero. The permutation
+  loop took 2.7 seconds. All expected manifest, feature/scaling, prediction,
+  progress and summary artifacts exist under ignored results storage.
+- Diagnostic participant-averaged single/four-event test accuracy:
+  **33.3333% / 28.3333%**, three-way chance **33.3333%**; paired delta **-5.0 pp**.
+  Subject 1: 28.75% / 20.00% (delta -8.75 pp). Subject 2: 37.9167% /
+  36.6667% (delta -1.25 pp). Both directions and secondary budgets are saved.
+- Both diagnostic permutation p-values are 1.0, but five permutations and two
+  participants cannot support the planned inference. Canonical-complete,
+  statistical-advance and practical-advance flags are correctly false by design.
+  This is an end-to-end execution check, not the completed Experiment 08 result.
+- Independently checked saved null count (five), both directions' balanced
+  constant-probability controls (1/3), gate flags and presence of saved artifacts.
+  No fitting settings, pooling rule, primary budget or cohort changed after this
+  diagnostic. Do not use the eight-event score to rescue the primary comparison.
+- Rough linear scaling of the permutation loop: 2.7/5 * (20/2) * 1000 =
+  5,400 seconds, approximately 90 minutes locally, plus overhead and variation.
+  This is not a promised completion time or a cluster resource measurement.
+- Updated the experiment README to distinguish completed smoke from the still-
+  unrun full-cohort analysis. This documentation update changes its fingerprint;
+  the old smoke directory remains an immutable record of its original inputs/code/
+  protocol. Use a fresh directory for the full run, not --resume on the smoke.
+- No full-cohort run, HPC connection, job submission, commit, push or GitHub edit.
+  Next step is the fixed full 20-person, 1,000-permutation analysis if requested;
+  local CPU execution is feasible and does not require a GPU.
+
+## 2026-11-15 - Started the full Experiment 08 analysis locally
+
+- User explicitly ruled out HPC, then requested proceeding. Started the fixed
+  20-participant, 1,000-permutation analysis on the local Windows CPU only.
+  No SSH connection, transfer, cluster submission or remote operation.
+- Command: `.venv-vtc/Scripts/python.exe -u studies/2_imagery_decoding/experiments/08_repetition_budget/repetition_budget.py --run --data datasets/gao/v4_fvi --out results/exp08_local_full_20261115 --seed 2022 --permute 1000`.
+- Launched with a hidden window and separate ignored stdout/stderr files:
+  `results/exp08_local_full_20261115.stdout.log` and
+  `results/exp08_local_full_20261115.stderr.log`. Launcher PID 10096, observed
+  interpreter PID 27480. The runner limits PyTorch to one CPU thread; no GPU used.
+- Refused pre-existing output/log paths before launch. Confirmed the personal
+  branch and preserved existing uncommitted work and the unrelated untracked file.
+  Early stdout confirms input validation is progressing; no stderr observed.
+- The runner saves a complete group-permutation checkpoint after each iteration.
+  Preserve its code, shared helpers and protocol README while it runs so strict
+  resume fingerprints remain usable. Research-log appends do not change them.
+- Approximately 90 minutes was the smoke-based estimate, not a completion promise.
+  Completion and final inference remain pending; no partial score was used to
+  alter settings or select budgets. Keep the machine awake; interrupted work can
+  resume with the identical command plus `--resume` after verifying no active copy.
+- No commit, push or GitHub update. The two-person smoke stays a separate diagnostic;
+  this fresh directory is the full-cohort analysis.
+
+## 2026-11-15 - Local full-run progress check
+
+- User requested an update. Local interpreter remains active; stdout and saved
+  progress agree on **218/1,000 permutations**. Loop elapsed 1,572.2 seconds
+  (about 26.2 minutes). Stderr is empty and no final summary exists yet.
+- Average-rate estimate is approximately 94 more minutes; recent iterations vary,
+  so this is not a completion guarantee. Process working set is about 384 MB.
+- Did not inspect partial scores, change settings, restart, interrupt, access HPC,
+  or modify the runner/protocol. The current iteration checkpoints remain intact.
+
+## 2026-11-15 - Local full run still active at 648 permutations
+
+- User asked whether finished. Stdout and saved checkpoint agree on
+  **648/1,000 permutations**; process is active, stderr empty, no summary yet.
+  Permutation-loop elapsed is 8,746.6 seconds (about 2 hours 26 minutes).
+- The earlier runtime estimate was optimistic; iteration speed has varied
+  substantially. No firm completion time is claimed. All 648 completed group
+  permutations remain saved. No partial accuracy was inspected or tuning done.
+- No restart, interruption, code/protocol change, remote access or HPC use.
+
+## 2026-11-15 - Paused the local full run at the user's request
+
+- User explicitly requested stopping now and resuming later. Confirmed the known
+  worker/launcher PIDs were Python processes with matching launch times, then
+  stopped only interpreter 27480 and launcher 10096. No other process or HPC job
+  was stopped. Both identified processes are no longer present.
+- The atomic checkpoint remains valid: **660/1,000 complete group permutations**,
+  each containing all 20 participants. Manifest and observed predictions exist;
+  no final summary yet. No checkpoint, dataset or model artifact was deleted.
+- Resume later with the identical command plus `--resume`, using
+  `results/exp08_local_full_20261115` after checking no other copy is active.
+  It will retain 660 completed permutations and run the remaining 340. Any
+  unfinished iteration at interruption is recomputed, not counted as complete.
+- Do not edit the runner, shared helpers, protocol README, dependencies or inputs
+  before resuming; fingerprint changes deliberately reject incompatible resume.
+  This log-only append does not change those fingerprints. No automatic restart.
+
+## 2026-11-15 - Resumed the local full analysis on request
+
+- User requested continuing. Verified the saved 660 complete group permutations,
+  all 20 participants per permutation, and unchanged runner/protocol/shared-code
+  fingerprints. No final summary exists. Process command-line inspection was
+  sandbox-denied; a supported process listing confirmed zero active python.exe
+  processes before launch, preventing a second concurrent copy.
+- Restarted the exact full-analysis command with `--resume`, retaining seed 2022,
+  20 participants, target 1,000 permutations and the original output directory.
+  It will recompute input features/verify signatures, reuse observed predictions
+  and the 660 saved permutations, then continue the remaining work.
+- Hidden local launcher PID 27676. Fresh stdout/stderr logs use suffix
+  `exp08_local_full_20261115.resume_20261115` under ignored results storage; original
+  logs are preserved. No settings, protocol, dependencies or data were changed.
+- Execution is local CPU only. No HPC connection, upload, job, commit or push.
+  Successful continuation beyond the checkpoint will be confirmed separately.
+
+- Confirmed successful resume: all input checks/signatures passed, stdout reports
+  permutation **661/1,000**, and progress.json independently records 661 complete
+  iterations. Resumed stderr is empty. Interpreter PID 4892 remains active; no
+  restart from zero or duplicate scientific run occurred.
+
+## 2026-11-15 - Resumed run progress at 898 permutations
+
+- User requested an update. Resumed stdout and the valid saved checkpoint agree:
+  **898/1,000 permutations complete**, 102 remaining. Interpreter PID 4892 is
+  active, stderr empty, and the final summary has not been generated.
+- Resumed-loop elapsed is 1,735.1 seconds for 238 additional permutations. Recent
+  iterations range roughly 12-27 seconds, slower than the resumed average; any
+  remaining-time estimate is approximate. No partial scores inspected, settings
+  changed, process interrupted, HPC accessed or GitHub content modified.
+
+## 2026-11-15 - Resumed run progress at 987 permutations
+
+- Read-only status check on request: **987/1,000 complete**, 13 remaining;
+  checkpoint matches stdout. Local interpreter remains active, stderr empty,
+  and summary.json is not present yet. Recent iterations take about 10-13 seconds.
+- No partial results inspected, settings changed, restart or remote operation.
+
+## 2026-11-15 - Full local Experiment 08 completed; no supported repetition gain
+
+- User requested completion check. Resumed log reaches **1,000/1,000** and reports
+  the saved summary; the local worker/launcher have exited. Both stderr logs are
+  empty. Checkpoint has exactly 1,000 complete permutations over all 20 people.
+- Participant-averaged single/four-event held-out test accuracy is
+  **34.8541667% / 34.3333333%**, chance **33.3333333%**. Primary difference
+  **-0.5208333 percentage points**; one-sided paired training-label p **.6823176823**.
+  Four-event above-chance p **.2277722278**. Statistical and practical gates fail.
+- Improvement 95% participant-bootstrap interval: **-2.7291667 to +1.7708333 pp**.
+  Four-event accuracy interval: **30.1666667% to 38.4166667%**. Nine of 20 people
+  improve. Two/eight-event descriptive accuracies: 35.6250% / 35.8333333%; neither
+  replaces the primary four-event comparison or supports an advance claim.
+- Predefined no-sub21 sensitivity: single/four 35.0219298% / 34.9122807%,
+  delta -0.1096491 pp, paired p .5154845155, four-event above-chance p .1198801199.
+  Excluding the replaced participant does not change the primary interpretation.
+- Independently reconstructed all primary event/group accuracies from saved
+  probabilities/membership and both p-values from the saved null arrays. Verified
+  full cohort, completion flags and constant controls. No post-result tuning.
+- Preserved the exact original README as ignored `protocol_at_run.md`, verifying
+  its SHA-256 against the run manifest BEFORE adding completed results to the
+  current README. Updated the experiment README and Study 2 index; Experiment 07
+  remains unchanged. Outputs remain under `results/exp08_local_full_20261115/`.
+- Conclusion is a protocol-specific null: four-attempt probability pooling did
+  not improve cross-session shape decoding here. It is not a finding that all
+  imagery decoding is impossible. No generation follow-up is supported by this test.
+- All execution was local CPU. No HPC access/job, upload, GitHub edit, commit or
+  push. Next action: discuss this completed result before choosing another test.
+
+## 2026-11-15 - Prepared Experiment 08 closeout for publication
+
+- User requested completing documentation, publication and branch push before
+  considering another idea. Confirmed `aditya-individual-branch`, refreshed origin,
+  and found no divergence from its remote. Current main is already an ancestor;
+  no merge or changes to main were needed. PR 17 remains open for this branch.
+- Updated FINDINGS.md with Experiment 08's methods, audit, completed null and
+  limitations while retaining Experiment 07's detailed results. Added the result
+  to the project journal/status/ledger and root README; updated study counts and
+  the study/experiment indexes. Older dated journal entries remain unchanged.
+- Included local download/archive-audit helpers, version-aware FVI preparation,
+  evaluator and tests. No new scientific method or run was started. Data and
+  generated artifacts remain ignored; the unrelated untracked file stays untouched.
+- Validation: **41 tests passed in 23.90 seconds** across Experiments 07 and 08.
+  Python source syntax, HTML parsing/unique IDs/newest-first journal chronology,
+  published headline values against summary.json and Git whitespace checks passed.
+  Inspected the explicit publication file list for data, private account paths
+  and credentials. No datasets, keys, weights or run artifacts are included.
+- Next action is committing/pushing this closeout only to the personal branch and
+  refreshing the existing PR description so it covers both completed experiments.
+  No automatic merge, new experiment, model run or HPC action is part of this work.
